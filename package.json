@@ -1,7 +1,7 @@
 {
-	"name": "obsidian-sample-plugin",
-	"version": "1.0.1",
-	"description": "This is a sample plugin for Obsidian (https://obsidian.md)",
+	"name": "obsidian-better-command-palette",
+	"version": "0.1.0",
+	"description": "A command palette that does all of the things you want it to do.",
 	"main": "main.js",
 	"scripts": {
 		"dev": "node esbuild.config.mjs",
