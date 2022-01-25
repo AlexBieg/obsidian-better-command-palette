@@ -32,7 +32,7 @@ export default class MyPlugin extends Plugin {
 		this.addCommand({
 			id: 'open-better-commmand-palette',
 			name: 'Open better command palette',
-			hotkeys: [{ modifiers: ["Mod", "Shift"], key: "p" }],
+			hotkeys: [{ modifiers: ["Mod"], key: "p" }],
 			callback: () => {
 				new BetterCommandPaletteModal(this.app, this.prevCommands, this).open();
 			}
@@ -46,7 +46,7 @@ function generateHotKeyText(hotkey : Hotkey) : string {
 		hotKeyStrings.push(MODIFIER_ICONS[mod])
 	}
 
-	hotKeyStrings.push(hotkey.key)
+	hotKeyStrings.push(hotkey.key.toUpperCase())
 
 	return hotKeyStrings.join(' ')
 }
@@ -58,16 +58,13 @@ class BetterCommandPaletteModal extends FuzzySuggestModal<Command> {
 		super(app);
 		this.prevCommands = prevCommands;
 
+		this.setPlaceholder('Select a command (or hit backspace to close)')
 
 		plugin.registerDomEvent(this.inputEl, 'keydown', (event) => {
 			if (event.key === 'Backspace' && event.target.value == '') {
 				this.close()
 			}
 		});
-	}
-
-	setPlaceholder() : string {
-		return 'Select a command (or backspace to close)...'
 	}
 
 	getItems() : Command[] {
@@ -101,6 +98,14 @@ class BetterCommandPaletteModal extends FuzzySuggestModal<Command> {
 					text: generateHotKeyText(hotkey),
 				})
 			}
+		}
+
+		if (this.prevCommands.has(command)) {
+			el.addClass('recent-command');
+			el.createEl('span', {
+				cls: 'recent-text',
+				text: '(recently used)',
+			});
 		}
 	}
 
