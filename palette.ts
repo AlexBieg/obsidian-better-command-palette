@@ -30,6 +30,7 @@ class BetterCommandPaletteModal extends FuzzySuggestModal < any > {
 
         plugin.registerDomEvent(this.inputEl, 'keydown', (event) => {
             // Let's us close the modal if there is no value and the user presses backspace
+            // @ts-ignore Event target's definitely have a `value`. Maybe I'm missing something about TS
             if (plugin.settings.closeWithBackspace && event.key === 'Backspace' && event.target.value == '') {
                 this.close()
             }
@@ -37,6 +38,7 @@ class BetterCommandPaletteModal extends FuzzySuggestModal < any > {
             // Use item even if meta is held
             if (this.actionType === this.ACTION_TYPE_FILES && event.key === 'Enter' && event.metaKey) {
                 // Seems like there should be a better way to do this
+                // @ts-ignore Until I know otherise I'll grab the currently chosen item from the `chooser`
                 const selectedItem = this.chooser.values && this.chooser.values[this.chooser.selectedItem]
                 this.onChooseItem(selectedItem && selectedItem.item, event)
                 this.close();
@@ -49,7 +51,7 @@ class BetterCommandPaletteModal extends FuzzySuggestModal < any > {
             if (potentialNewType !== this.actionType) {
                 this.actionType = potentialNewType;
                 this.updateEmptyStateText()
-                // Need this to update the suggestions without needing to type another character
+                //@ts-ignore Need this to update the suggestions without needing to type another character
                 this.updateSuggestions();
             }
         });
@@ -100,6 +102,7 @@ class BetterCommandPaletteModal extends FuzzySuggestModal < any > {
 
             case this.ACTION_TYPE_COMMAND:
                 return this.getSortedItems(
+                    // @ts-ignore Can't find another way to access commands. Seems like other plugins have used this.
                     this.app.commands.listCommands().sort((a: Command, b: Command) => b.name.localeCompare(a.name)),
                     this.prevCommands,
                 );
@@ -177,6 +180,7 @@ class BetterCommandPaletteModal extends FuzzySuggestModal < any > {
                 let created = false;
                 if (!item) {
                     created = true;
+                    // @ts-ignore Event target's definitely have a `value`. Maybe I'm missing something about TS
                     const path = normalizePath(`${event.target.value.replace(this.fileSearchPrefix, '')}.md`);
                     item = await this.app.vault.create(path, '');
                 }
@@ -195,6 +199,7 @@ class BetterCommandPaletteModal extends FuzzySuggestModal < any > {
 
             case this.ACTION_TYPE_COMMAND:
                 this.prevCommands.add(item);
+                // @ts-ignore Can't find another way to access commands. Seems like other plugins have used this.
                 this.app.commands.executeCommandById(item.id);
                 break;
         }
