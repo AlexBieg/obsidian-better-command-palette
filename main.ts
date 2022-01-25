@@ -7,11 +7,13 @@ import BetterCommandPaletteModal from './palette';
 interface BetterCommandPalettePluginSettings {
 	closeWithBackspace: boolean,
 	fileSearchPrefix: string,
+	suggestionLimit: number,
 }
 
 const DEFAULT_SETTINGS: BetterCommandPalettePluginSettings = {
 	closeWithBackspace: true,
-	fileSearchPrefix: '/'
+	fileSearchPrefix: '/',
+	suggestionLimit: 50,
 }
 
 export default class BetterCommandPalettePlugin extends Plugin {
@@ -80,5 +82,24 @@ class BetterCommandPaletteSettingTab extends PluginSettingTab {
 				settings.fileSearchPrefix = val;
 				await this.plugin.saveSettings();
 			}));
+
+		const dropdownOptions = {
+			'10': '10',
+			'20': '20',
+			'50': '50',
+			'100': '100',
+			'200': '200',
+			'500': '500',
+			'1000': '1000',
+		}
+		new Setting(containerEl)
+			.setName('Suggestion Limit')
+			.setDesc('The number of items that will be in the suggestion list of the palette. Really high numbers can affect performance')
+			.addDropdown(d => d.addOptions(dropdownOptions)
+				.setValue(settings.suggestionLimit.toString())
+				.onChange(async v => {
+					settings.suggestionLimit = parseInt(v);
+					await this.plugin.saveSettings();
+				}));
 	}
 }

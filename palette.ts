@@ -17,6 +17,7 @@ class BetterCommandPaletteModal extends FuzzySuggestModal < any > {
         this.prevFiles = prevFiles;
         this.actionType = this.getActionType();
         this.fileSearchPrefix = plugin.settings.fileSearchPrefix;
+        this.limit = plugin.settings.suggestionLimit;
 
         this.setPlaceholder('Select a command')
         this.updateEmptyStateText()
