@@ -1,5 +1,5 @@
-.recent-command {
-    color: var(--text-accent);
+.recent {
+    font-weight: bold;
 }
 
 .recent-text {
