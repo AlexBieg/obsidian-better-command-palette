@@ -1,5 +1,5 @@
 import BetterCommandPalettePlugin from "main";
-import { App, Command, FuzzyMatch, FuzzySuggestModal, TFile } from "obsidian";
+import { App, Command, FuzzyMatch, FuzzySuggestModal, normalizePath, TFile } from "obsidian";
 import { generateHotKeyText, OrderedSet } from "utils";
 
 class BetterCommandPaletteModal extends FuzzySuggestModal < any > {
@@ -177,7 +177,8 @@ class BetterCommandPaletteModal extends FuzzySuggestModal < any > {
                 let created = false;
                 if (!item) {
                     created = true;
-                    item = await this.app.vault.create(`${event.target.value.replace(this.fileSearchPrefix, '')}.md`, '');
+                    const path = normalizePath(`${event.target.value.replace(this.fileSearchPrefix, '')}.md`);
+                    item = await this.app.vault.create(path, '');
                 }
 
                 this.prevFiles.add(item);
