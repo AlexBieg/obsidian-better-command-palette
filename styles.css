@@ -1,3 +1,7 @@
+.better-command-palette-title {
+    color: var(--text-accent);
+    margin: 5px;
+}
 .recent {
     font-weight: bold;
 }

@@ -19,6 +19,14 @@ class BetterCommandPaletteModal extends FuzzySuggestModal < any > {
         this.fileSearchPrefix = plugin.settings.fileSearchPrefix;
 
         this.setPlaceholder('Select a command')
+        this.updateEmptyStateText()
+
+        const modalTitle = createEl('p', {
+            text: 'Better Command Palette',
+            cls: 'better-command-palette-title'
+        });
+
+        this.modalEl.insertBefore(modalTitle, this.modalEl.firstChild);
 
         plugin.registerDomEvent(this.inputEl, 'keydown', (event) => {
             // Let's us close the modal if there is no value and the user presses backspace
@@ -40,6 +48,7 @@ class BetterCommandPaletteModal extends FuzzySuggestModal < any > {
             // Action Type changed
             if (potentialNewType !== this.actionType) {
                 this.actionType = potentialNewType;
+                this.updateEmptyStateText()
                 // Need this to update the suggestions without needing to type another character
                 this.updateSuggestions();
             }
@@ -54,6 +63,18 @@ class BetterCommandPaletteModal extends FuzzySuggestModal < any > {
         }
 
         return this.ACTION_TYPE_COMMAND
+    }
+
+    updateEmptyStateText() {
+        switch (this.actionType) {
+            case this.ACTION_TYPE_FILES:
+                this.emptyStateText = 'No matching files. ⌘+Enter to create the file.'
+                break;
+
+            case this.ACTION_TYPE_COMMAND:
+                this.emptyStateText = 'No matching commands.'
+                break;
+        }
     }
 
 	getSortedItems(items: any[], prevItems: OrderedSet<any>) {
@@ -109,8 +130,6 @@ class BetterCommandPaletteModal extends FuzzySuggestModal < any > {
                 return item.name;
         }
     }
-
-
 
 	renderPrevItems(match: FuzzyMatch<any>, el: HTMLElement, prevItems: OrderedSet<any>) {
         if (prevItems.has(match.item)) {
