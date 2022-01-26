@@ -8,9 +8,19 @@ export const MODIFIER_ICONS = {
     Shift: '⇧',
 }
 
+export const SPECIAL_KEYS = [
+    ["TAB", "↹"],
+    ["ENTER", "↵"],
+    ["ARROWLEFT", "←"],
+    ["ARROWRIGHT", "→"],
+    ["ARROWUP", "↑"],
+    ["ARROWDOWN", "↓"],
+    ["BACKSPACE", "⌫"],
+]
+
 /**
  * A utility set that keeps track of the last time an item was added to the
- * set even it it was already in the set.
+ * set even if it was already in the set.
  */
 export class OrderedSet<T> extends Set<T> {
     add(item: T) {
@@ -37,7 +47,12 @@ export function generateHotKeyText(hotkey: Hotkey): string {
         hotKeyStrings.push(MODIFIER_ICONS[mod])
     }
 
-    hotKeyStrings.push(hotkey.key.toUpperCase())
+    var key = hotkey.key.toUpperCase();
+    SPECIAL_KEYS.forEach (special_key =>{
+        if (special_key[0] === key) key = special_key[1];
+    });
+
+    hotKeyStrings.push(key)
 
     return hotKeyStrings.join(' ')
 }
