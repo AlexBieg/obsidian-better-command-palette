@@ -1,5 +1,5 @@
 import BetterCommandPalettePlugin from "main";
-import { App, Command, FuzzyMatch, FuzzySuggestModal, normalizePath, TFile } from "obsidian";
+import { App, Command, FuzzyMatch, FuzzySuggestModal, Hotkey, normalizePath, TFile } from "obsidian";
 import { generateHotKeyText, OrderedSet } from "utils";
 
 class BetterCommandPaletteModal extends FuzzySuggestModal < any > {
@@ -147,14 +147,17 @@ class BetterCommandPaletteModal extends FuzzySuggestModal < any > {
 
 	renderCommandSuggestion(match: FuzzyMatch<Command>, el: HTMLElement) {
         const command = match.item;
+        const allHotkeys : Hotkey[] = [
+            ...(command.hotkeys || []),
+            // @ts-ignore Need to access hotkeyManager to get custom hotkeys
+            ...(this.app.hotkeyManager.customKeys[command.id] || [])
+        ]
 
-        if (match.item.hotkeys) {
-            for (const hotkey of command.hotkeys) {
-                el.createEl('kbd', {
-                    cls: 'suggestion-hotkey',
-                    text: generateHotKeyText(hotkey),
-                })
-            }
+        for (const hotkey of allHotkeys) {
+            el.createEl('kbd', {
+                cls: 'suggestion-hotkey',
+                text: generateHotKeyText(hotkey),
+            })
         }
     }
 
