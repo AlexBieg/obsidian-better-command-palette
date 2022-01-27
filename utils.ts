@@ -47,12 +47,8 @@ export function generateHotKeyText(hotkey: Hotkey): string {
         hotKeyStrings.push(MODIFIER_ICONS[mod])
     }
 
-    var key = hotkey.key.toUpperCase();
-    SPECIAL_KEYS.forEach (special_key =>{
-        if (special_key[0] === key) key = special_key[1];
-    });
-
-    hotKeyStrings.push(key)
+    const key = hotkey.key.toUpperCase();
+    hotKeyStrings.push(SPECIAL_KEYS[key] || key)
 
     return hotKeyStrings.join(' ')
 }
