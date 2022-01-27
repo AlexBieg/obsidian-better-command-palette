@@ -6,6 +6,8 @@ class BetterCommandPaletteModal extends FuzzySuggestModal < any > {
     ACTION_TYPE_COMMAND: string = 'command';
     ACTION_TYPE_FILES: string = 'files';
 
+    COMMAND_PLUGIN_NAME_SEPARATOR: string = ': ';
+
     actionType: string;
     prevCommands: OrderedSet<Command>;
     prevFiles: OrderedSet<TFile>;
@@ -183,9 +185,25 @@ class BetterCommandPaletteModal extends FuzzySuggestModal < any > {
             setIcon(flairContainer, 'filled-pin', 13);
         }
 
+        let text = this.getItemText(command);
+
+        // Has a plugin name prefix
+        if (text.includes(this.COMMAND_PLUGIN_NAME_SEPARATOR)) {
+            // Wish there was an easy way to get the plugin name without string manipulation
+            // Seems like this is how the acutal command palette does it though
+            const split = text.split(this.COMMAND_PLUGIN_NAME_SEPARATOR);
+            const prefix = split[0];
+            text = split[1];
+
+            el.createEl('span', {
+                cls: 'suggestion-prefix',
+                text: prefix,
+            })
+        }
+
         el.createEl('span', {
             cls: 'suggestion-content',
-            text: this.getItemText(command),
+            text: text,
         })
 
         for (const hotkey of allHotkeys) {
