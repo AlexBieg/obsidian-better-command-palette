@@ -8,7 +8,7 @@ export const MODIFIER_ICONS = {
     Shift: '⇧',
 }
 
-export const SPECIAL_KEYS = {
+export const SPECIAL_KEYS : Record<string, string> = {
     TAB: "↹",
     ENTER: "↵",
     ARROWLEFT: "←",
