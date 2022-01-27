@@ -8,15 +8,15 @@ export const MODIFIER_ICONS = {
     Shift: '⇧',
 }
 
-export const SPECIAL_KEYS = [
-    ["TAB", "↹"],
-    ["ENTER", "↵"],
-    ["ARROWLEFT", "←"],
-    ["ARROWRIGHT", "→"],
-    ["ARROWUP", "↑"],
-    ["ARROWDOWN", "↓"],
-    ["BACKSPACE", "⌫"],
-]
+export const SPECIAL_KEYS = {
+    TAB: "↹",
+    ENTER: "↵",
+    ARROWLEFT: "←",
+    ARROWRIGHT: "→",
+    ARROWUP: "↑",
+    ARROWDOWN: "↓",
+    BACKSPACE: "⌫",
+}
 
 /**
  * A utility set that keeps track of the last time an item was added to the
