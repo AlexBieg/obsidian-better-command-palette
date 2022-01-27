@@ -8,12 +8,14 @@ interface BetterCommandPalettePluginSettings {
 	closeWithBackspace: boolean,
 	fileSearchPrefix: string,
 	suggestionLimit: number,
+	recentAbovePinned: boolean,
 }
 
 const DEFAULT_SETTINGS: BetterCommandPalettePluginSettings = {
 	closeWithBackspace: true,
 	fileSearchPrefix: '/',
 	suggestionLimit: 50,
+	recentAbovePinned: false,
 }
 
 export default class BetterCommandPalettePlugin extends Plugin {
@@ -72,6 +74,14 @@ class BetterCommandPaletteSettingTab extends PluginSettingTab {
 			.setDesc('Close the palette when there is no text and backspace is pressed')
 			.addToggle(t => t.setValue(settings.closeWithBackspace).onChange(async val => {
 				settings.closeWithBackspace = val;
+				await this.plugin.saveSettings();
+			}));
+
+		new Setting(containerEl)
+			.setName('Recent above Pinned')
+			.setDesc('Sorts the suggestion so that the recently used items show before pinned items.')
+			.addToggle(t => t.setValue(settings.recentAbovePinned).onChange(async val => {
+				settings.recentAbovePinned = val;
 				await this.plugin.saveSettings();
 			}));
 
