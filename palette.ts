@@ -1,5 +1,5 @@
 import BetterCommandPalettePlugin from "main";
-import { App, Command, FuzzyMatch, FuzzySuggestModal, Hotkey, normalizePath, TFile } from "obsidian";
+import { App, Command, FuzzyMatch, FuzzySuggestModal, Hotkey, normalizePath, setIcon, TFile } from "obsidian";
 import { generateHotKeyText, OrderedSet } from "utils";
 
 class BetterCommandPaletteModal extends FuzzySuggestModal < any > {
@@ -10,6 +10,7 @@ class BetterCommandPaletteModal extends FuzzySuggestModal < any > {
     prevCommands: OrderedSet<Command>;
     prevFiles: OrderedSet<TFile>;
     fileSearchPrefix: string;
+    recentAbovePinned: boolean;
 
     constructor(app: App, prevCommands: OrderedSet<Command>, prevFiles: OrderedSet<TFile>, plugin: BetterCommandPalettePlugin) {
         super(app);
@@ -18,6 +19,7 @@ class BetterCommandPaletteModal extends FuzzySuggestModal < any > {
         this.actionType = this.getActionType();
         this.fileSearchPrefix = plugin.settings.fileSearchPrefix;
         this.limit = plugin.settings.suggestionLimit;
+        this.recentAbovePinned = plugin.settings.recentAbovePinned;
 
         this.setPlaceholder('Select a command')
         this.updateEmptyStateText()
@@ -83,14 +85,36 @@ class BetterCommandPaletteModal extends FuzzySuggestModal < any > {
 	getSortedItems(items: any[], prevItems: OrderedSet<any>) {
         const allItems = new OrderedSet(items);
 
-        for (const prevItem of prevItems.values()) {
-            if (allItems.has(prevItem)) {
-                // Bring it to the top
-                allItems.add(prevItem);
+        // TODO: Clean up this logic. If we ever have more than two things this will not work.
+        const firstItems = this.recentAbovePinned ? prevItems.values() : this.getPinnedItems();
+        const secondItems = !this.recentAbovePinned ? prevItems.values() : this.getPinnedItems();
+
+        const itemsToAdd = [secondItems, firstItems];
+
+        for (const toAdd of itemsToAdd) {
+            for (const i of toAdd) {
+                if (allItems.has(i)) {
+                    // Bring it to the top
+                    allItems.add(i);
+                }
             }
         }
 
         return allItems.valuesByLastAdd();
+    }
+
+    getPinnedItems() : Array<any> {
+        switch (this.actionType) {
+            case this.ACTION_TYPE_FILES:
+                return [];
+
+            case this.ACTION_TYPE_COMMAND:
+                // @ts-ignore Don't love accessing the internal plugin, but that's where it's stored
+                return this.app.internalPlugins.getPluginById('command-palette').instance.options.pinned.map(
+                    // @ts-ignore Get the command object using the command id
+                    (id : string ) : Command => this.app.commands.commands[id]
+                )
+        }
     }
 
 	getItems(): Array<any> {
@@ -153,6 +177,17 @@ class BetterCommandPaletteModal extends FuzzySuggestModal < any > {
             ...(this.app.hotkeyManager.customKeys[command.id] || [])
         ]
 
+        if (this.getPinnedItems().includes(command)) {
+            const flairContainer = el.createEl('span', 'suggestion-flair');
+            // 13 copied from current command palette
+            setIcon(flairContainer, 'filled-pin', 13);
+        }
+
+        el.createEl('span', {
+            cls: 'suggestion-content',
+            text: this.getItemText(command),
+        })
+
         for (const hotkey of allHotkeys) {
             el.createEl('kbd', {
                 cls: 'suggestion-hotkey',
@@ -162,16 +197,15 @@ class BetterCommandPaletteModal extends FuzzySuggestModal < any > {
     }
 
 	renderSuggestion(match: FuzzyMatch<any>, el: HTMLElement) {
-        super.renderSuggestion(match, el)
-
         switch (this.actionType) {
             case this.ACTION_TYPE_FILES:
+                super.renderSuggestion(match, el)
                 this.renderPrevItems(match, el, this.prevFiles)
                 break;
 
             case this.ACTION_TYPE_COMMAND:
-                this.renderPrevItems(match, el, this.prevCommands)
                 this.renderCommandSuggestion(match, el);
+                this.renderPrevItems(match, el, this.prevCommands)
                 break;
         }
     }
