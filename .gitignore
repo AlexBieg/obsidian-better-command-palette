@@ -1,5 +1,5 @@
 # vscode
-.vscode 
+.vscode
 
 # Intellij
 *.iml
@@ -17,3 +17,6 @@ main.js
 
 # obsidian
 data.json
+
+# Mac
+.DS_Store
