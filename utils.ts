@@ -6,6 +6,7 @@ export const MODIFIER_ICONS = {
     Meta: '⌘',
     Alt: '⌥',
     Shift: '⇧',
+    Capslock: '⇪',
 }
 
 export const SPECIAL_KEYS : Record<string, string> = {
@@ -45,7 +46,7 @@ export function generateHotKeyText(hotkey: Hotkey): string {
     var hotKeyStrings: string[] = [];
     if (hotkey.modifiers.length === 4) {
         // for Mac users using the Hyper Key https://holmberg.io/hyper-key/
-        hotKeyStrings.push("⇪");
+        hotKeyStrings.push(MODIFIER_ICONS["Capslock"]);
     } else {
         for (const mod of hotkey.modifiers) {
             hotKeyStrings.push(MODIFIER_ICONS[mod])
