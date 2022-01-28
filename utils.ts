@@ -43,8 +43,13 @@ export class OrderedSet<T> extends Set<T> {
  */
 export function generateHotKeyText(hotkey: Hotkey): string {
     var hotKeyStrings: string[] = [];
-    for (const mod of hotkey.modifiers) {
-        hotKeyStrings.push(MODIFIER_ICONS[mod])
+    if (hotkey.modifiers.length === 4) {
+        // for Mac users using the Hyper Key https://holmberg.io/hyper-key/
+        hotKeyStrings.push("⇪");
+    } else {
+        for (const mod of hotkey.modifiers) {
+            hotKeyStrings.push(MODIFIER_ICONS[mod])
+        }
     }
 
     const key = hotkey.key.toUpperCase();
