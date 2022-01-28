@@ -17,6 +17,7 @@ export const SPECIAL_KEYS : Record<string, string> = {
     ARROWUP: "↑",
     ARROWDOWN: "↓",
     BACKSPACE: "⌫",
+    ESC: "Esc",
 }
 
 /**
