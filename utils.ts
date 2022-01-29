@@ -1,4 +1,5 @@
-import { Hotkey } from "obsidian";
+import { Hotkey} from "obsidian";
+import { Comparable, Match } from "types";
 
 export const MODIFIER_ICONS = {
     Mod: '⌘',
@@ -22,17 +23,50 @@ export const SPECIAL_KEYS : Record<string, string> = {
  * A utility set that keeps track of the last time an item was added to the
  * set even if it was already in the set.
  */
-export class OrderedSet<T> extends Set<T> {
-    add(item: T) {
-        if (this.has(item)) {
-            this.delete(item);
-        }
+export class OrderedSet<T extends Comparable> {
+    private map: Map<string, T>;
 
-        return super.add(item);
+    constructor(values: Iterable<T> = []) {
+        this.map = new Map<string, T>()
+        for (const v of values) {
+            this.map.set(v.value(), v);
+        }
+    }
+
+    has(item: T) : boolean {
+        return this.map.has(item.value());
+    }
+
+    add(item: T) {
+        this.delete(item);
+
+        return this.map.set(item.value(), item);
+    }
+
+    delete(item: T) {
+        this.map.delete(item.value())
+    }
+
+    values(): T[] {
+        return Array.from(this.map.values())
     }
 
     valuesByLastAdd(): T[] {
-        return Array.from(this).reverse()
+        return Array.from(this.map.values()).reverse()
+    }
+}
+
+export class PaletteMatch implements Match {
+    id: string;
+    text: string;
+
+    constructor(id: string, text: string) {
+        this.id = id;
+        this.text = text;
+    }
+
+    value() : string {
+        return this.id;
     }
 }
 

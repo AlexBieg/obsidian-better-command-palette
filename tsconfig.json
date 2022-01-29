@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "baseUrl": ".",
-    "inlineSourceMap": true,
+    "sourceMap": true,
     "inlineSources": true,
     "module": "ESNext",
     "target": "ES6",
@@ -19,5 +19,5 @@
   },
   "include": [
     "**/*.ts"
-  ]
+, "suggestions-worker.js"  ]
 }
