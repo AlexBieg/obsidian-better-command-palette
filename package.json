@@ -1,6 +1,6 @@
 {
 	"name": "obsidian-better-command-palette",
-	"version": "0.3.0",
+	"version": "0.4.0",
 	"description": "A command palette that does all of the things you want it to do.",
 	"main": "main.js",
 	"scripts": {
