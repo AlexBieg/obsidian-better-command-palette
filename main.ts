@@ -2,7 +2,8 @@ import { Plugin, Command, App, PluginSettingTab, Setting, TFile } from 'obsidian
 
 import { OrderedSet } from './utils';
 import BetterCommandPaletteModal from './palette';
-
+import SuggestionsWorker from 'web-worker:./suggestions-worker';
+import { Match } from './types';
 
 interface BetterCommandPalettePluginSettings {
 	closeWithBackspace: boolean,
@@ -20,16 +21,18 @@ const DEFAULT_SETTINGS: BetterCommandPalettePluginSettings = {
 
 export default class BetterCommandPalettePlugin extends Plugin {
 	settings: BetterCommandPalettePluginSettings;
-	prevCommands : OrderedSet<Command>;
-	prevFiles : OrderedSet<TFile>;
+	prevCommands : OrderedSet<Match>;
+	prevFiles : OrderedSet<Match>;
+	suggestionsWorker : Worker;
 
 	async onload() {
 		console.log('Loading plugin: Better Command Palette');
 
 		await this.loadSettings();
 
-		this.prevCommands = new OrderedSet<Command>()
-		this.prevFiles = new OrderedSet<TFile>()
+		this.prevCommands = new OrderedSet<Match>()
+		this.prevFiles = new OrderedSet<Match>()
+		this.suggestionsWorker = new SuggestionsWorker({});
 
 		this.addCommand({
 			id: 'open-better-commmand-palette',
@@ -38,7 +41,13 @@ export default class BetterCommandPalettePlugin extends Plugin {
 			// Can still be overwritten in the hotkey settings
 			hotkeys: [{ modifiers: ["Mod", "Shift"], key: "p" }],
 			callback: () => {
-				new BetterCommandPaletteModal(this.app, this.prevCommands, this.prevFiles, this).open();
+				new BetterCommandPaletteModal(
+					this.app,
+					this.prevCommands,
+					this.prevFiles,
+					this,
+					this.suggestionsWorker
+				).open();
 			}
 		});
 
