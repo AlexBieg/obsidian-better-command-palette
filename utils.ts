@@ -78,10 +78,9 @@ export abstract class SuggestModalAdapter {
     app: App;
     prevItems: OrderedSet<Match>;
     recentAbovePinned: boolean;
-
-    pinnedItems: Match[] = [];
-
-    abstract allItems: Match[];
+    pinnedItems: Match[];
+    initialized: boolean;
+    allItems: Match[];
 
     abstract getTitleText(): string;
     abstract getEmptyStateText():  string;
@@ -92,6 +91,19 @@ export abstract class SuggestModalAdapter {
         this.app = app;
         this.prevItems = prevItems;
         this.recentAbovePinned = recentAbovePinned;
+        this.allItems = []
+        this.pinnedItems = [];
+        this.initialized = false;
+    }
+
+    checkInitialized() {
+        if (!this.initialized) {
+            throw new Error('This adapter has not been initialized');
+        }
+    }
+
+    initialize() {
+        this.initialized = true;
     }
 
     cleanQuery(query: string) {
@@ -99,10 +111,12 @@ export abstract class SuggestModalAdapter {
     }
 
     getPinnedItems(): Match[] {
+        this.checkInitialized()
         return this.pinnedItems;
     }
 
     getItems(): Match[] {
+        this.checkInitialized()
         return this.allItems;
     }
 

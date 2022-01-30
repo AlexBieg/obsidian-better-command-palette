@@ -1,6 +1,6 @@
 import { App, Command, setIcon } from "obsidian";
 import { Match} from "types";
-import { generateHotKeyText, OrderedSet, PaletteMatch, SuggestModalAdapter } from "utils";
+import { generateHotKeyText, PaletteMatch, SuggestModalAdapter } from "utils";
 
 export class BetterCommandPaletteCommandAdapter extends SuggestModalAdapter {
     COMMAND_PLUGIN_NAME_SEPARATOR: string = ': ';
@@ -8,8 +8,9 @@ export class BetterCommandPaletteCommandAdapter extends SuggestModalAdapter {
     allItems: Match[];
     pinnedItems: Match[];
 
-    constructor(app: App, prevItems: OrderedSet<Match>, recentAbovePinned: boolean) {
-        super(app, prevItems, recentAbovePinned);
+    initialize() {
+        super.initialize();
+
         // @ts-ignore Can't find another way to access commands. Seems like other plugins have used this.
         this.allItems = this.app.commands.listCommands()
             .sort((a: Command, b: Command) => b.name.localeCompare(a.name))

@@ -4,13 +4,30 @@ import { OrderedSet, PaletteMatch, SuggestModalAdapter } from "utils";
 
 export class BetterCommandPaletteTagAdapter extends SuggestModalAdapter {
     allItems: Match[];
+    tagSearchPrefix: string;
 
-    constructor(app: App, prevItems: OrderedSet<Match>, recentAbovePinned: boolean) {
-        super(app, prevItems, recentAbovePinned)
+    constructor(app: App, prevItems: OrderedSet<Match>, recentAbovePinned: boolean, tagSearchPrefix: string) {
+        super(app, prevItems, recentAbovePinned);
+        this.tagSearchPrefix = tagSearchPrefix;
+    }
 
-        // @ts-ignore Can't find another way to access tags.
-        this.allItems = Object.keys(this.app.metadataCache.getTags())
-            .map((tag) => new PaletteMatch(tag, tag));
+    initialize(): void {
+        super.initialize();
+
+        // @ts-ignore get all files with tags
+        this.allItems = this.app.metadataCache.getCachedFiles().reduce((acc: PaletteMatch[], path: string) => {
+            const fileCache = this.app.metadataCache.getCache(path);
+            if (fileCache.tags) {
+                const tagString = fileCache.tags.map(tc => tc.tag).join(' ');
+                acc.push(new PaletteMatch(path, tagString))
+            }
+
+            return acc;
+        }, []);
+    }
+
+    cleanQuery(query: string): string {
+        return query.replace(this.tagSearchPrefix, '');
     }
 
     getTitleText(): string {
@@ -24,15 +41,19 @@ export class BetterCommandPaletteTagAdapter extends SuggestModalAdapter {
     renderSuggestion(match: Match, el: HTMLElement): void {
         el.createEl('span', {
             cls: 'suggestion-content',
+            text: match.id, // We're storing the file path in the id
+        });
+
+        el.createEl('span', {
+            cls: 'suggestion-sub-content',
             text: match.text,
         });
     }
 
     async onChooseSuggestion(match: Match, event: MouseEvent | KeyboardEvent) {
         this.getPrevItems().add(match);
-        // @ts-ignore
-        this.app.internalPlugins.plugins['global-search'].instance.openGlobalSearch(`tag:${match.text}`)
-        console.log(match);
+        const file = this.app.metadataCache.getFirstLinkpathDest(match.id, '');
+        this.app.workspace.activeLeaf.openFile(file);
     };
 
 }

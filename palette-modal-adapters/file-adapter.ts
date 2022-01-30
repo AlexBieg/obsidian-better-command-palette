@@ -9,6 +9,11 @@ export class BetterCommandPaletteFileAdapter extends SuggestModalAdapter {
     constructor(app: App, prevItems: OrderedSet<Match>, recentAbovePinned: boolean, fileSearchPrefix: string) {
         super(app, prevItems, recentAbovePinned)
         this.fileSearchPrefix = fileSearchPrefix;
+    }
+
+    initialize() {
+        super.initialize();
+
         // @ts-ignore To support searching every file 'getCachedFiles' is much faster
         this.allItems = this.app.metadataCache.getCachedFiles()
             .reverse() // Reversed because we want it sorted A -> Z

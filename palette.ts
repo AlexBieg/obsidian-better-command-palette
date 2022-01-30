@@ -54,10 +54,9 @@ class BetterCommandPaletteModal extends SuggestModal <any> {
         this.tagAdapter = new BetterCommandPaletteTagAdapter(
             app,
             prevTags,
-            plugin.settings.recentAbovePinned
+            plugin.settings.recentAbovePinned,
+            this.tagSearchPrefix,
         );
-
-        this.currentAdapter = this.commandAdapter;
 
         // Lets us do the suggestion fuzzy search in a different thread
         this.suggestionsWorker = suggestionsWorker;
@@ -67,7 +66,6 @@ class BetterCommandPaletteModal extends SuggestModal <any> {
         this.setPlaceholder('Select a command')
 
         this.modalTitleEl = createEl('p', {
-            text: this.currentAdapter.getTitleText(),
             cls: 'better-command-palette-title'
         });
 
@@ -104,8 +102,7 @@ class BetterCommandPaletteModal extends SuggestModal <any> {
 
 	updateActionType() : boolean {
         const text: string = this.inputEl.value;
-        let type = this.ACTION_TYPE_COMMAND
-        this.currentAdapter = this.commandAdapter;
+        let type;
 
         if (text.startsWith(this.fileSearchPrefix)) {
             type = this.ACTION_TYPE_FILES;
@@ -113,6 +110,13 @@ class BetterCommandPaletteModal extends SuggestModal <any> {
         } else if (text.startsWith(this.tagSearchPrefix)) {
             type = this.ACTION_TYPE_TAGS;
             this.currentAdapter = this.tagAdapter;
+        } else {
+            type = this.ACTION_TYPE_COMMAND
+            this.currentAdapter = this.commandAdapter;
+        }
+
+        if (!this.currentAdapter.initialized) {
+            this.currentAdapter.initialize();
         }
 
         const wasUpdated = type !== this.actionType;
@@ -185,8 +189,8 @@ class BetterCommandPaletteModal extends SuggestModal <any> {
     }
 
 	renderSuggestion(match: Match, el: HTMLElement) {
-        this.currentAdapter.renderSuggestion(match, el);
         this.renderPrevItems(match, el, this.currentAdapter.getPrevItems());
+        this.currentAdapter.renderSuggestion(match, el);
     }
 
 	async onChooseSuggestion(item: Match, event: MouseEvent | KeyboardEvent) {
