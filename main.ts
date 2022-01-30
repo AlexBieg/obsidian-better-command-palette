@@ -8,6 +8,7 @@ import { Match } from './types';
 interface BetterCommandPalettePluginSettings {
 	closeWithBackspace: boolean,
 	fileSearchPrefix: string,
+	tagSearchPrefix: string,
 	suggestionLimit: number,
 	recentAbovePinned: boolean,
 }
@@ -15,6 +16,7 @@ interface BetterCommandPalettePluginSettings {
 const DEFAULT_SETTINGS: BetterCommandPalettePluginSettings = {
 	closeWithBackspace: true,
 	fileSearchPrefix: '/',
+	tagSearchPrefix: '#',
 	suggestionLimit: 50,
 	recentAbovePinned: false,
 }
@@ -99,6 +101,14 @@ class BetterCommandPaletteSettingTab extends PluginSettingTab {
 			.setDesc('The prefix used to tell the palette you want to search files')
 			.addText(t => t.setValue(settings.fileSearchPrefix).onChange(async val => {
 				settings.fileSearchPrefix = val;
+				await this.plugin.saveSettings();
+			}));
+
+		new Setting(containerEl)
+			.setName('Tag Search Prefix')
+			.setDesc('The prefix used to tell the palette you want to search tags')
+			.addText(t => t.setValue(settings.tagSearchPrefix).onChange(async val => {
+				settings.tagSearchPrefix = val;
 				await this.plugin.saveSettings();
 			}));
 

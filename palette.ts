@@ -4,15 +4,17 @@ import { generateHotKeyText, OrderedSet, PaletteMatch } from "./utils";
 import { Match } from './types';
 
 class BetterCommandPaletteModal extends SuggestModal <any> {
-    ACTION_TYPE_COMMAND: string = 'command';
-    ACTION_TYPE_FILES: string = 'files';
+    ACTION_TYPE_COMMAND: number = 1;
+    ACTION_TYPE_FILES: number = 2;
+    ACTION_TYPE_TAGS: number = 3;
 
     COMMAND_PLUGIN_NAME_SEPARATOR: string = ': ';
 
-    actionType: string;
+    actionType: number;
     prevCommands: OrderedSet<Match>;
     prevFiles: OrderedSet<Match>;
     fileSearchPrefix: string;
+    tagSearchPrefix: string;
     recentAbovePinned: boolean;
     suggestionsWorker: Worker;
     currentSuggestions: Match[];
@@ -23,6 +25,7 @@ class BetterCommandPaletteModal extends SuggestModal <any> {
         this.prevCommands = prevCommands;
         this.prevFiles = prevFiles;
         this.fileSearchPrefix = plugin.settings.fileSearchPrefix;
+        this.tagSearchPrefix = plugin.settings.tagSearchPrefix;
         this.limit = plugin.settings.suggestionLimit;
         this.recentAbovePinned = plugin.settings.recentAbovePinned;
         this.currentSuggestions = [];
