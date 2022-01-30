@@ -16,7 +16,8 @@ export class BetterCommandPaletteCommandAdapter extends SuggestModalAdapter {
             .map((c: Command): Match => new PaletteMatch(c.id, c.name));
 
         // @ts-ignore Don't love accessing the internal plugin, but that's where it's stored
-        this.pinnedItems = this.app.internalPlugins.getPluginById('command-palette').instance.options.pinned.map(
+        const pinnedCommands = this.app.internalPlugins.getPluginById('command-palette').instance.options.pinned || [];
+        this.pinnedItems = pinnedCommands.map(
             // @ts-ignore Get the command object using the command id
             (id: string): Match => new PaletteMatch(id, this.app.commands.findCommand(id).name)
         );

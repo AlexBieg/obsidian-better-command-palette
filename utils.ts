@@ -79,6 +79,8 @@ export abstract class SuggestModalAdapter {
     prevItems: OrderedSet<Match>;
     recentAbovePinned: boolean;
 
+    pinnedItems: Match[] = [];
+
     abstract allItems: Match[];
 
     abstract getTitleText(): string;
@@ -97,7 +99,7 @@ export abstract class SuggestModalAdapter {
     }
 
     getPinnedItems(): Match[] {
-        return []
+        return this.pinnedItems;
     }
 
     getItems(): Match[] {
