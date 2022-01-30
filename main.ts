@@ -8,6 +8,7 @@ import { Match } from './types';
 interface BetterCommandPalettePluginSettings {
 	closeWithBackspace: boolean,
 	fileSearchPrefix: string,
+	tagSearchPrefix: string,
 	suggestionLimit: number,
 	recentAbovePinned: boolean,
 }
@@ -15,6 +16,7 @@ interface BetterCommandPalettePluginSettings {
 const DEFAULT_SETTINGS: BetterCommandPalettePluginSettings = {
 	closeWithBackspace: true,
 	fileSearchPrefix: '/',
+	tagSearchPrefix: '#',
 	suggestionLimit: 50,
 	recentAbovePinned: false,
 }
@@ -23,6 +25,7 @@ export default class BetterCommandPalettePlugin extends Plugin {
 	settings: BetterCommandPalettePluginSettings;
 	prevCommands : OrderedSet<Match>;
 	prevFiles : OrderedSet<Match>;
+	prevTags : OrderedSet<Match>;
 	suggestionsWorker : Worker;
 
 	async onload() {
@@ -30,8 +33,9 @@ export default class BetterCommandPalettePlugin extends Plugin {
 
 		await this.loadSettings();
 
-		this.prevCommands = new OrderedSet<Match>()
-		this.prevFiles = new OrderedSet<Match>()
+		this.prevCommands = new OrderedSet<Match>();
+		this.prevFiles = new OrderedSet<Match>();
+		this.prevTags = new OrderedSet<Match>();
 		this.suggestionsWorker = new SuggestionsWorker({});
 
 		this.addCommand({
@@ -45,6 +49,7 @@ export default class BetterCommandPalettePlugin extends Plugin {
 					this.app,
 					this.prevCommands,
 					this.prevFiles,
+					this.prevTags,
 					this,
 					this.suggestionsWorker
 				).open();
@@ -99,6 +104,14 @@ class BetterCommandPaletteSettingTab extends PluginSettingTab {
 			.setDesc('The prefix used to tell the palette you want to search files')
 			.addText(t => t.setValue(settings.fileSearchPrefix).onChange(async val => {
 				settings.fileSearchPrefix = val;
+				await this.plugin.saveSettings();
+			}));
+
+		new Setting(containerEl)
+			.setName('Tag Search Prefix')
+			.setDesc('The prefix used to tell the palette you want to search tags')
+			.addText(t => t.setValue(settings.tagSearchPrefix).onChange(async val => {
+				settings.tagSearchPrefix = val;
 				await this.plugin.saveSettings();
 			}));
 
