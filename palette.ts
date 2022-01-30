@@ -204,11 +204,14 @@ class BetterCommandPaletteModal extends SuggestModal <any> {
 	renderCommandSuggestion(match: Match, el: HTMLElement) {
         // @ts-ignore
         const command = this.app.commands.findCommand(match.id);
-        const allHotkeys : Hotkey[] = [
-            ...(command.hotkeys || []),
-            // @ts-ignore Need to access hotkeyManager to get custom hotkeys
-            ...(this.app.hotkeyManager.customKeys[command.id] || [])
-        ]
+        // @ts-ignore Need to access hotkeyManager to get custom hotkeys
+        const customHotkeys = this.app.hotkeyManager.getHotkeys(command.id);
+        // @ts-ignore Need to access hotkeyManager to get default hotkeys
+        const defaultHotkeys = this.app.hotkeyManager.getDefaultHotkeys(command.id);
+
+        // If hotkeys have been customized in some way (add new, deleted default) customHotkeys will be an array, otherwise undefined
+        // If there is a default hotkey defaultHotkeys will be an array (does not check any customization), otherwise undefined.
+        const hotkeys = customHotkeys || defaultHotkeys || [];
 
         if (this.getPinnedItems().find(i => i.id === match.id)) {
             const flairContainer = el.createEl('span', 'suggestion-flair');
@@ -236,7 +239,7 @@ class BetterCommandPaletteModal extends SuggestModal <any> {
         }
 
 
-        for (const hotkey of allHotkeys) {
+        for (const hotkey of hotkeys) {
             el.createEl('kbd', {
                 cls: 'suggestion-hotkey',
                 text: generateHotKeyText(hotkey),
