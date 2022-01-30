@@ -1,57 +1,95 @@
 // import BetterCommandPalettePlugin from "./main";
-import { App, Command, SuggestModal, Hotkey, normalizePath, setIcon } from "obsidian";
-import { generateHotKeyText, OrderedSet, PaletteMatch } from "./utils";
+import { App, KeymapEventListener, SuggestModal } from "obsidian";
+import { OrderedSet, PaletteMatch, SuggestModalAdapter } from "./utils";
+import {
+    BetterCommandPaletteCommandAdapter,
+    BetterCommandPaletteFileAdapter,
+    BetterCommandPaletteTagAdapter,
+} from "palette-modal-adapters";
 import { Match } from './types';
+import BetterCommandPalettePlugin from "main";
 
 class BetterCommandPaletteModal extends SuggestModal <any> {
     ACTION_TYPE_COMMAND: number = 1;
     ACTION_TYPE_FILES: number = 2;
     ACTION_TYPE_TAGS: number = 3;
 
-    COMMAND_PLUGIN_NAME_SEPARATOR: string = ': ';
-
     actionType: number;
-    prevCommands: OrderedSet<Match>;
-    prevFiles: OrderedSet<Match>;
     fileSearchPrefix: string;
     tagSearchPrefix: string;
-    recentAbovePinned: boolean;
     suggestionsWorker: Worker;
     currentSuggestions: Match[];
     lastQuery: string;
+    modalTitleEl: HTMLElement;
 
-    constructor(app: App, prevCommands: OrderedSet<Match>, prevFiles: OrderedSet<Match>, plugin: any, suggestionsWorker: Worker) {
+    commandAdapter: BetterCommandPaletteCommandAdapter;
+    fileAdapter: BetterCommandPaletteFileAdapter;
+    tagAdapter: BetterCommandPaletteTagAdapter;
+    currentAdapter: SuggestModalAdapter;
+
+    constructor(
+        app: App,
+        prevCommands: OrderedSet<Match>,
+        prevFiles: OrderedSet<Match>,
+        prevTags: OrderedSet<Match>,
+        plugin: BetterCommandPalettePlugin,
+        suggestionsWorker: Worker
+    ) {
         super(app);
-        this.prevCommands = prevCommands;
-        this.prevFiles = prevFiles;
         this.fileSearchPrefix = plugin.settings.fileSearchPrefix;
         this.tagSearchPrefix = plugin.settings.tagSearchPrefix;
         this.limit = plugin.settings.suggestionLimit;
-        this.recentAbovePinned = plugin.settings.recentAbovePinned;
-        this.currentSuggestions = [];
+
+        this.commandAdapter = new BetterCommandPaletteCommandAdapter(
+            app,
+            prevCommands,
+            plugin.settings.recentAbovePinned,
+        );
+        this.fileAdapter = new BetterCommandPaletteFileAdapter(
+            app,
+            prevFiles,
+            plugin.settings.recentAbovePinned,
+            this.fileSearchPrefix,
+        );
+        this.tagAdapter = new BetterCommandPaletteTagAdapter(
+            app,
+            prevTags,
+            plugin.settings.recentAbovePinned
+        );
+
+        this.currentAdapter = this.commandAdapter;
 
         // Lets us do the suggestion fuzzy search in a different thread
         this.suggestionsWorker = suggestionsWorker;
         this.suggestionsWorker.onmessage = (msg: MessageEvent) => this.receivedSuggestions(msg);
 
 
-        this.updateActionType();
         this.setPlaceholder('Select a command')
-        this.updateEmptyStateText()
 
-        const modalTitle = createEl('p', {
-            text: 'Better Command Palette',
+        this.modalTitleEl = createEl('p', {
+            text: this.currentAdapter.getTitleText(),
             cls: 'better-command-palette-title'
         });
 
-        this.modalEl.insertBefore(modalTitle, this.modalEl.firstChild);
+        this.updateActionType();
 
-        plugin.registerDomEvent(this.inputEl, 'keydown', (event:KeyboardEvent) => {
-            // Let's us close the modal if there is no value and the user presses backspace
+        this.modalEl.insertBefore(this.modalTitleEl, this.modalEl.firstChild);
+
+        this.scope.register([], 'Backspace', (event: KeyboardEvent) => {
             // @ts-ignore Event target's definitely have a `value`. Maybe I'm missing something about TS
-            if (plugin.settings.closeWithBackspace && event.key === 'Backspace' && event.target.value == '') {
+            if (plugin.settings.closeWithBackspace && event.target.value == '') {
                 this.close()
             }
+        });
+
+        this.scope.register(['Meta'], 'Enter', () => {
+            if (this.actionType === this.ACTION_TYPE_FILES) {
+                // @ts-ignore Until I know otherise I'll grab the currently chosen item from the `chooser`
+                this.chooser.useSelectedItem({ metaKey: true });
+            }
+        })
+
+        plugin.registerDomEvent(this.inputEl, 'keydown', (event:KeyboardEvent) => {
 
             // Use item even if meta is held
             if (this.actionType === this.ACTION_TYPE_FILES && event.key === 'Enter' && event.metaKey) {
@@ -67,86 +105,39 @@ class BetterCommandPaletteModal extends SuggestModal <any> {
 	updateActionType() : boolean {
         const text: string = this.inputEl.value;
         let type = this.ACTION_TYPE_COMMAND
+        this.currentAdapter = this.commandAdapter;
 
         if (text.startsWith(this.fileSearchPrefix)) {
             type = this.ACTION_TYPE_FILES;
+            this.currentAdapter = this.fileAdapter;
+        } else if (text.startsWith(this.tagSearchPrefix)) {
+            type = this.ACTION_TYPE_TAGS;
+            this.currentAdapter = this.tagAdapter;
         }
 
         const wasUpdated = type !== this.actionType;
         this.actionType = type;
+
+        if (wasUpdated) {
+            this.updateEmptyStateText();
+            this.updateTitleText();
+            this.currentSuggestions = this.currentAdapter.getSortedItems();
+        }
+
         return wasUpdated;
     }
 
+    updateTitleText() {
+        this.modalTitleEl.setText(this.currentAdapter.getTitleText())
+    }
+
     updateEmptyStateText() {
-        switch (this.actionType) {
-            case this.ACTION_TYPE_FILES:
-                this.emptyStateText = 'No matching files. ⌘+Enter to create the file.'
-                break;
-
-            case this.ACTION_TYPE_COMMAND:
-                this.emptyStateText = 'No matching commands.'
-                break;
-        }
+        this.emptyStateText = this.currentAdapter.getEmptyStateText();
     }
 
-	getSortedItems(items: Match[], prevItems: OrderedSet<Match>) {
-        const allItems = new OrderedSet(items);
-
-        // TODO: Clean up this logic. If we ever have more than two things this will not work.
-        const firstItems = this.recentAbovePinned ? prevItems.values() : this.getPinnedItems();
-        const secondItems = !this.recentAbovePinned ? prevItems.values() : this.getPinnedItems();
-
-        const itemsToAdd = [secondItems, firstItems];
-
-        for (const toAdd of itemsToAdd) {
-            for (const i of toAdd) {
-                if (allItems.has(i)) {
-                    // Bring it to the top
-                    allItems.add(i);
-                }
-            }
-        }
-
-        return allItems.valuesByLastAdd();
-    }
-
-    getPinnedItems() : Match[] {
-        switch (this.actionType) {
-            case this.ACTION_TYPE_FILES:
-                return [];
-
-            case this.ACTION_TYPE_COMMAND:
-            default:
-                // @ts-ignore Don't love accessing the internal plugin, but that's where it's stored
-                return this.app.internalPlugins.getPluginById('command-palette').instance.options.pinned.map(
-                    // @ts-ignore Get the command object using the command id
-                    (id : string ) : Match => new PaletteMatch(id, this.app.commands.findCommand(id).name)
-                );
-        }
-    }
 
 	getItems(): Match[] {
-        // @ts-ignore
-        switch (this.actionType) {
-            case this.ACTION_TYPE_FILES:
-                return this.getSortedItems(
-                    // @ts-ignore To support searching every file 'getCachedFiles' is much faster
-                    this.app.metadataCache.getCachedFiles()
-                        .reverse() // Reversed because we want it sorted A -> Z
-                        .map((path : string) => new PaletteMatch(path, path)),
-                    this.prevFiles,
-                )
-
-            case this.ACTION_TYPE_COMMAND:
-            default:
-                return this.getSortedItems(
-                    // @ts-ignore Can't find another way to access commands. Seems like other plugins have used this.
-                    this.app.commands.listCommands()
-                        .sort((a: Command, b: Command) => b.name.localeCompare(a.name))
-                        .map((c : Command) : Match => new PaletteMatch(c.id, c.name)),
-                    this.prevCommands,
-                )
-        }
+        return this.currentAdapter.getSortedItems();
     }
 
     receivedSuggestions(msg : MessageEvent) {
@@ -166,24 +157,13 @@ class BetterCommandPaletteModal extends SuggestModal <any> {
     }
 
 	getSuggestions(query: string): Match[] {
+        // The action type might have changed
+        this.updateActionType();
+
         const getNewSuggestions = query !== this.lastQuery;
         this.lastQuery = query;
         query = query.trim()
-        switch (this.actionType) {
-            case this.ACTION_TYPE_FILES:
-                query = query.replace(this.fileSearchPrefix, '')
-                break;
-
-            case this.ACTION_TYPE_COMMAND:
-                break;
-        }
-
-        // The action type might have changed
-        if (this.updateActionType()) {
-            // The action type did change, so update empty state text, and clear the current suggestions
-            this.updateEmptyStateText();
-            this.currentSuggestions = [];
-        }
+        query = this.currentAdapter.cleanQuery(query);
 
         if (getNewSuggestions) {
             // Load suggestions in another thread
@@ -204,106 +184,13 @@ class BetterCommandPaletteModal extends SuggestModal <any> {
         }
     }
 
-	renderCommandSuggestion(match: Match, el: HTMLElement) {
-        // @ts-ignore
-        const command = this.app.commands.findCommand(match.id);
-        const allHotkeys : Hotkey[] = [
-            ...(command.hotkeys || []),
-            // @ts-ignore Need to access hotkeyManager to get custom hotkeys
-            ...(this.app.hotkeyManager.customKeys[command.id] || [])
-        ]
-
-        if (this.getPinnedItems().find(i => i.id === match.id)) {
-            const flairContainer = el.createEl('span', 'suggestion-flair');
-            // 13 copied from current command palette
-            setIcon(flairContainer, 'filled-pin', 13);
-        }
-
-        let text = match.text;
-
-        // Has a plugin name prefix
-        if (text.includes(this.COMMAND_PLUGIN_NAME_SEPARATOR)) {
-            // Wish there was an easy way to get the plugin name without string manipulation
-            // Seems like this is how the acutal command palette does it though
-            const split = text.split(this.COMMAND_PLUGIN_NAME_SEPARATOR);
-            const prefix = split[0];
-            text = split[1];
-
-            el.createEl('span', {
-                cls: 'suggestion-prefix',
-                text: prefix,
-            })
-            this.renderText({ ...match, text: text }, el);
-        } else {
-            this.renderText(match, el);
-        }
-
-
-        for (const hotkey of allHotkeys) {
-            el.createEl('kbd', {
-                cls: 'suggestion-hotkey',
-                text: generateHotKeyText(hotkey),
-            })
-        }
-    }
-
-    renderText(match: Match, el: HTMLElement) {
-        el.createEl('span', {
-            cls: 'suggestion-content',
-            text: match.text,
-        })
-    }
-
 	renderSuggestion(match: Match, el: HTMLElement) {
-        switch (this.actionType) {
-            case this.ACTION_TYPE_FILES:
-                this.renderText(match, el)
-                this.renderPrevItems(match, el, this.prevFiles)
-                break;
-
-            case this.ACTION_TYPE_COMMAND:
-                this.renderCommandSuggestion(match, el);
-                this.renderPrevItems(match, el, this.prevCommands)
-                break;
-        }
+        this.currentAdapter.renderSuggestion(match, el);
+        this.renderPrevItems(match, el, this.currentAdapter.getPrevItems());
     }
 
 	async onChooseSuggestion(item: Match, event: MouseEvent | KeyboardEvent) {
-        switch (this.actionType) {
-            case this.ACTION_TYPE_FILES:
-                let created = false;
-                let file = null;
-
-                if (!item) {
-                    created = true;
-                    // @ts-ignore Event target's definitely have a `value`. Maybe I'm missing something about TS
-                    const path = normalizePath(`${event.target.value.replace(this.fileSearchPrefix, '')}.md`);
-                    file = await this.app.vault.create(path, '');
-                    item = new PaletteMatch(file.path, file.path);
-                } else {
-                    file = this.app.metadataCache.getFirstLinkpathDest(item.id, '');
-                }
-
-                this.prevFiles.add(item);
-                const workspace = this.app.workspace;
-
-                if (event.metaKey && !created) {
-                    const newLeaf = workspace.createLeafBySplit(workspace.activeLeaf)
-                    newLeaf.openFile(file);
-                    workspace.setActiveLeaf(newLeaf);
-                } else {
-                    workspace.activeLeaf.openFile(file);
-                }
-
-                break;
-
-            case this.ACTION_TYPE_COMMAND:
-                this.prevCommands.add(item);
-                // @ts-ignore Can't find another way to access commands. Seems like other plugins have used this.
-                this.app.commands.executeCommandById(item.id);
-                break;
-        }
-
+        this.currentAdapter.onChooseSuggestion(item, event);
     }
 }
 

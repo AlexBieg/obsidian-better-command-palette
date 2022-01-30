@@ -1,4 +1,4 @@
-import { Hotkey} from "obsidian";
+import { App, Hotkey} from "obsidian";
 import { Comparable, Match } from "types";
 
 export const MODIFIER_ICONS = {
@@ -68,6 +68,67 @@ export class PaletteMatch implements Match {
     value() : string {
         return this.id;
     }
+}
+
+/**
+ * A class that can be used by the palette modal to abstact away item specific logic between:
+ * Commands, Files, and Tags
+ */
+export abstract class SuggestModalAdapter {
+    app: App;
+    prevItems: OrderedSet<Match>;
+    recentAbovePinned: boolean;
+
+    abstract allItems: Match[];
+
+    abstract getTitleText(): string;
+    abstract getEmptyStateText():  string;
+    abstract renderSuggestion(match: Match, el: HTMLElement):  void;
+    abstract onChooseSuggestion(match: Match, event: MouseEvent | KeyboardEvent):  void;
+
+    constructor(app: App, prevItems: OrderedSet<Match>, recentAbovePinned: boolean) {
+        this.app = app;
+        this.prevItems = prevItems;
+        this.recentAbovePinned = recentAbovePinned;
+    }
+
+    cleanQuery(query: string) {
+        return query;
+    }
+
+    getPinnedItems(): Match[] {
+        return []
+    }
+
+    getItems(): Match[] {
+        return this.allItems;
+    }
+
+    getPrevItems(): OrderedSet<Match> {
+        return this.prevItems;
+    }
+
+    getSortedItems(): Match[] {
+        const allItems = new OrderedSet(this.getItems());
+
+        // TODO: Clean up this logic. If we ever have more than two things this will not work.
+        const firstItems = this.recentAbovePinned ? this.getPrevItems().values() : this.getPinnedItems();
+        const secondItems = !this.recentAbovePinned ? this.getPrevItems().values() : this.getPinnedItems();
+
+        const itemsToAdd = [secondItems, firstItems];
+
+        for (const toAdd of itemsToAdd) {
+            for (const i of toAdd) {
+                if (allItems.has(i)) {
+                    // Bring it to the top
+                    allItems.add(i);
+                }
+            }
+        }
+
+        return allItems.valuesByLastAdd();
+    }
+
 }
 
 /**

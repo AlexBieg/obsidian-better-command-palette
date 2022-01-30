@@ -25,6 +25,7 @@ export default class BetterCommandPalettePlugin extends Plugin {
 	settings: BetterCommandPalettePluginSettings;
 	prevCommands : OrderedSet<Match>;
 	prevFiles : OrderedSet<Match>;
+	prevTags : OrderedSet<Match>;
 	suggestionsWorker : Worker;
 
 	async onload() {
@@ -32,8 +33,9 @@ export default class BetterCommandPalettePlugin extends Plugin {
 
 		await this.loadSettings();
 
-		this.prevCommands = new OrderedSet<Match>()
-		this.prevFiles = new OrderedSet<Match>()
+		this.prevCommands = new OrderedSet<Match>();
+		this.prevFiles = new OrderedSet<Match>();
+		this.prevTags = new OrderedSet<Match>();
 		this.suggestionsWorker = new SuggestionsWorker({});
 
 		this.addCommand({
@@ -47,6 +49,7 @@ export default class BetterCommandPalettePlugin extends Plugin {
 					this.app,
 					this.prevCommands,
 					this.prevFiles,
+					this.prevTags,
 					this,
 					this.suggestionsWorker
 				).open();
