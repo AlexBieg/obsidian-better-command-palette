@@ -40,7 +40,7 @@ export default class BetterCommandPalettePlugin extends Plugin {
 
 		this.addCommand({
 			id: 'open-better-commmand-palette',
-			name: 'Open better command palette',
+			name: 'Open better command palette: Test',
 			// Generally I would not set a hotkey, but since it is a command palette I think it makes sense
 			// Can still be overwritten in the hotkey settings
 			hotkeys: [{ modifiers: ["Mod", "Shift"], key: "p" }],

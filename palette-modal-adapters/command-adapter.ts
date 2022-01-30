@@ -59,8 +59,9 @@ export class BetterCommandPaletteCommandAdapter extends SuggestModalAdapter {
             // Wish there was an easy way to get the plugin name without string manipulation
             // Seems like this is how the acutal command palette does it though
             const split = text.split(this.COMMAND_PLUGIN_NAME_SEPARATOR);
-            const prefix = split[0];
-            text = split[1];
+            // Get first element
+            const prefix = split.shift();
+            text = split.join(this.COMMAND_PLUGIN_NAME_SEPARATOR);
 
             el.createEl('span', {
                 cls: 'suggestion-prefix',
