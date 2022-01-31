@@ -56,6 +56,40 @@ export default class BetterCommandPalettePlugin extends Plugin {
 			}
 		});
 
+		this.addCommand({
+			id: 'open-better-commmand-palette-file-search',
+			name: 'Open better command palette: File Search',
+			hotkeys: [],
+			callback: () => {
+				new BetterCommandPaletteModal(
+					this.app,
+					this.prevCommands,
+					this.prevFiles,
+					this.prevTags,
+					this,
+					this.suggestionsWorker,
+					this.settings.fileSearchPrefix,
+				).open();
+			}
+		});
+
+		this.addCommand({
+			id: 'open-better-commmand-palette-tag-search',
+			name: 'Open better command palette: Tag Search',
+			hotkeys: [],
+			callback: () => {
+				new BetterCommandPaletteModal(
+					this.app,
+					this.prevCommands,
+					this.prevFiles,
+					this.prevTags,
+					this,
+					this.suggestionsWorker,
+					this.settings.tagSearchPrefix,
+				).open();
+			}
+		});
+
 		this.addSettingTab(new BetterCommandPaletteSettingTab(this.app, this));
 	}
 

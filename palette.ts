@@ -21,6 +21,7 @@ class BetterCommandPaletteModal extends SuggestModal <any> {
     currentSuggestions: Match[];
     lastQuery: string;
     modalTitleEl: HTMLElement;
+    initialInputValue: string;
 
     commandAdapter: BetterCommandPaletteCommandAdapter;
     fileAdapter: BetterCommandPaletteFileAdapter;
@@ -33,12 +34,15 @@ class BetterCommandPaletteModal extends SuggestModal <any> {
         prevFiles: OrderedSet<Match>,
         prevTags: OrderedSet<Match>,
         plugin: BetterCommandPalettePlugin,
-        suggestionsWorker: Worker
+        suggestionsWorker: Worker,
+        initialInputValue: string = '',
     ) {
         super(app);
+
         this.fileSearchPrefix = plugin.settings.fileSearchPrefix;
         this.tagSearchPrefix = plugin.settings.tagSearchPrefix;
         this.limit = plugin.settings.suggestionLimit;
+        this.initialInputValue = initialInputValue;
 
         this.commandAdapter = new BetterCommandPaletteCommandAdapter(
             app,
@@ -73,11 +77,23 @@ class BetterCommandPaletteModal extends SuggestModal <any> {
 
         this.modalEl.insertBefore(this.modalTitleEl, this.modalEl.firstChild);
 
-        this.scope.register([], 'Backspace', (event: KeyboardEvent) => {
-            // @ts-ignore Event target's definitely have a `value`. Maybe I'm missing something about TS
-            if (plugin.settings.closeWithBackspace && event.target.value == '') {
+        const closeModal = (event: KeyboardEvent) => {
+            // Have to cast this to access `value`
+            const el = event.target as HTMLInputElement;
+
+            if (plugin.settings.closeWithBackspace && el.value == '') {
                 this.close()
+                // Stops the editor from using the backspace event
+                event.preventDefault();
             }
+        }
+
+        this.scope.register([], 'Backspace', (event: KeyboardEvent) => {
+            closeModal(event);
+        });
+
+        this.scope.register(['Meta'], 'Backspace', (event: KeyboardEvent) => {
+            closeModal(event);
         });
 
         this.scope.register(['Meta'], 'Enter', () => {
@@ -85,19 +101,18 @@ class BetterCommandPaletteModal extends SuggestModal <any> {
                 // @ts-ignore Until I know otherise I'll grab the currently chosen item from the `chooser`
                 this.chooser.useSelectedItem({ metaKey: true });
             }
-        })
-
-        plugin.registerDomEvent(this.inputEl, 'keydown', (event:KeyboardEvent) => {
-
-            // Use item even if meta is held
-            if (this.actionType === this.ACTION_TYPE_FILES && event.key === 'Enter' && event.metaKey) {
-                // Seems like there should be a better way to do this
-                // @ts-ignore Until I know otherise I'll grab the currently chosen item from the `chooser`
-                const selectedItem = this.chooser.values && this.chooser.values[this.chooser.selectedItem]
-                this.onChooseSuggestion(selectedItem && selectedItem.item, event)
-                this.close();
-            }
         });
+    }
+
+    onOpen() {
+        super.onOpen();
+
+        // Add the initial value to the input
+        // TODO: Figure out if there is a way to bypass the first seach result flickering before this is set
+        // As far as I can tell onOpen resets the value of the input so this is the first place
+        if (this.initialInputValue) {
+            this.inputEl.value = this.initialInputValue;
+        }
     }
 
 	updateActionType() : boolean {
