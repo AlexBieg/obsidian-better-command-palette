@@ -1,8 +1,11 @@
 import { App } from "obsidian";
 import { Match } from "types";
-import { OrderedSet, PaletteMatch, SuggestModalAdapter } from "utils";
+import { OrderedSet, PaletteMatch, SuggestModalAdapter, UnsafeAppInterface } from "utils";
 
 export class BetterCommandPaletteTagAdapter extends SuggestModalAdapter {
+    // Unsafe interface
+    app: UnsafeAppInterface;
+
     allItems: Match[];
     tagSearchPrefix: string;
 
@@ -14,7 +17,6 @@ export class BetterCommandPaletteTagAdapter extends SuggestModalAdapter {
     initialize(): void {
         super.initialize();
 
-        // @ts-ignore get all files with tags
         this.allItems = this.app.metadataCache.getCachedFiles().reduce((acc: PaletteMatch[], path: string) => {
             const fileCache = this.app.metadataCache.getCache(path);
             if (fileCache.tags) {

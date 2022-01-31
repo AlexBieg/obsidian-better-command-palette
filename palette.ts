@@ -1,6 +1,5 @@
-// import BetterCommandPalettePlugin from "./main";
-import { App, KeymapEventListener, SuggestModal } from "obsidian";
-import { OrderedSet, PaletteMatch, SuggestModalAdapter } from "./utils";
+import { App, SuggestModal } from "obsidian";
+import { OrderedSet, PaletteMatch, SuggestModalAdapter, UnsafeSuggestModalInterface } from "./utils";
 import {
     BetterCommandPaletteCommandAdapter,
     BetterCommandPaletteFileAdapter,
@@ -9,10 +8,14 @@ import {
 import { Match } from './types';
 import BetterCommandPalettePlugin from "main";
 
-class BetterCommandPaletteModal extends SuggestModal <any> {
+class BetterCommandPaletteModal extends SuggestModal<Match> implements UnsafeSuggestModalInterface  {
     ACTION_TYPE_COMMAND: number = 1;
     ACTION_TYPE_FILES: number = 2;
     ACTION_TYPE_TAGS: number = 3;
+
+    // Unsafe interface
+    chooser: UnsafeSuggestModalInterface['chooser'];
+    updateSuggestions: UnsafeSuggestModalInterface['updateSuggestions'];
 
     actionType: number;
     fileSearchPrefix: string;
@@ -21,6 +24,7 @@ class BetterCommandPaletteModal extends SuggestModal <any> {
     currentSuggestions: Match[];
     lastQuery: string;
     modalTitleEl: HTMLElement;
+    initialInputValue: string;
 
     commandAdapter: BetterCommandPaletteCommandAdapter;
     fileAdapter: BetterCommandPaletteFileAdapter;
@@ -33,13 +37,21 @@ class BetterCommandPaletteModal extends SuggestModal <any> {
         prevFiles: OrderedSet<Match>,
         prevTags: OrderedSet<Match>,
         plugin: BetterCommandPalettePlugin,
-        suggestionsWorker: Worker
+        suggestionsWorker: Worker,
+        initialInputValue: string = '',
     ) {
         super(app);
+
+        // General instance variables
         this.fileSearchPrefix = plugin.settings.fileSearchPrefix;
         this.tagSearchPrefix = plugin.settings.tagSearchPrefix;
         this.limit = plugin.settings.suggestionLimit;
+        this.initialInputValue = initialInputValue;
 
+        // The only time the input will be empty will be when we are searching commands
+        this.setPlaceholder('Select a command')
+
+        // Set up all of our different adapters
         this.commandAdapter = new BetterCommandPaletteCommandAdapter(
             app,
             prevCommands,
@@ -62,42 +74,57 @@ class BetterCommandPaletteModal extends SuggestModal <any> {
         this.suggestionsWorker = suggestionsWorker;
         this.suggestionsWorker.onmessage = (msg: MessageEvent) => this.receivedSuggestions(msg);
 
-
-        this.setPlaceholder('Select a command')
-
+        // Add our custom title element
         this.modalTitleEl = createEl('p', {
             cls: 'better-command-palette-title'
         });
 
+        // Update our action type before adding in our title element so the text is correct
         this.updateActionType();
 
+        // Add in the title element
         this.modalEl.insertBefore(this.modalTitleEl, this.modalEl.firstChild);
 
-        this.scope.register([], 'Backspace', (event: KeyboardEvent) => {
-            // @ts-ignore Event target's definitely have a `value`. Maybe I'm missing something about TS
-            if (plugin.settings.closeWithBackspace && event.target.value == '') {
+        // Set our scopes for the modal
+        this.setScopes(plugin);
+    }
+
+    setScopes(plugin: BetterCommandPalettePlugin) {
+        const closeModal = (event: KeyboardEvent) => {
+            // Have to cast this to access `value`
+            const el = event.target as HTMLInputElement;
+
+            if (plugin.settings.closeWithBackspace && el.value == '') {
                 this.close()
+                // Stops the editor from using the backspace event
+                event.preventDefault();
             }
+        }
+
+        this.scope.register([], 'Backspace', (event: KeyboardEvent) => {
+            closeModal(event);
+        });
+
+        this.scope.register(['Meta'], 'Backspace', (event: KeyboardEvent) => {
+            closeModal(event);
         });
 
         this.scope.register(['Meta'], 'Enter', () => {
             if (this.actionType === this.ACTION_TYPE_FILES) {
-                // @ts-ignore Until I know otherise I'll grab the currently chosen item from the `chooser`
                 this.chooser.useSelectedItem({ metaKey: true });
             }
-        })
-
-        plugin.registerDomEvent(this.inputEl, 'keydown', (event:KeyboardEvent) => {
-
-            // Use item even if meta is held
-            if (this.actionType === this.ACTION_TYPE_FILES && event.key === 'Enter' && event.metaKey) {
-                // Seems like there should be a better way to do this
-                // @ts-ignore Until I know otherise I'll grab the currently chosen item from the `chooser`
-                const selectedItem = this.chooser.values && this.chooser.values[this.chooser.selectedItem]
-                this.onChooseSuggestion(selectedItem && selectedItem.item, event)
-                this.close();
-            }
         });
+    }
+
+    onOpen() {
+        super.onOpen();
+
+        // Add the initial value to the input
+        // TODO: Figure out if there is a way to bypass the first seach result flickering before this is set
+        // As far as I can tell onOpen resets the value of the input so this is the first place
+        if (this.initialInputValue) {
+            this.inputEl.value = this.initialInputValue;
+        }
     }
 
 	updateActionType() : boolean {
@@ -148,7 +175,6 @@ class BetterCommandPaletteModal extends SuggestModal <any> {
         const results = msg.data.slice(0, this.limit)
         const matches = results.map((r : Record<string, string>) => new PaletteMatch(r.id, r.text))
         this.currentSuggestions = matches;
-        // @ts-ignore
         this.updateSuggestions();
     }
 

@@ -1,4 +1,4 @@
-import { App, Hotkey} from "obsidian";
+import { App, Command, Hotkey, MetadataCache, SuggestModal} from "obsidian";
 import { Comparable, Match } from "types";
 
 export const MODIFIER_ICONS = {
@@ -163,4 +163,36 @@ export function generateHotKeyText(hotkey: Hotkey): string {
     hotKeyStrings.push(SPECIAL_KEYS[key] || key)
 
     return hotKeyStrings.join(' ')
+}
+
+// Unsafe Interfaces
+// Ideally we would not have to use these, but as far as I can tell they are the only way for certain
+// functionality.
+// Copied this pattern from Another Quick Switcher: https://github.com/tadashi-aikawa/obsidian-another-quick-switcher/blob/master/src/ui/AnotherQuickSwitcherModal.ts#L109
+
+export interface UnsafeSuggestModalInterface extends SuggestModal<Match> {
+    chooser: {
+        useSelectedItem(ev: Partial<KeyboardEvent>): void;
+    }
+    updateSuggestions(): void;
+}
+
+interface UnsafeMetadataCacheInterface extends MetadataCache {
+    getCachedFiles(): string[],
+}
+
+export interface UnsafeAppInterface extends App {
+    commands: {
+        listCommands(): Command[],
+        findCommand(id: string): Command,
+        executeCommandById(id: string): void,
+    },
+    hotkeyManager: {
+        getHotkeys(id: string): Hotkey[],
+        getDefaultHotkeys(id: string): Hotkey[],
+    },
+    metadataCache: UnsafeMetadataCacheInterface,
+    internalPlugins: {
+        getPluginById(id: string): { instance: { options: { pinned: [] }}},
+    }
 }
