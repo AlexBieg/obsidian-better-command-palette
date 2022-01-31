@@ -1,8 +1,11 @@
 import { App, normalizePath } from "obsidian";
 import { Match } from "types";
-import { OrderedSet, PaletteMatch, SuggestModalAdapter } from "utils";
+import { OrderedSet, PaletteMatch, SuggestModalAdapter, UnsafeAppInterface } from "utils";
 
 export class BetterCommandPaletteFileAdapter extends SuggestModalAdapter {
+    // Unsafe interface
+    app: UnsafeAppInterface;
+
     allItems: Match[];
     fileSearchPrefix: string;
 
@@ -14,7 +17,6 @@ export class BetterCommandPaletteFileAdapter extends SuggestModalAdapter {
     initialize() {
         super.initialize();
 
-        // @ts-ignore To support searching every file 'getCachedFiles' is much faster
         this.allItems = this.app.metadataCache.getCachedFiles()
             .reverse() // Reversed because we want it sorted A -> Z
             .map((path: string) => new PaletteMatch(path, path));
@@ -46,8 +48,10 @@ export class BetterCommandPaletteFileAdapter extends SuggestModalAdapter {
 
         if (!match) {
             created = true;
-            // @ts-ignore Event target's definitely have a `value`. Maybe I'm missing something about TS
-            const path = normalizePath(`${event.target.value.replace(this.fileSearchPrefix, '')}.md`);
+
+            const el = event.target as HTMLInputElement;
+            const path = normalizePath(`${el.value.replace(this.fileSearchPrefix, '')}.md`);
+
             file = await this.app.vault.create(path, '');
             match = new PaletteMatch(file.path, file.path);
         } else {

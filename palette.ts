@@ -1,5 +1,5 @@
 import { App, SuggestModal } from "obsidian";
-import { OrderedSet, PaletteMatch, SuggestModalAdapter } from "./utils";
+import { OrderedSet, PaletteMatch, SuggestModalAdapter, UnsafeSuggestModalInterface } from "./utils";
 import {
     BetterCommandPaletteCommandAdapter,
     BetterCommandPaletteFileAdapter,
@@ -8,10 +8,14 @@ import {
 import { Match } from './types';
 import BetterCommandPalettePlugin from "main";
 
-class BetterCommandPaletteModal extends SuggestModal <any> {
+class BetterCommandPaletteModal extends SuggestModal<Match> implements UnsafeSuggestModalInterface  {
     ACTION_TYPE_COMMAND: number = 1;
     ACTION_TYPE_FILES: number = 2;
     ACTION_TYPE_TAGS: number = 3;
+
+    // Unsafe interface
+    chooser: UnsafeSuggestModalInterface['chooser'];
+    updateSuggestions: UnsafeSuggestModalInterface['updateSuggestions'];
 
     actionType: number;
     fileSearchPrefix: string;
@@ -107,7 +111,6 @@ class BetterCommandPaletteModal extends SuggestModal <any> {
 
         this.scope.register(['Meta'], 'Enter', () => {
             if (this.actionType === this.ACTION_TYPE_FILES) {
-                // @ts-ignore Until I know otherise I'll grab the currently chosen item from the `chooser`
                 this.chooser.useSelectedItem({ metaKey: true });
             }
         });
@@ -172,7 +175,6 @@ class BetterCommandPaletteModal extends SuggestModal <any> {
         const results = msg.data.slice(0, this.limit)
         const matches = results.map((r : Record<string, string>) => new PaletteMatch(r.id, r.text))
         this.currentSuggestions = matches;
-        // @ts-ignore
         this.updateSuggestions();
     }
 
