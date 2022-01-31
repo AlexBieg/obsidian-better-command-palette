@@ -1,5 +1,4 @@
-// import BetterCommandPalettePlugin from "./main";
-import { App, KeymapEventListener, SuggestModal } from "obsidian";
+import { App, SuggestModal } from "obsidian";
 import { OrderedSet, PaletteMatch, SuggestModalAdapter } from "./utils";
 import {
     BetterCommandPaletteCommandAdapter,
@@ -39,11 +38,16 @@ class BetterCommandPaletteModal extends SuggestModal <any> {
     ) {
         super(app);
 
+        // General instance variables
         this.fileSearchPrefix = plugin.settings.fileSearchPrefix;
         this.tagSearchPrefix = plugin.settings.tagSearchPrefix;
         this.limit = plugin.settings.suggestionLimit;
         this.initialInputValue = initialInputValue;
 
+        // The only time the input will be empty will be when we are searching commands
+        this.setPlaceholder('Select a command')
+
+        // Set up all of our different adapters
         this.commandAdapter = new BetterCommandPaletteCommandAdapter(
             app,
             prevCommands,
@@ -66,17 +70,22 @@ class BetterCommandPaletteModal extends SuggestModal <any> {
         this.suggestionsWorker = suggestionsWorker;
         this.suggestionsWorker.onmessage = (msg: MessageEvent) => this.receivedSuggestions(msg);
 
-
-        this.setPlaceholder('Select a command')
-
+        // Add our custom title element
         this.modalTitleEl = createEl('p', {
             cls: 'better-command-palette-title'
         });
 
+        // Update our action type before adding in our title element so the text is correct
         this.updateActionType();
 
+        // Add in the title element
         this.modalEl.insertBefore(this.modalTitleEl, this.modalEl.firstChild);
 
+        // Set our scopes for the modal
+        this.setScopes(plugin);
+    }
+
+    setScopes(plugin: BetterCommandPalettePlugin) {
         const closeModal = (event: KeyboardEvent) => {
             // Have to cast this to access `value`
             const el = event.target as HTMLInputElement;
