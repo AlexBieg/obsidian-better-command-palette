@@ -7,10 +7,17 @@ import copy from 'rollup-plugin-copy';
 import eslint from '@rollup/plugin-eslint';
 
 const isProduction = process.env.NODE_ENV === 'production';
-// eslint-disable-next-line
-console.log('isProduction', isProduction);
+const isLocal = process.env.DEST === 'local';
 
-const outputLocation = isProduction ? './dist' : './test-vault/.obsidian/plugins/obsidian-better-command-palette';
+let outputLocation = './test-vault/.obsidian/plugins/obsidian-better-command-palette';
+
+if (isProduction) {
+    outputLocation = './dist';
+}
+
+if (isLocal) {
+    outputLocation = '.';
+}
 
 export default {
     input: 'src/main.ts',
@@ -26,7 +33,7 @@ export default {
         copy({
             targets: [
                 { src: 'src/styles.css', dest: outputLocation },
-                { src: 'manifest.json', dest: outputLocation },
+                ...(!isLocal ? [{ src: 'manifest.json', dest: outputLocation }] : []),
             ],
         }),
         webWorkerLoader({
