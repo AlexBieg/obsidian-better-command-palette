@@ -124,9 +124,10 @@ class BetterCommandPaletteModal extends SuggestModal<Match> implements UnsafeSug
             closeModal(event);
         });
 
-        this.scope.register(['Meta'], 'Enter', () => {
+        this.scope.register(['Meta'], 'Enter', (event: KeyboardEvent) => {
             if (this.actionType === this.ACTION_TYPE_FILES) {
-                this.chooser.useSelectedItem({ metaKey: true });
+                this.currentAdapter.onChooseSuggestion(null, event);
+                this.close();
             }
         });
     }
