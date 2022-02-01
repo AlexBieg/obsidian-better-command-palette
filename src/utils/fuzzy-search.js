@@ -1,3 +1,4 @@
+/* eslint-disable */
 /*
 TODO: Figure out a way to use Node modules here
 SHAMEFULLY copied from https://github.com/farzher/fuzzysort. I could not get
@@ -14,7 +15,6 @@ USAGE:
 
   fuzzysort.go('mr', ['Monitor.cpp', 'MeshRenderer.cpp'])
   // [{score: -18, target: "MeshRenderer.cpp"}, {score: -6009, target: "Monitor.cpp"}]
-
   fuzzysort.highlight(fuzzysort.single('fs', 'Fuzzy Search'), '<b>', '</b>')
   // <b>F</b>uzzy <b>S</b>earch
 */

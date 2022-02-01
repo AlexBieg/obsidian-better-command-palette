@@ -1,18 +1,28 @@
-import { App, Command, setIcon } from "obsidian";
-import { Match} from "types";
-import { generateHotKeyText, PaletteMatch, SuggestModalAdapter, UnsafeAppInterface } from "utils";
+import { Command, setIcon } from 'obsidian';
+import {
+    generateHotKeyText, PaletteMatch, SuggestModalAdapter,
+} from 'src/utils';
+import { Match, UnsafeAppInterface } from 'src/types/types';
 
-export class BetterCommandPaletteCommandAdapter extends SuggestModalAdapter {
-    COMMAND_PLUGIN_NAME_SEPARATOR: string = ': ';
+export default class BetterCommandPaletteCommandAdapter extends SuggestModalAdapter {
+    titleText: string;
+
+    emptyStateText: string;
+
+    COMMAND_PLUGIN_NAME_SEPARATOR = ': ';
 
     // Unsafe Interfaces
     app: UnsafeAppInterface;
 
     allItems: Match[];
+
     pinnedItems: Match[];
 
     initialize() {
         super.initialize();
+
+        this.titleText = 'Better Command Palette: Commands';
+        this.emptyStateText = 'No matching commands.';
 
         this.allItems = this.app.commands.listCommands()
             .sort((a: Command, b: Command) => b.name.localeCompare(a.name))
@@ -20,16 +30,8 @@ export class BetterCommandPaletteCommandAdapter extends SuggestModalAdapter {
 
         const pinnedCommands = this.app.internalPlugins.getPluginById('command-palette').instance.options.pinned || [];
         this.pinnedItems = pinnedCommands.map(
-            (id: string): Match => new PaletteMatch(id, this.app.commands.findCommand(id).name)
+            (id: string): Match => new PaletteMatch(id, this.app.commands.findCommand(id).name),
         );
-    }
-
-    getTitleText(): string {
-        return 'Better Command Palette: Commands';
-    }
-
-    getEmptyStateText(): string {
-        return 'No matching commands.';
     }
 
     renderSuggestion(match: Match, el: HTMLElement): void {
@@ -37,19 +39,19 @@ export class BetterCommandPaletteCommandAdapter extends SuggestModalAdapter {
         const customHotkeys = this.app.hotkeyManager.getHotkeys(command.id);
         const defaultHotkeys = this.app.hotkeyManager.getDefaultHotkeys(command.id);
 
-        // If hotkeys have been customized in some way (add new, deleted default) customHotkeys will be an array, otherwise undefined
-        // If there is a default hotkey defaultHotkeys will be an array (does not check any customization), otherwise undefined.
+        // If hotkeys have been customized in some way (add new, deleted default)
+        // customHotkeys will be an array, otherwise undefined
+        // If there is a default hotkey defaultHotkeys will be an array
+        // (does not check any customization), otherwise undefined.
         const hotkeys = customHotkeys || defaultHotkeys || [];
 
-
-
-        if (this.getPinnedItems().find(i => i.id === match.id)) {
+        if (this.getPinnedItems().find((i) => i.id === match.id)) {
             const flairContainer = el.createEl('span', 'suggestion-flair');
             // 13 copied from current command palette
             setIcon(flairContainer, 'filled-pin', 13);
         }
 
-        let text = match.text;
+        let { text } = match;
 
         // Has a plugin name prefix
         if (text.includes(this.COMMAND_PLUGIN_NAME_SEPARATOR)) {
@@ -63,7 +65,7 @@ export class BetterCommandPaletteCommandAdapter extends SuggestModalAdapter {
             el.createEl('span', {
                 cls: 'suggestion-prefix',
                 text: prefix,
-            })
+            });
         }
 
         el.createEl('span', {
@@ -71,18 +73,16 @@ export class BetterCommandPaletteCommandAdapter extends SuggestModalAdapter {
             text,
         });
 
-
-        for (const hotkey of hotkeys) {
+        hotkeys.forEach((hotkey) => {
             el.createEl('kbd', {
                 cls: 'suggestion-hotkey',
                 text: generateHotKeyText(hotkey),
-            })
-        }
+            });
+        });
     }
 
-    async onChooseSuggestion(match: Match, event: MouseEvent | KeyboardEvent) {
+    async onChooseSuggestion(match: Match) {
         this.getPrevItems().add(match);
         this.app.commands.executeCommandById(match.id);
-    };
-
+    }
 }

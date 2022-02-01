@@ -1,0 +1,68 @@
+import { App } from 'obsidian';
+import {
+    OrderedSet, PaletteMatch, SuggestModalAdapter,
+}
+    from 'src/utils';
+import { Match, UnsafeAppInterface } from '../types/types';
+
+export default class BetterCommandPaletteTagAdapter extends SuggestModalAdapter {
+    titleText: string;
+
+    emptyStateText: string;
+
+    // Unsafe interface
+    app: UnsafeAppInterface;
+
+    allItems: Match[];
+
+    tagSearchPrefix: string;
+
+    constructor(
+        app: App,
+        prevItems: OrderedSet<Match>,
+        recentAbovePinned: boolean,
+        tagSearchPrefix: string,
+    ) {
+        super(app, prevItems, recentAbovePinned);
+        this.tagSearchPrefix = tagSearchPrefix;
+        this.titleText = 'Better Command Palette: Tags';
+        this.emptyStateText = 'No matching tags.';
+    }
+
+    initialize(): void {
+        super.initialize();
+
+        this.allItems = this.app.metadataCache
+            .getCachedFiles().reduce((acc: PaletteMatch[], path: string) => {
+                const fileCache = this.app.metadataCache.getCache(path);
+                if (fileCache.tags) {
+                    const tagString = fileCache.tags.map((tc) => tc.tag).join(' ');
+                    acc.push(new PaletteMatch(path, tagString));
+                }
+
+                return acc;
+            }, []);
+    }
+
+    cleanQuery(query: string): string {
+        return query.replace(this.tagSearchPrefix, '');
+    }
+
+    renderSuggestion(match: Match, el: HTMLElement): void {
+        el.createEl('span', {
+            cls: 'suggestion-content',
+            text: match.id, // We're storing the file path in the id
+        });
+
+        el.createEl('span', {
+            cls: 'suggestion-sub-content',
+            text: match.text,
+        });
+    }
+
+    async onChooseSuggestion(match: Match) {
+        this.getPrevItems().add(match);
+        const file = this.app.metadataCache.getFirstLinkpathDest(match.id, '');
+        this.app.workspace.activeLeaf.openFile(file);
+    }
+}

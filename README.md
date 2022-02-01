@@ -21,3 +21,23 @@ If after searching for files to open there are no results you may press `cmd+ent
 ### File Searching using Tags
 Better Command Palette allows you to find and open files that contain the tags you search for.
 Type `#` (configurable in the settings) to begin searching for files that have that tag. Press enter to open the selected file.
+
+## Development
+### Project Setup
+1. Clone the repo
+2. Run `npm install`
+
+### Development Build
+Run `npm run dev`
+
+This will create a directory named `test-vault` in your repo (automatically ignored by git). You can point obsidian to this directory and use it as a testing environment. Files are automatically watched and the dev server will restart when they are changed.
+
+### Local Build
+Run `npm run build-local`
+
+This builds the plugin in production mode and copies the needed files to the root of the repo (automatically ignored by git). This is to allow people who wish to manually install the plugin on their machines to easily do so by copying the plugin to their plugin directory and running the command.
+
+### Production Build
+Run `npm run build`
+
+Builds the plugin for production and puts all neccessary files into the `dist` directory. Pretty much only used by github actions for releases.

@@ -1,23 +1,40 @@
 {
-    "root": true,
-    "parser": "@typescript-eslint/parser",
-    "env": { "node": true },
-    "plugins": [
-      "@typescript-eslint"
-    ],
-    "extends": [
-      "eslint:recommended",
-      "plugin:@typescript-eslint/eslint-recommended",
-      "plugin:@typescript-eslint/recommended"
-    ], 
-    "parserOptions": {
-        "sourceType": "module"
-    },
-    "rules": {
-      "no-unused-vars": "off",
-      "@typescript-eslint/no-unused-vars": ["error", { "args": "none" }],
-      "@typescript-eslint/ban-ts-comment": "off",
-      "no-prototype-builtins": "off",
-      "@typescript-eslint/no-empty-function": "off"
-    } 
-  }
+  "root": true,
+  "parser": "@typescript-eslint/parser",
+  "globals": {
+    "window": true
+  },
+  "env": {
+    "node": true
+  },
+  "plugins": [
+    "@typescript-eslint"
+  ],
+  "extends": [
+    "airbnb-base",
+  ],
+
+  "rules": {
+    "indent": ["error", 4],
+    "import/extensions": 0,
+    "class-methods-use-this": "off",
+  },
+  "overrides": [
+    {
+      "files": ["*.ts"], // Your TypeScript files extension
+      // As mentioned in the comments, you should extend TypeScript plugins here,
+      // instead of extending them outside the `overrides`.
+      // If you don't want to extend any rules, you don't need an `extends` attribute.
+      "extends": ["airbnb-typescript/base"],
+
+      "parserOptions": {
+        "sourceType": "module",
+        "project": "./tsconfig.json"
+      },
+
+      "rules": {
+        "@typescript-eslint/indent": ["error", 4]
+      }
+    }
+  ]
+}
