@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "outDir": "./dist",
     "baseUrl": ".",
     "sourceMap": true,
     "inlineSources": true,

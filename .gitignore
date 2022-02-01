@@ -18,5 +18,11 @@ main.js
 # obsidian
 data.json
 
+# build folder
+dist
+
+# dev build folder
+test-vault
+
 # Mac
 .DS_Store
