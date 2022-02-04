@@ -1,7 +1,25 @@
 import { App, PluginSettingTab, Setting } from 'obsidian';
 import BetterCommandPalettePlugin from './main';
 
-export default class BetterCommandPaletteSettingTab extends PluginSettingTab {
+export interface BetterCommandPalettePluginSettings {
+    closeWithBackspace: boolean,
+    fileSearchPrefix: string,
+    tagSearchPrefix: string,
+    suggestionLimit: number,
+    recentAbovePinned: boolean,
+    hyperKeyOverride: boolean,
+}
+
+export const DEFAULT_SETTINGS: BetterCommandPalettePluginSettings = {
+    closeWithBackspace: true,
+    fileSearchPrefix: '/',
+    tagSearchPrefix: '#',
+    suggestionLimit: 50,
+    recentAbovePinned: false,
+    hyperKeyOverride: false,
+};
+
+export class BetterCommandPaletteSettingTab extends PluginSettingTab {
     plugin: BetterCommandPalettePlugin;
 
     constructor(app: App, plugin: BetterCommandPalettePlugin) {
@@ -66,5 +84,13 @@ export default class BetterCommandPaletteSettingTab extends PluginSettingTab {
                     settings.suggestionLimit = parseInt(v, 10);
                     await this.plugin.saveSettings();
                 }));
+
+        new Setting(containerEl)
+            .setName('Caps Lock Hyper Key Hotkey Override')
+            .setDesc('For those users who have use a "Hyper Key", enabling this maps the icons "⌥ ^ ⌘ ⇧" to the caps lock icon "⇪" ')
+            .addToggle((t) => t.setValue(settings.hyperKeyOverride).onChange(async (val) => {
+                settings.hyperKeyOverride = val;
+                await this.plugin.saveSettings();
+            }));
     }
 }

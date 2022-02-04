@@ -1,4 +1,5 @@
 import { App } from 'obsidian';
+import BetterCommandPalettePlugin from 'src/main';
 import { Match } from 'src/types/types';
 import OrderedSet from 'src/utils/ordered-set';
 
@@ -8,6 +9,8 @@ import OrderedSet from 'src/utils/ordered-set';
  */
 export default abstract class SuggestModalAdapter {
     app: App;
+
+    plugin: BetterCommandPalettePlugin;
 
     prevItems: OrderedSet<Match>;
 
@@ -26,10 +29,11 @@ export default abstract class SuggestModalAdapter {
     abstract renderSuggestion(match: Match, el: HTMLElement): void;
     abstract onChooseSuggestion(match: Match, event: MouseEvent | KeyboardEvent): void;
 
-    constructor(app: App, prevItems: OrderedSet<Match>, recentAbovePinned: boolean) {
+    constructor(app: App, prevItems: OrderedSet<Match>, plugin: BetterCommandPalettePlugin) {
         this.app = app;
         this.prevItems = prevItems;
-        this.recentAbovePinned = recentAbovePinned;
+        this.recentAbovePinned = plugin.settings.recentAbovePinned;
+        this.plugin = plugin;
         this.allItems = [];
         this.pinnedItems = [];
         this.initialized = false;

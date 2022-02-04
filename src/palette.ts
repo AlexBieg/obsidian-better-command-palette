@@ -70,19 +70,17 @@ class BetterCommandPaletteModal extends SuggestModal<Match> implements UnsafeSug
         this.commandAdapter = new BetterCommandPaletteCommandAdapter(
             app,
             prevCommands,
-            plugin.settings.recentAbovePinned,
+            plugin,
         );
         this.fileAdapter = new BetterCommandPaletteFileAdapter(
             app,
             prevFiles,
-            plugin.settings.recentAbovePinned,
-            this.fileSearchPrefix,
+            plugin,
         );
         this.tagAdapter = new BetterCommandPaletteTagAdapter(
             app,
             prevTags,
-            plugin.settings.recentAbovePinned,
-            this.tagSearchPrefix,
+            plugin,
         );
 
         // Lets us do the suggestion fuzzy search in a different thread
