@@ -1,6 +1,5 @@
-import { App } from 'obsidian';
 import {
-    OrderedSet, PaletteMatch, SuggestModalAdapter,
+    PaletteMatch, SuggestModalAdapter,
 }
     from 'src/utils';
 import { Match, UnsafeAppInterface } from '../types/types';
@@ -17,20 +16,12 @@ export default class BetterCommandPaletteTagAdapter extends SuggestModalAdapter 
 
     tagSearchPrefix: string;
 
-    constructor(
-        app: App,
-        prevItems: OrderedSet<Match>,
-        recentAbovePinned: boolean,
-        tagSearchPrefix: string,
-    ) {
-        super(app, prevItems, recentAbovePinned);
-        this.tagSearchPrefix = tagSearchPrefix;
-        this.titleText = 'Better Command Palette: Tags';
-        this.emptyStateText = 'No matching tags.';
-    }
-
     initialize(): void {
         super.initialize();
+
+        this.tagSearchPrefix = this.plugin.settings.tagSearchPrefix;
+        this.titleText = 'Better Command Palette: Tags';
+        this.emptyStateText = 'No matching tags.';
 
         this.allItems = this.app.metadataCache
             .getCachedFiles().reduce((acc: PaletteMatch[], path: string) => {

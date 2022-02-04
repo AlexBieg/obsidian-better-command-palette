@@ -76,7 +76,7 @@ export default class BetterCommandPaletteCommandAdapter extends SuggestModalAdap
         hotkeys.forEach((hotkey) => {
             el.createEl('kbd', {
                 cls: 'suggestion-hotkey',
-                text: generateHotKeyText(hotkey),
+                text: generateHotKeyText(hotkey, this.plugin.settings.hyperKeyOverride),
             });
         });
     }

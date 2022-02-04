@@ -1,6 +1,6 @@
-import { App, normalizePath } from 'obsidian';
+import { normalizePath } from 'obsidian';
 import {
-    OrderedSet, PaletteMatch, SuggestModalAdapter,
+    PaletteMatch, SuggestModalAdapter,
 } from 'src/utils';
 import { Match, UnsafeAppInterface } from 'src/types/types';
 
@@ -16,20 +16,12 @@ export default class BetterCommandPaletteFileAdapter extends SuggestModalAdapter
 
     fileSearchPrefix: string;
 
-    constructor(
-        app: App,
-        prevItems: OrderedSet<Match>,
-        recentAbovePinned: boolean,
-        fileSearchPrefix: string,
-    ) {
-        super(app, prevItems, recentAbovePinned);
-        this.titleText = 'Better Command Palette: Files';
-        this.emptyStateText = 'No matching files.⌘+Enter to create the file.';
-        this.fileSearchPrefix = fileSearchPrefix;
-    }
-
     initialize() {
         super.initialize();
+
+        this.titleText = 'Better Command Palette: Files';
+        this.emptyStateText = 'No matching files.⌘+Enter to create the file.';
+        this.fileSearchPrefix = this.plugin.settings.fileSearchPrefix;
 
         this.allItems = this.app.metadataCache.getCachedFiles()
             .reverse() // Reversed because we want it sorted A -> Z

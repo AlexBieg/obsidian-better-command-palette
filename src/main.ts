@@ -4,23 +4,7 @@ import SuggestionsWorker from 'web-worker:./web-workers/suggestions-worker';
 import { OrderedSet } from 'src/utils';
 import BetterCommandPaletteModal from 'src/palette';
 import { Match } from 'src/types/types';
-import BetterCommandPaletteSettingTab from 'src/settings';
-
-interface BetterCommandPalettePluginSettings {
-    closeWithBackspace: boolean,
-    fileSearchPrefix: string,
-    tagSearchPrefix: string,
-    suggestionLimit: number,
-    recentAbovePinned: boolean,
-}
-
-const DEFAULT_SETTINGS: BetterCommandPalettePluginSettings = {
-    closeWithBackspace: true,
-    fileSearchPrefix: '/',
-    tagSearchPrefix: '#',
-    suggestionLimit: 50,
-    recentAbovePinned: false,
-};
+import { BetterCommandPalettePluginSettings, BetterCommandPaletteSettingTab, DEFAULT_SETTINGS } from 'src/settings';
 
 export default class BetterCommandPalettePlugin extends Plugin {
     settings: BetterCommandPalettePluginSettings;
