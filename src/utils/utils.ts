@@ -22,6 +22,8 @@ export const SPECIAL_KEYS : Record<string, string> = {
     ESC: 'Esc',
 };
 
+export const MACRO_COMMAND_ID_PREFIX = 'obsidian-better-command-palette-macro-';
+
 /**
  * Determines if the modifiers of a hotkey could be a hyper key command.
  * @param {Modifier[]} modifiers An array of modifiers
