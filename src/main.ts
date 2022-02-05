@@ -84,6 +84,10 @@ export default class BetterCommandPalettePlugin extends Plugin {
         this.addSettingTab(new BetterCommandPaletteSettingTab(this.app, this));
     }
 
+    onunload(): void {
+        this.suggestionsWorker.terminate();
+    }
+
     async loadSettings() {
         this.settings = { ...DEFAULT_SETTINGS, ...await this.loadData() };
     }
