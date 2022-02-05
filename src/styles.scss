@@ -1,0 +1,49 @@
+.better-command-palette-title {
+    color: var(--text-accent);
+    margin: 5px;
+}
+.recent .suggestion-content {
+    font-weight: bold;
+}
+
+.recent-text {
+    color: var(--text-faint);
+    margin-left: 10px;
+    float: right;
+}
+
+.suggestion-sub-content {
+    color: var(--text-muted);
+    float: right;
+}
+
+/* Settings Styles */
+.macro-setting {
+    flex-wrap: wrap;
+    .setting-item-name {
+        font-weight: bold;
+    }
+
+    .macro-main-settings {
+        width: 100%;
+        display: grid;
+        grid-template-columns: 80% 20%;
+        border-top: solid 1px var(--background-modifier-border);
+        margin-top: 10px;
+
+        * {
+            margin-top: 10px;
+        }
+    }
+
+    .macro-command {
+        display: flex;
+        align-items: center;
+        width: 100%;
+
+        button {
+            margin-left: 30px;
+            margin-right: 20px;
+        }
+    }
+}

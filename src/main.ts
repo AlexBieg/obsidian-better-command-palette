@@ -1,12 +1,16 @@
 import { Plugin } from 'obsidian';
 
 import SuggestionsWorker from 'web-worker:./web-workers/suggestions-worker';
-import { OrderedSet } from 'src/utils';
+import { OrderedSet, MacroCommand, MACRO_COMMAND_ID_PREFIX } from 'src/utils';
 import BetterCommandPaletteModal from 'src/palette';
-import { Match } from 'src/types/types';
+import { Match, UnsafeAppInterface } from 'src/types/types';
 import { BetterCommandPalettePluginSettings, BetterCommandPaletteSettingTab, DEFAULT_SETTINGS } from 'src/settings';
 
+import './styles.scss';
+
 export default class BetterCommandPalettePlugin extends Plugin {
+    app: UnsafeAppInterface;
+
     settings: BetterCommandPalettePluginSettings;
 
     prevCommands: OrderedSet<Match>;
@@ -88,11 +92,41 @@ export default class BetterCommandPalettePlugin extends Plugin {
         this.suggestionsWorker.terminate();
     }
 
+    loadMacroCommands() {
+        this.settings.macros.forEach((macroData, index) => {
+            if (!macroData.name || !macroData.commandIds.length) {
+                return;
+            }
+
+            const macro = new MacroCommand(
+                this.app,
+                `${MACRO_COMMAND_ID_PREFIX}${index}`,
+                macroData.name,
+                macroData.commandIds,
+                macroData.delay,
+            );
+
+            this.addCommand(macro);
+        });
+    }
+
+    deleteMacroCommands() {
+        const macroCommandIds = Object.keys(this.app.commands.commands)
+            .filter((id) => id.includes(MACRO_COMMAND_ID_PREFIX));
+
+        macroCommandIds.forEach((id) => {
+            this.app.commands.removeCommand(id);
+        });
+    }
+
     async loadSettings() {
         this.settings = { ...DEFAULT_SETTINGS, ...await this.loadData() };
+        this.loadMacroCommands();
     }
 
     async saveSettings() {
+        this.deleteMacroCommands();
         await this.saveData(this.settings);
+        this.loadMacroCommands();
     }
 }

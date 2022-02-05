@@ -3,6 +3,12 @@ import {
 } from 'obsidian';
 import { OrderedSet } from 'src/utils';
 
+interface MacroCommandInterface {
+    commandIds: string[],
+    name: string,
+    delay: number,
+}
+
 export interface BetterCommandPaletteInterface extends Plugin {
     settings: PluginSettingTab;
 
@@ -44,7 +50,9 @@ export interface UnsafeAppInterface extends App {
     commands: {
         listCommands(): Command[],
         findCommand(id: string): Command,
+        removeCommand(id: string): void,
         executeCommandById(id: string): void,
+        commands: Record<string, Command>,
     },
     hotkeyManager: {
         getHotkeys(id: string): Hotkey[],

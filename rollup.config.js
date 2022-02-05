@@ -5,6 +5,7 @@ import webWorkerLoader from 'rollup-plugin-web-worker-loader';
 import { terser } from 'rollup-plugin-terser';
 import copy from 'rollup-plugin-copy';
 import eslint from '@rollup/plugin-eslint';
+import scss from 'rollup-plugin-scss';
 
 const isProduction = process.env.NODE_ENV === 'production';
 const isLocal = process.env.DEST === 'local';
@@ -29,11 +30,15 @@ export default {
     },
     external: ['obsidian', 'path', 'fs', 'util', 'events', 'stream', 'os'],
     plugins: [
+        scss({
+            output: `${outputLocation}/styles.css`,
+        }),
         eslint(),
         copy({
             targets: [
-                { src: 'src/styles.css', dest: outputLocation },
-                ...(!isLocal ? [{ src: 'manifest.json', dest: outputLocation }] : []),
+                ...(!isLocal
+                    ? [{ src: 'manifest.json', dest: outputLocation }]
+                    : []),
             ],
         }),
         webWorkerLoader({
