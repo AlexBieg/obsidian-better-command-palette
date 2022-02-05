@@ -22,6 +22,15 @@ If after searching for files to open there are no results you may press `cmd+ent
 Better Command Palette allows you to find and open files that contain the tags you search for.
 Type `#` (configurable in the settings) to begin searching for files that have that tag. Press enter to open the selected file.
 
+### Macro Commands
+Macros can be created in the settings tab for Better Command Palette. Each Macro must be give a name, delay, and at least one command. If any of these are not set the macro will not show up in the command palette.
+
+The delay is the number of milliseconds the macro will wait between each command. This can be useful for commands that take some time to complete.
+
+Any command can be added including other macro commands. Each command is run in sequence. At each step the macro will check if the next command can be run. Certain commands require certain conditions to be met. A an error message will be shown if a command could not be run. The macro will only be shown in the command palette if the first command can be run at that time.
+
+Hotkeys can be assigned to the macro in the normal hotkey tab after the macro has been created.
+
 ## Development
 ### Project Setup
 1. Clone the repo
