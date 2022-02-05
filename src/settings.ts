@@ -142,14 +142,22 @@ export class BetterCommandPaletteSettingTab extends PluginSettingTab {
             const mainSettingsEl = topLevelSetting.settingEl.createEl('div', 'macro-main-settings');
 
             mainSettingsEl.createEl('label', { text: 'Macro Name' });
-            mainSettingsEl.createEl('input', { cls: 'name-input', type: 'text', value: `${macro.name}` }).on('change', '.name-input', async (evt: Event) => {
+            mainSettingsEl.createEl('input', {
+                cls: 'name-input',
+                type: 'text',
+                value: macro.name,
+            }).on('change', '.name-input', async (evt: Event) => {
                 const target = evt.target as HTMLInputElement;
                 settings.macros[index] = { ...macro, name: target.value };
                 await this.plugin.saveSettings();
             });
 
             mainSettingsEl.createEl('label', { text: 'Delay (ms)' });
-            mainSettingsEl.createEl('input', { cls: 'delay-input', type: 'number', value: `${macro.delay}` }).on('change', '.delay-input', async (evt: Event) => {
+            mainSettingsEl.createEl('input', {
+                cls: 'delay-input',
+                type: 'number',
+                value: macro.delay.toString(),
+            }).on('change', '.delay-input', async (evt: Event) => {
                 const target = evt.target as HTMLInputElement;
                 const delayStr = target.value;
                 settings.macros[index].delay = parseInt(delayStr, 10);
