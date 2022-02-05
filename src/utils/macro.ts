@@ -17,7 +17,13 @@ export default class MacroCommand implements Command, MacroCommandInterface {
 
     delay: number;
 
-    constructor(app: App, id: string, name: string, commandIds: string[] = [], delay: number = 10) {
+    constructor(
+        app: App,
+        id: string,
+        name: string,
+        commandIds: string[] = [],
+        delay: number = 200,
+    ) {
         this.app = app as UnsafeAppInterface;
         this.id = id;
         this.name = name;

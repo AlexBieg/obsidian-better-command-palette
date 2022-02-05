@@ -103,6 +103,7 @@ export default class BetterCommandPalettePlugin extends Plugin {
                 `${MACRO_COMMAND_ID_PREFIX}${index}`,
                 macroData.name,
                 macroData.commandIds,
+                macroData.delay,
             );
 
             this.addCommand(macro);

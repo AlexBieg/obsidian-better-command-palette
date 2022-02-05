@@ -1,7 +1,7 @@
 import {
     App, Command, PluginSettingTab, setIcon, Setting,
 } from 'obsidian';
-import BetterCommandPalettePlugin from './main';
+import BetterCommandPalettePlugin from 'src/main';
 import { MacroCommandInterface, UnsafeAppInterface } from './types/types';
 import { SettingsCommandSuggestModal } from './utils';
 
@@ -114,9 +114,9 @@ export class BetterCommandPaletteSettingTab extends PluginSettingTab {
                 .setButtonText('+')
                 .onClick(async () => {
                     settings.macros.push({
-                        name: '',
+                        name: `Macro ${settings.macros.length + 1}`,
                         commandIds: [],
-                        delay: 10,
+                        delay: 200,
                     });
                     await this.plugin.saveSettings();
                     this.display();
@@ -142,14 +142,14 @@ export class BetterCommandPaletteSettingTab extends PluginSettingTab {
             const mainSettingsEl = topLevelSetting.settingEl.createEl('div', 'macro-main-settings');
 
             mainSettingsEl.createEl('label', { text: 'Macro Name' });
-            mainSettingsEl.createEl('input', { type: 'text', value: `${macro.name}` }).on('change', '', async (evt: Event) => {
+            mainSettingsEl.createEl('input', { cls: 'name-input', type: 'text', value: `${macro.name}` }).on('change', '.name-input', async (evt: Event) => {
                 const target = evt.target as HTMLInputElement;
                 settings.macros[index] = { ...macro, name: target.value };
                 await this.plugin.saveSettings();
             });
 
             mainSettingsEl.createEl('label', { text: 'Delay (ms)' });
-            mainSettingsEl.createEl('input', { type: 'number', value: `${macro.delay}` }).on('change', '', async (evt: Event) => {
+            mainSettingsEl.createEl('input', { cls: 'delay-input', type: 'number', value: `${macro.delay}` }).on('change', '.delay-input', async (evt: Event) => {
                 const target = evt.target as HTMLInputElement;
                 const delayStr = target.value;
                 settings.macros[index].delay = parseInt(delayStr, 10);
