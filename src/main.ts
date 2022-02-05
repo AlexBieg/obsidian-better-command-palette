@@ -88,6 +88,10 @@ export default class BetterCommandPalettePlugin extends Plugin {
         this.addSettingTab(new BetterCommandPaletteSettingTab(this.app, this));
     }
 
+    onunload(): void {
+        this.suggestionsWorker.terminate();
+    }
+
     loadMacroCommands() {
         this.settings.macros.forEach((macroData, index) => {
             if (!macroData.name || !macroData.commandIds.length) {
