@@ -46,7 +46,7 @@ export default class BetterCommandPaletteFileAdapter extends SuggestModalAdapter
                 );
             });
 
-        this.allItems = this.allItems.concat(Array.from(this.unresolvedItems.values()));
+        this.allItems = this.allItems.concat(Array.from(this.unresolvedItems.values())).reverse();
 
         this.app.workspace.getLastOpenFiles().reverse().forEach((path) => {
             this.prevItems.add(new PaletteMatch(path, path));

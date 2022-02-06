@@ -19,7 +19,7 @@
         color: var(--text-muted);
 
         &::after {
-            content: '(Unresolved link. Press Enter to create)';
+            content: '(Unresolved link)';
             float: right;
             color: var(--text-faint);
         }
