@@ -88,10 +88,11 @@ export default class BetterCommandPaletteFileAdapter extends SuggestModalAdapter
 
             try {
                 await this.app.vault.createFolder(dirOnlyPath);
-            } finally {
+            } catch (e) {
                 // An error just means the folder path already exists
-                file = await this.app.vault.create(normalizedPath, '');
             }
+
+            file = await this.app.vault.create(normalizedPath, '');
         }
 
         return file;
