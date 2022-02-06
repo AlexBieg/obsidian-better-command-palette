@@ -29,8 +29,18 @@ export default class BetterCommandPaletteCommandAdapter extends SuggestModalAdap
             .map((c: Command): Match => new PaletteMatch(c.id, c.name));
 
         const pinnedCommands = this.app.internalPlugins.getPluginById('command-palette').instance.options.pinned || [];
-        this.pinnedItems = pinnedCommands.reverse().map(
-            (id: string): Match => new PaletteMatch(id, this.app.commands.findCommand(id).name),
+        this.pinnedItems = pinnedCommands.reverse().reduce(
+            (acc: Match[], id: string): Match[] => {
+                const command = this.app.commands.findCommand(id);
+
+                // If a command was pinned and then the plugin removed we won't have a command here
+                if (command) {
+                    acc.push(new PaletteMatch(id, command.name));
+                }
+
+                return acc;
+            },
+            [],
         );
     }
 
