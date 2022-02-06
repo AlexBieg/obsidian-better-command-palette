@@ -126,6 +126,13 @@ class BetterCommandPaletteModal extends SuggestModal<Match> implements UnsafeSug
                 this.close();
             }
         });
+
+        this.scope.register(['Meta', 'Shift'], 'Enter', (event: KeyboardEvent) => {
+            if (this.actionType === this.ACTION_TYPE_FILES) {
+                this.currentAdapter.onChooseSuggestion(null, event);
+                this.close();
+            }
+        });
     }
 
     onOpen() {
@@ -165,6 +172,7 @@ class BetterCommandPaletteModal extends SuggestModal<Match> implements UnsafeSug
         if (wasUpdated) {
             this.updateEmptyStateText();
             this.updateTitleText();
+            this.updateInstructions();
             this.currentSuggestions = this.currentAdapter.getSortedItems();
         }
 
@@ -177,6 +185,10 @@ class BetterCommandPaletteModal extends SuggestModal<Match> implements UnsafeSug
 
     updateEmptyStateText() {
         this.emptyStateText = this.currentAdapter.getEmptyStateText();
+    }
+
+    updateInstructions() {
+        this.setInstructions(this.currentAdapter.getInstructions());
     }
 
     getItems(): Match[] {

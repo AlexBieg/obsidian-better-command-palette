@@ -3,16 +3,29 @@
     margin: 5px;
 }
 
-.recent-text {
-    color: var(--text-faint);
-    margin-left: 10px;
-    float: right;
+.suggestion-item {
+    .recent-text {
+        color: var(--text-faint);
+        margin-left: 10px;
+        float: right;
+    }
+
+    .suggestion-sub-content {
+        color: var(--text-muted);
+        float: right;
+    }
+
+    .unresolved {
+        color: var(--text-muted);
+
+        &::after {
+            content: '(Unresolved link. Press Enter to create)';
+            float: right;
+            color: var(--text-faint);
+        }
+    }
 }
 
-.suggestion-sub-content {
-    color: var(--text-muted);
-    float: right;
-}
 
 /* Settings Styles */
 .macro-setting {
