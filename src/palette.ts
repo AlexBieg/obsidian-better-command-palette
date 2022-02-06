@@ -49,7 +49,6 @@ class BetterCommandPaletteModal extends SuggestModal<Match> implements UnsafeSug
     constructor(
         app: App,
         prevCommands: OrderedSet<Match>,
-        prevFiles: OrderedSet<Match>,
         prevTags: OrderedSet<Match>,
         plugin: BetterCommandPalettePlugin,
         suggestionsWorker: Worker,
@@ -74,7 +73,6 @@ class BetterCommandPaletteModal extends SuggestModal<Match> implements UnsafeSug
         );
         this.fileAdapter = new BetterCommandPaletteFileAdapter(
             app,
-            prevFiles,
             plugin,
         );
         this.tagAdapter = new BetterCommandPaletteTagAdapter(

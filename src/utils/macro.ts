@@ -1,6 +1,5 @@
 import {
-    App,
-    Command, Hotkey, Notice,
+    App, Command, Notice,
 } from 'obsidian';
 import { MacroCommandInterface, UnsafeAppInterface } from 'src/types/types';
 
@@ -10,8 +9,6 @@ export default class MacroCommand implements Command, MacroCommandInterface {
     id: string;
 
     name: string;
-
-    hotkeys?: Hotkey[];
 
     commandIds: string[];
 
@@ -28,7 +25,6 @@ export default class MacroCommand implements Command, MacroCommandInterface {
         this.id = id;
         this.name = name;
         this.commandIds = commandIds;
-        this.hotkeys = [];
         this.delay = delay;
     }
 

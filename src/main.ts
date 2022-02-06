@@ -15,20 +15,17 @@ export default class BetterCommandPalettePlugin extends Plugin {
 
     prevCommands: OrderedSet<Match>;
 
-    prevFiles: OrderedSet<Match>;
-
     prevTags: OrderedSet<Match>;
 
     suggestionsWorker: Worker;
 
     async onload() {
-        // eslint-disable-next-line
+        // eslint-disable-next-line no-console
         console.log('Loading plugin: Better Command Palette');
 
         await this.loadSettings();
 
         this.prevCommands = new OrderedSet<Match>();
-        this.prevFiles = new OrderedSet<Match>();
         this.prevTags = new OrderedSet<Match>();
         this.suggestionsWorker = new SuggestionsWorker({});
 
@@ -43,7 +40,6 @@ export default class BetterCommandPalettePlugin extends Plugin {
                 new BetterCommandPaletteModal(
                     this.app,
                     this.prevCommands,
-                    this.prevFiles,
                     this.prevTags,
                     this,
                     this.suggestionsWorker,
@@ -59,7 +55,6 @@ export default class BetterCommandPalettePlugin extends Plugin {
                 new BetterCommandPaletteModal(
                     this.app,
                     this.prevCommands,
-                    this.prevFiles,
                     this.prevTags,
                     this,
                     this.suggestionsWorker,
@@ -76,7 +71,6 @@ export default class BetterCommandPalettePlugin extends Plugin {
                 new BetterCommandPaletteModal(
                     this.app,
                     this.prevCommands,
-                    this.prevFiles,
                     this.prevTags,
                     this,
                     this.suggestionsWorker,

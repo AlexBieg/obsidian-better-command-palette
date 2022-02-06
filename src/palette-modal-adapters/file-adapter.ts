@@ -1,8 +1,10 @@
-import { normalizePath } from 'obsidian';
+import { App, normalizePath } from 'obsidian';
 import {
+    OrderedSet,
     PaletteMatch, SuggestModalAdapter,
 } from 'src/utils';
 import { Match, UnsafeAppInterface } from 'src/types/types';
+import BetterCommandPalettePlugin from 'src/main';
 
 export default class BetterCommandPaletteFileAdapter extends SuggestModalAdapter {
     titleText: string;
@@ -16,6 +18,10 @@ export default class BetterCommandPaletteFileAdapter extends SuggestModalAdapter
 
     fileSearchPrefix: string;
 
+    constructor(app: App, plugin: BetterCommandPalettePlugin) {
+        super(app, new OrderedSet<Match>(), plugin);
+    }
+
     initialize() {
         super.initialize();
 
@@ -26,6 +32,10 @@ export default class BetterCommandPaletteFileAdapter extends SuggestModalAdapter
         this.allItems = this.app.metadataCache.getCachedFiles()
             .reverse() // Reversed because we want it sorted A -> Z
             .map((path: string) => new PaletteMatch(path, path));
+
+        this.app.workspace.getLastOpenFiles().reverse().forEach((path) => {
+            this.prevItems.add(new PaletteMatch(path, path));
+        });
     }
 
     cleanQuery(query: string): string {
