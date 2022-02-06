@@ -1,4 +1,6 @@
-import { App, Instruction, normalizePath } from 'obsidian';
+import {
+    App, Instruction, normalizePath, TFile,
+} from 'obsidian';
 import {
     MODIFIER_ICONS,
     OrderedSet,
@@ -77,23 +79,32 @@ export default class BetterCommandPaletteFileAdapter extends SuggestModalAdapter
         }
     }
 
+    async getOrCreateFile(path: string) : Promise<TFile> {
+        let file = this.app.metadataCache.getFirstLinkpathDest(path, '');
+
+        if (!file) {
+            const normalizedPath = normalizePath(`${path}.md`);
+            const dirOnlyPath = normalizedPath.split('/').slice(0, -1).join('/');
+
+            await this.app.vault.createFolder(dirOnlyPath);
+
+            file = await this.app.vault.create(normalizedPath, '');
+        }
+
+        return file;
+    }
+
     async onChooseSuggestion(possbileMatch: Match, event: MouseEvent | KeyboardEvent) {
         let file = null;
         let match = possbileMatch;
 
         if (!match) {
             const el = event.target as HTMLInputElement;
-            const path = normalizePath(`${el.value.replace(this.fileSearchPrefix, '')}.md`);
 
-            file = await this.app.vault.create(path, '');
+            file = await this.getOrCreateFile(el.value.replace(this.fileSearchPrefix, ''));
             match = new PaletteMatch(file.path, file.path);
         } else {
-            file = this.app.metadataCache.getFirstLinkpathDest(match.id, '');
-
-            if (!file) {
-                const path = normalizePath(`${match.id}.md`);
-                file = await this.app.vault.create(path, '');
-            }
+            file = await this.getOrCreateFile(match.id);
         }
 
         this.getPrevItems().add(match);
