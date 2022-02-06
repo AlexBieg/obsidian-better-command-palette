@@ -86,36 +86,42 @@ export default class BetterCommandPaletteFileAdapter extends SuggestModalAdapter
             const normalizedPath = normalizePath(`${path}.md`);
             const dirOnlyPath = normalizedPath.split('/').slice(0, -1).join('/');
 
-            await this.app.vault.createFolder(dirOnlyPath);
-
-            file = await this.app.vault.create(normalizedPath, '');
+            try {
+                await this.app.vault.createFolder(dirOnlyPath);
+            } finally {
+                // An error just means the folder path already exists
+                file = await this.app.vault.create(normalizedPath, '');
+            }
         }
 
         return file;
     }
 
-    async onChooseSuggestion(possbileMatch: Match, event: MouseEvent | KeyboardEvent) {
-        let file = null;
-        let match = possbileMatch;
+    async onChooseSuggestion(match: Match, event: MouseEvent | KeyboardEvent) {
+        const { workspace } = this.app;
+        let path = match && match.id;
 
+        // No match means we are trying to create new file
         if (!match) {
             const el = event.target as HTMLInputElement;
-
-            file = await this.getOrCreateFile(el.value.replace(this.fileSearchPrefix, ''));
-            match = new PaletteMatch(file.path, file.path);
-        } else {
-            file = await this.getOrCreateFile(match.id);
+            path = el.value.replace(this.fileSearchPrefix, '');
         }
 
-        this.getPrevItems().add(match);
-        const { workspace } = this.app;
+        const file = await this.getOrCreateFile(path);
 
+        // We might not have a file if only a directory was specified
+        if (file) {
+            this.getPrevItems().add(match || new PaletteMatch(file.path, file.path));
+        }
+
+        let leaf = workspace.activeLeaf;
+
+        // Shift key means we should be using a new leaf
         if (event.shiftKey) {
-            const newLeaf = workspace.createLeafBySplit(workspace.activeLeaf);
-            newLeaf.openFile(file);
-            workspace.setActiveLeaf(newLeaf);
-        } else {
-            workspace.activeLeaf.openFile(file);
+            leaf = workspace.createLeafBySplit(workspace.activeLeaf);
+            workspace.setActiveLeaf(leaf);
         }
+
+        leaf.openFile(file);
     }
 }
