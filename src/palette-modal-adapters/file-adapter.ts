@@ -1,8 +1,13 @@
-import { normalizePath } from 'obsidian';
 import {
-    PaletteMatch, SuggestModalAdapter,
+    App, Instruction, normalizePath, TFile,
+} from 'obsidian';
+import {
+    MODIFIER_ICONS,
+    OrderedSet,
+    PaletteMatch, SPECIAL_KEYS, SuggestModalAdapter,
 } from 'src/utils';
 import { Match, UnsafeAppInterface } from 'src/types/types';
+import BetterCommandPalettePlugin from 'src/main';
 
 export default class BetterCommandPaletteFileAdapter extends SuggestModalAdapter {
     titleText: string;
@@ -14,7 +19,13 @@ export default class BetterCommandPaletteFileAdapter extends SuggestModalAdapter
 
     allItems: Match[];
 
+    unresolvedItems: OrderedSet<Match>;
+
     fileSearchPrefix: string;
+
+    constructor(app: App, plugin: BetterCommandPalettePlugin) {
+        super(app, new OrderedSet<Match>(), plugin);
+    }
 
     initialize() {
         super.initialize();
@@ -23,9 +34,33 @@ export default class BetterCommandPaletteFileAdapter extends SuggestModalAdapter
         this.emptyStateText = 'No matching files.⌘+Enter to create the file.';
         this.fileSearchPrefix = this.plugin.settings.fileSearchPrefix;
 
-        this.allItems = this.app.metadataCache.getCachedFiles()
-            .reverse() // Reversed because we want it sorted A -> Z
-            .map((path: string) => new PaletteMatch(path, path));
+        this.allItems = [];
+
+        this.unresolvedItems = new OrderedSet<Match>();
+
+        Object.entries(this.app.metadataCache.unresolvedLinks)
+            .forEach(([filePath, linkObject]: [string, Record<string, number>]) => {
+                this.allItems.push(new PaletteMatch(filePath, filePath));
+                Object.keys(linkObject).forEach(
+                    (p) => this.unresolvedItems.add(new PaletteMatch(p, p)),
+                );
+            });
+
+        this.allItems = this.allItems.concat(Array.from(this.unresolvedItems.values())).reverse();
+
+        this.app.workspace.getLastOpenFiles().reverse().forEach((path) => {
+            this.prevItems.add(new PaletteMatch(path, path));
+        });
+    }
+
+    getInstructions(): Instruction[] {
+        return [
+            { command: SPECIAL_KEYS.ENTER, purpose: 'Open file' },
+            { command: `${MODIFIER_ICONS.Shift} ${SPECIAL_KEYS.ENTER}`, purpose: 'Open file in new pane' },
+            { command: `${MODIFIER_ICONS.Meta} ${SPECIAL_KEYS.ENTER}`, purpose: 'Create file' },
+            { command: `${MODIFIER_ICONS.Meta} ${MODIFIER_ICONS.Shift} ${SPECIAL_KEYS.ENTER}`, purpose: 'Create file in new pane' },
+            { command: `${SPECIAL_KEYS.ESC}`, purpose: 'Close palette' },
+        ];
     }
 
     cleanQuery(query: string): string {
@@ -34,38 +69,60 @@ export default class BetterCommandPaletteFileAdapter extends SuggestModalAdapter
     }
 
     renderSuggestion(match: Match, el: HTMLElement): void {
-        el.createEl('span', {
+        const suggestionEl = el.createEl('span', {
             cls: 'suggestion-content',
             text: match.text,
         });
+
+        if (this.unresolvedItems.has(match)) {
+            suggestionEl.addClass('unresolved');
+        }
     }
 
-    async onChooseSuggestion(possbileMatch: Match, event: MouseEvent | KeyboardEvent) {
-        let created = false;
-        let file = null;
-        let match = possbileMatch;
+    async getOrCreateFile(path: string) : Promise<TFile> {
+        let file = this.app.metadataCache.getFirstLinkpathDest(path, '');
 
-        if (!match) {
-            created = true;
+        if (!file) {
+            const normalizedPath = normalizePath(`${path}.md`);
+            const dirOnlyPath = normalizedPath.split('/').slice(0, -1).join('/');
 
-            const el = event.target as HTMLInputElement;
-            const path = normalizePath(`${el.value.replace(this.fileSearchPrefix, '')}.md`);
+            try {
+                await this.app.vault.createFolder(dirOnlyPath);
+            } catch (e) {
+                // An error just means the folder path already exists
+            }
 
-            file = await this.app.vault.create(path, '');
-            match = new PaletteMatch(file.path, file.path);
-        } else {
-            file = this.app.metadataCache.getFirstLinkpathDest(match.id, '');
+            file = await this.app.vault.create(normalizedPath, '');
         }
 
-        this.getPrevItems().add(match);
+        return file;
+    }
+
+    async onChooseSuggestion(match: Match, event: MouseEvent | KeyboardEvent) {
         const { workspace } = this.app;
+        let path = match && match.id;
 
-        if (event.metaKey && !created) {
-            const newLeaf = workspace.createLeafBySplit(workspace.activeLeaf);
-            newLeaf.openFile(file);
-            workspace.setActiveLeaf(newLeaf);
-        } else {
-            workspace.activeLeaf.openFile(file);
+        // No match means we are trying to create new file
+        if (!match) {
+            const el = event.target as HTMLInputElement;
+            path = el.value.replace(this.fileSearchPrefix, '');
         }
+
+        const file = await this.getOrCreateFile(path);
+
+        // We might not have a file if only a directory was specified
+        if (file) {
+            this.getPrevItems().add(match || new PaletteMatch(file.path, file.path));
+        }
+
+        let leaf = workspace.activeLeaf;
+
+        // Shift key means we should be using a new leaf
+        if (event.shiftKey) {
+            leaf = workspace.createLeafBySplit(workspace.activeLeaf);
+            workspace.setActiveLeaf(leaf);
+        }
+
+        leaf.openFile(file);
     }
 }

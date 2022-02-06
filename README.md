@@ -15,8 +15,7 @@ Commands that have been pinned in the default `Command Palette` will be pinned h
 Better Command Palette allows you to open files from the same input without needing to run a command or press `cmd+o first`. Once the palette is open just type `/` (This can be changed in the settings) and you will be searching files to open. Press `enter` to open the file in the active pane or prese `cmd+enter` to open the file in a new pane.
 
 ### File Creation
-If after searching for files to open there are no results you may press `cmd+enter` to create a file with the same name as you have entered. You may specify directories.
-**NOTE: Currently the plugin will not create directories for you.**
+If after searching for files to open there are no results you may press `cmd+enter` to create a file with the same name as you have entered. You may specify directories. If the directory path does not exist it will create it.
 
 ### File Searching using Tags
 Better Command Palette allows you to find and open files that contain the tags you search for.
