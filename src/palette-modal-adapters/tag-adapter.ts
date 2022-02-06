@@ -1,5 +1,6 @@
+import { Instruction } from 'obsidian';
 import {
-    PaletteMatch, SuggestModalAdapter,
+    PaletteMatch, SPECIAL_KEYS, SuggestModalAdapter,
 }
     from 'src/utils';
 import { Match, UnsafeAppInterface } from '../types/types';
@@ -33,6 +34,13 @@ export default class BetterCommandPaletteTagAdapter extends SuggestModalAdapter 
 
                 return acc;
             }, []);
+    }
+
+    getInstructions(): Instruction[] {
+        return [
+            { command: SPECIAL_KEYS.ENTER, purpose: 'Open file' },
+            { command: `${SPECIAL_KEYS.ESC}`, purpose: 'Close palette' },
+        ];
     }
 
     cleanQuery(query: string): string {

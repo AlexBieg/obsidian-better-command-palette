@@ -1,7 +1,8 @@
 import { App, Instruction, normalizePath } from 'obsidian';
 import {
+    MODIFIER_ICONS,
     OrderedSet,
-    PaletteMatch, SuggestModalAdapter,
+    PaletteMatch, SPECIAL_KEYS, SuggestModalAdapter,
 } from 'src/utils';
 import { Match, UnsafeAppInterface } from 'src/types/types';
 import BetterCommandPalettePlugin from 'src/main';
@@ -52,10 +53,11 @@ export default class BetterCommandPaletteFileAdapter extends SuggestModalAdapter
 
     getInstructions(): Instruction[] {
         return [
-            { command: 'Enter', purpose: 'Open file' },
-            { command: '⇧ Enter', purpose: 'Open file in new pane' },
-            { command: '⌘ Enter', purpose: 'Create file' },
-            { command: '⌘ ⇧ Enter', purpose: 'Create file in new pane' },
+            { command: SPECIAL_KEYS.ENTER, purpose: 'Open file' },
+            { command: `${MODIFIER_ICONS.Shift} ${SPECIAL_KEYS.ENTER}`, purpose: 'Open file in new pane' },
+            { command: `${MODIFIER_ICONS.Meta} ${SPECIAL_KEYS.ENTER}`, purpose: 'Create file' },
+            { command: `${MODIFIER_ICONS.Meta} ${MODIFIER_ICONS.Shift} ${SPECIAL_KEYS.ENTER}`, purpose: 'Create file in new pane' },
+            { command: `${SPECIAL_KEYS.ESC}`, purpose: 'Close palette' },
         ];
     }
 

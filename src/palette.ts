@@ -188,6 +188,11 @@ class BetterCommandPaletteModal extends SuggestModal<Match> implements UnsafeSug
     }
 
     updateInstructions() {
+        Array.from(this.modalEl.getElementsByClassName('prompt-instructions'))
+            .forEach((instruction) => {
+                this.modalEl.removeChild(instruction);
+            });
+
         this.setInstructions(this.currentAdapter.getInstructions());
     }
 

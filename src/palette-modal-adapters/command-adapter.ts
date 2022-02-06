@@ -1,6 +1,6 @@
-import { Command, setIcon } from 'obsidian';
+import { Command, Instruction, setIcon } from 'obsidian';
 import {
-    generateHotKeyText, PaletteMatch, SuggestModalAdapter,
+    generateHotKeyText, PaletteMatch, SPECIAL_KEYS, SuggestModalAdapter,
 } from 'src/utils';
 import { Match, UnsafeAppInterface } from 'src/types/types';
 
@@ -42,6 +42,13 @@ export default class BetterCommandPaletteCommandAdapter extends SuggestModalAdap
             },
             [],
         );
+    }
+
+    getInstructions(): Instruction[] {
+        return [
+            { command: SPECIAL_KEYS.ENTER, purpose: 'Run command' },
+            { command: `${SPECIAL_KEYS.BACKSPACE} / ${SPECIAL_KEYS.ESC}`, purpose: 'Close palette' },
+        ];
     }
 
     renderSuggestion(match: Match, el: HTMLElement): void {
