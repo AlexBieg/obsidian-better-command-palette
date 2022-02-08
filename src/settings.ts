@@ -2,7 +2,7 @@ import {
     App, Command, PluginSettingTab, setIcon, Setting,
 } from 'obsidian';
 import BetterCommandPalettePlugin from 'src/main';
-import { MacroCommandInterface, UnsafeAppInterface } from './types/types';
+import { HotkeyStyleType, MacroCommandInterface, UnsafeAppInterface } from './types/types';
 import { SettingsCommandSuggestModal } from './utils';
 
 export interface BetterCommandPalettePluginSettings {
@@ -12,7 +12,8 @@ export interface BetterCommandPalettePluginSettings {
     suggestionLimit: number,
     recentAbovePinned: boolean,
     hyperKeyOverride: boolean,
-    macros: MacroCommandInterface[]
+    macros: MacroCommandInterface[],
+    hotkeyStyle: HotkeyStyleType;
 }
 
 export const DEFAULT_SETTINGS: BetterCommandPalettePluginSettings = {
@@ -23,6 +24,7 @@ export const DEFAULT_SETTINGS: BetterCommandPalettePluginSettings = {
     recentAbovePinned: false,
     hyperKeyOverride: false,
     macros: [],
+    hotkeyStyle: 'auto',
 };
 
 export class BetterCommandPaletteSettingTab extends PluginSettingTab {
@@ -104,6 +106,19 @@ export class BetterCommandPaletteSettingTab extends PluginSettingTab {
                 .setValue(settings.suggestionLimit.toString())
                 .onChange(async (v) => {
                     settings.suggestionLimit = parseInt(v, 10);
+                    await this.plugin.saveSettings();
+                }));
+
+        new Setting(containerEl)
+            .setName('Hotkey Modifier Style')
+            .setDesc('Allows autodetecting of hotkey modifier or forcing to Mac or Windows')
+            .addDropdown((d) => d.addOptions({
+                auto: 'Auto Detect',
+                mac: 'Force Mac Hotkeys',
+                windows: 'Force Windows Hotkeys',
+            }).setValue(settings.hotkeyStyle)
+                .onChange(async (v) => {
+                    settings.hotkeyStyle = v as HotkeyStyleType;
                     await this.plugin.saveSettings();
                 }));
 

@@ -63,3 +63,5 @@ export interface UnsafeAppInterface extends App {
         getPluginById(id: string): { instance: { options: { pinned: [] } } },
     }
 }
+
+type HotkeyStyleType = 'auto' | 'mac' | 'windows';

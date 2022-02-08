@@ -1,6 +1,7 @@
 import { Instruction } from 'obsidian';
 import {
-    PaletteMatch, SPECIAL_KEYS, SuggestModalAdapter,
+    generateHotKeyText,
+    PaletteMatch, SuggestModalAdapter,
 }
     from 'src/utils';
 import { Match, UnsafeAppInterface } from '../types/types';
@@ -38,8 +39,8 @@ export default class BetterCommandPaletteTagAdapter extends SuggestModalAdapter 
 
     getInstructions(): Instruction[] {
         return [
-            { command: SPECIAL_KEYS.ENTER, purpose: 'Open file' },
-            { command: `${SPECIAL_KEYS.ESC}`, purpose: 'Close palette' },
+            { command: generateHotKeyText({ modifiers: [], key: 'ENTER' }, this.plugin.settings), purpose: 'Open file' },
+            { command: generateHotKeyText({ modifiers: [], key: 'ESC' }, this.plugin.settings), purpose: 'Close Palette' },
         ];
     }
 
