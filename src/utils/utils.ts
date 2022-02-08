@@ -1,8 +1,18 @@
-import { Hotkey, Modifier } from 'obsidian';
+import { Hotkey, Modifier, Platform } from 'obsidian';
+import { BetterCommandPalettePluginSettings } from 'src/settings';
 
 const HYPER_KEY_MODIFIERS_SET = new Set(['Alt', 'Ctrl', 'Mod', 'Shift']);
 
-export const MODIFIER_ICONS = {
+const BASIC_MODIFIER_ICONS = {
+    Mod: 'Ctrl',
+    Ctrl: 'Ctrl',
+    Meta: 'Win',
+    Alt: 'Alt',
+    Shift: 'Shift',
+    Hyper: 'Caps',
+};
+
+const MAC_MODIFIER_ICONS = {
     Mod: '⌘',
     Ctrl: '^',
     Meta: '⌘',
@@ -10,6 +20,8 @@ export const MODIFIER_ICONS = {
     Shift: '⇧',
     Hyper: '⇪',
 };
+
+export const MODIFIER_ICONS = Platform.isMacOS ? MAC_MODIFIER_ICONS : BASIC_MODIFIER_ICONS;
 
 export const SPECIAL_KEYS : Record<string, string> = {
     TAB: '↹',
@@ -42,14 +54,25 @@ function isHyperKey(modifiers: Modifier[]) : boolean {
  * @param {Hotkey} hotkey The hotkey to generate text for
  * @returns {string} The hotkey text
  */
-export function generateHotKeyText(hotkey: Hotkey, useHyperKey: boolean = false): string {
+export function generateHotKeyText(
+    hotkey: Hotkey,
+    settings: BetterCommandPalettePluginSettings,
+): string {
+    let modifierIcons = MODIFIER_ICONS;
+
+    if (settings.hotkeyStyle === 'mac') {
+        modifierIcons = MAC_MODIFIER_ICONS;
+    } else if (settings.hotkeyStyle === 'windows') {
+        modifierIcons = BASIC_MODIFIER_ICONS;
+    }
+
     const hotKeyStrings: string[] = [];
 
-    if (useHyperKey && isHyperKey(hotkey.modifiers)) {
-        hotKeyStrings.push(MODIFIER_ICONS.Hyper);
+    if (settings.hyperKeyOverride && isHyperKey(hotkey.modifiers)) {
+        hotKeyStrings.push(modifierIcons.Hyper);
     } else {
         hotkey.modifiers.forEach((mod: Modifier) => {
-            hotKeyStrings.push(MODIFIER_ICONS[mod]);
+            hotKeyStrings.push(modifierIcons[mod]);
         });
     }
 

@@ -1,6 +1,6 @@
 import { Command, Instruction, setIcon } from 'obsidian';
 import {
-    generateHotKeyText, PaletteMatch, SPECIAL_KEYS, SuggestModalAdapter,
+    generateHotKeyText, PaletteMatch, SuggestModalAdapter,
 } from 'src/utils';
 import { Match, UnsafeAppInterface } from 'src/types/types';
 
@@ -45,9 +45,12 @@ export default class BetterCommandPaletteCommandAdapter extends SuggestModalAdap
     }
 
     getInstructions(): Instruction[] {
+        const backspaceHotkeyText = generateHotKeyText({ modifiers: [], key: 'BACKSPACE' }, this.plugin.settings);
+        const escapeHotkeyText = generateHotKeyText({ modifiers: [], key: 'ESC' }, this.plugin.settings);
+
         return [
-            { command: SPECIAL_KEYS.ENTER, purpose: 'Run command' },
-            { command: `${SPECIAL_KEYS.BACKSPACE} / ${SPECIAL_KEYS.ESC}`, purpose: 'Close palette' },
+            { command: generateHotKeyText({ modifiers: [], key: 'ENTER' }, this.plugin.settings), purpose: 'Run command' },
+            { command: `${backspaceHotkeyText} / ${escapeHotkeyText}`, purpose: 'Close palette' },
         ];
     }
 
@@ -93,7 +96,7 @@ export default class BetterCommandPaletteCommandAdapter extends SuggestModalAdap
         hotkeys.forEach((hotkey) => {
             el.createEl('kbd', {
                 cls: 'suggestion-hotkey',
-                text: generateHotKeyText(hotkey, this.plugin.settings.hyperKeyOverride),
+                text: generateHotKeyText(hotkey, this.plugin.settings),
             });
         });
     }

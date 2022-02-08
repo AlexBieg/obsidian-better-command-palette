@@ -2,9 +2,9 @@ import {
     App, Instruction, normalizePath, TFile,
 } from 'obsidian';
 import {
-    MODIFIER_ICONS,
+    generateHotKeyText,
     OrderedSet,
-    PaletteMatch, SPECIAL_KEYS, SuggestModalAdapter,
+    PaletteMatch, SuggestModalAdapter,
 } from 'src/utils';
 import { Match, UnsafeAppInterface } from 'src/types/types';
 import BetterCommandPalettePlugin from 'src/main';
@@ -55,11 +55,11 @@ export default class BetterCommandPaletteFileAdapter extends SuggestModalAdapter
 
     getInstructions(): Instruction[] {
         return [
-            { command: SPECIAL_KEYS.ENTER, purpose: 'Open file' },
-            { command: `${MODIFIER_ICONS.Shift} ${SPECIAL_KEYS.ENTER}`, purpose: 'Open file in new pane' },
-            { command: `${MODIFIER_ICONS.Meta} ${SPECIAL_KEYS.ENTER}`, purpose: 'Create file' },
-            { command: `${MODIFIER_ICONS.Meta} ${MODIFIER_ICONS.Shift} ${SPECIAL_KEYS.ENTER}`, purpose: 'Create file in new pane' },
-            { command: `${SPECIAL_KEYS.ESC}`, purpose: 'Close palette' },
+            { command: generateHotKeyText({ modifiers: [], key: 'ENTER' }, this.plugin.settings), purpose: 'Open file' },
+            { command: generateHotKeyText({ modifiers: ['Shift'], key: 'ENTER' }, this.plugin.settings), purpose: 'Open file in new pane' },
+            { command: generateHotKeyText({ modifiers: ['Mod'], key: 'ENTER' }, this.plugin.settings), purpose: 'Create file' },
+            { command: generateHotKeyText({ modifiers: ['Mod', 'Shift'], key: 'ENTER' }, this.plugin.settings), purpose: 'Create file in new pane' },
+            { command: generateHotKeyText({ modifiers: [], key: 'ESC' }, this.plugin.settings), purpose: 'Close palette' },
         ];
     }
 
