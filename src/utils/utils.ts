@@ -4,12 +4,12 @@ import { BetterCommandPalettePluginSettings } from 'src/settings';
 const HYPER_KEY_MODIFIERS_SET = new Set(['Alt', 'Ctrl', 'Mod', 'Shift']);
 
 const BASIC_MODIFIER_ICONS = {
-    Mod: 'Ctrl',
-    Ctrl: 'Ctrl',
-    Meta: 'Win',
-    Alt: 'Alt',
-    Shift: 'Shift',
-    Hyper: 'Caps',
+    Mod: 'Ctrl +',
+    Ctrl: 'Ctrl +',
+    Meta: 'Win +',
+    Alt: 'Alt +',
+    Shift: 'Shift +',
+    Hyper: 'Caps +',
 };
 
 const MAC_MODIFIER_ICONS = {
