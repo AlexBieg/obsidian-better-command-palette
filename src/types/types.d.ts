@@ -38,6 +38,7 @@ export interface Match extends Comparable {
 export interface UnsafeSuggestModalInterface extends SuggestModal<Match> {
     chooser: {
         useSelectedItem(ev: Partial<KeyboardEvent>): void;
+        selectedItem: Match,
     }
     updateSuggestions(): void;
 }
@@ -65,3 +66,10 @@ export interface UnsafeAppInterface extends App {
 }
 
 type HotkeyStyleType = 'auto' | 'mac' | 'windows';
+
+type Message = {
+    data: {
+        query: string,
+        items: Match[],
+    }
+};

@@ -1,9 +1,13 @@
 import { Instruction } from 'obsidian';
 import {
     generateHotKeyText,
+    getOrCreateFile,
+    openFileWithEventKeys,
+    OrderedSet,
     PaletteMatch, SuggestModalAdapter,
 }
     from 'src/utils';
+import { QUERY_OR } from 'src/utils/constants';
 import { Match, UnsafeAppInterface } from '../types/types';
 
 export default class BetterCommandPaletteTagAdapter extends SuggestModalAdapter {
@@ -16,6 +20,8 @@ export default class BetterCommandPaletteTagAdapter extends SuggestModalAdapter 
 
     allItems: Match[];
 
+    tagsToFiles: Map<string, string[]>;
+
     tagSearchPrefix: string;
 
     initialize(): void {
@@ -24,17 +30,22 @@ export default class BetterCommandPaletteTagAdapter extends SuggestModalAdapter 
         this.tagSearchPrefix = this.plugin.settings.tagSearchPrefix;
         this.titleText = 'Better Command Palette: Tags';
         this.emptyStateText = 'No matching tags.';
+        this.tagsToFiles = new Map();
 
         this.allItems = this.app.metadataCache
-            .getCachedFiles().reduce((acc: PaletteMatch[], path: string) => {
+            .getCachedFiles().reduce((acc: OrderedSet<PaletteMatch>, path: string) => {
                 const fileCache = this.app.metadataCache.getCache(path);
-                if (fileCache.tags) {
-                    const tagString = fileCache.tags.map((tc) => tc.tag).join(' ');
-                    acc.push(new PaletteMatch(path, tagString));
-                }
+                (fileCache.tags || []).forEach((tc) => {
+                    const { tag } = tc;
+                    const fileList = this.tagsToFiles.get(tag) || [];
+
+                    fileList.push(path);
+                    this.tagsToFiles.set(tc.tag, fileList);
+                    acc.add(new PaletteMatch(tag, tag));
+                });
 
                 return acc;
-            }, []);
+            }, new OrderedSet()).values();
     }
 
     getInstructions(): Instruction[] {
@@ -51,18 +62,29 @@ export default class BetterCommandPaletteTagAdapter extends SuggestModalAdapter 
     renderSuggestion(match: Match, el: HTMLElement): void {
         el.createEl('span', {
             cls: 'suggestion-content',
-            text: match.id, // We're storing the file path in the id
+            text: match.text,
         });
+
+        const filePaths = this.tagsToFiles.get(match.id);
 
         el.createEl('span', {
             cls: 'suggestion-sub-content',
-            text: match.text,
+            text: `Found in ${filePaths.length} file${filePaths.length === 1 ? '' : 's'}`,
         });
     }
 
-    async onChooseSuggestion(match: Match) {
+    async onChooseSuggestion(match: Match, event: MouseEvent | KeyboardEvent) {
         this.getPrevItems().add(match);
-        const file = this.app.metadataCache.getFirstLinkpathDest(match.id, '');
-        this.app.workspace.activeLeaf.openFile(file);
+        const filePaths = this.tagsToFiles.get(match.id);
+
+        if (filePaths.length === 1) {
+            // If there is only one file, might as well open it
+            const file = await getOrCreateFile(this.app, filePaths[0]);
+            openFileWithEventKeys(this.app, file, event);
+        } else {
+            // If more than one file we should show them all of the files in the file search
+            this.palette.open();
+            this.palette.setQuery(`/${filePaths.join(QUERY_OR)}`);
+        }
     }
 }

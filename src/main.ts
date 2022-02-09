@@ -1,12 +1,14 @@
 import { Plugin } from 'obsidian';
 
-import SuggestionsWorker from 'web-worker:./web-workers/suggestions-worker';
-import { OrderedSet, MacroCommand, MACRO_COMMAND_ID_PREFIX } from 'src/utils';
+import 'src/web-workers/suggestions-worker';
+import SuggestionsWorker from 'web-worker:./web-workers/suggestions-worker.ts'; // eslint-disable-line import/extensions
+import { OrderedSet, MacroCommand } from 'src/utils';
 import BetterCommandPaletteModal from 'src/palette';
 import { Match, UnsafeAppInterface } from 'src/types/types';
 import { BetterCommandPalettePluginSettings, BetterCommandPaletteSettingTab, DEFAULT_SETTINGS } from 'src/settings';
 
 import './styles.scss';
+import { MACRO_COMMAND_ID_PREFIX } from './utils/constants';
 
 export default class BetterCommandPalettePlugin extends Plugin {
     app: UnsafeAppInterface;

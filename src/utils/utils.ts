@@ -1,40 +1,13 @@
-import { Hotkey, Modifier, Platform } from 'obsidian';
+import {
+    App,
+    Command, Hotkey, Modifier, normalizePath, Platform, TFile,
+} from 'obsidian';
 import { BetterCommandPalettePluginSettings } from 'src/settings';
-
-const HYPER_KEY_MODIFIERS_SET = new Set(['Alt', 'Ctrl', 'Mod', 'Shift']);
-
-const BASIC_MODIFIER_ICONS = {
-    Mod: 'Ctrl +',
-    Ctrl: 'Ctrl +',
-    Meta: 'Win +',
-    Alt: 'Alt +',
-    Shift: 'Shift +',
-    Hyper: 'Caps +',
-};
-
-const MAC_MODIFIER_ICONS = {
-    Mod: '⌘',
-    Ctrl: '^',
-    Meta: '⌘',
-    Alt: '⌥',
-    Shift: '⇧',
-    Hyper: '⇪',
-};
-
-export const MODIFIER_ICONS = Platform.isMacOS ? MAC_MODIFIER_ICONS : BASIC_MODIFIER_ICONS;
-
-export const SPECIAL_KEYS : Record<string, string> = {
-    TAB: '↹',
-    ENTER: '↵',
-    ARROWLEFT: '←',
-    ARROWRIGHT: '→',
-    ARROWUP: '↑',
-    ARROWDOWN: '↓',
-    BACKSPACE: '⌫',
-    ESC: 'Esc',
-};
-
-export const MACRO_COMMAND_ID_PREFIX = 'obsidian-better-command-palette-macro-';
+import { Match } from 'src/types/types';
+import OrderedSet from './ordered-set';
+import {
+    BASIC_MODIFIER_ICONS, HYPER_KEY_MODIFIERS_SET, MAC_MODIFIER_ICONS, SPECIAL_KEYS,
+} from './constants';
 
 /**
  * Determines if the modifiers of a hotkey could be a hyper key command.
@@ -58,7 +31,7 @@ export function generateHotKeyText(
     hotkey: Hotkey,
     settings: BetterCommandPalettePluginSettings,
 ): string {
-    let modifierIcons = MODIFIER_ICONS;
+    let modifierIcons = Platform.isMacOS ? MAC_MODIFIER_ICONS : BASIC_MODIFIER_ICONS;
 
     if (settings.hotkeyStyle === 'mac') {
         modifierIcons = MAC_MODIFIER_ICONS;
@@ -80,4 +53,57 @@ export function generateHotKeyText(
     hotKeyStrings.push(SPECIAL_KEYS[key] || key);
 
     return hotKeyStrings.join(' ');
+}
+
+export function renderPrevItems(match: Match, el: HTMLElement, prevItems: OrderedSet<Match>) {
+    if (prevItems.has(match)) {
+        el.addClass('recent');
+        el.createEl('span', {
+            cls: 'recent-text',
+            text: '(recently used)',
+        });
+    }
+}
+
+export function getCommandText(item: Command): string {
+    return item.name;
+}
+
+export const identity = (item: any): any => item;
+
+export async function getOrCreateFile(app: App, path: string) : Promise < TFile > {
+    let file = app.metadataCache.getFirstLinkpathDest(path, '');
+
+    if (!file) {
+        const normalizedPath = normalizePath(`${path}.md`);
+        const dirOnlyPath = normalizedPath.split('/').slice(0, -1).join('/');
+
+        try {
+            await app.vault.createFolder(dirOnlyPath);
+        } catch (e) {
+            // An error just means the folder path already exists
+        }
+
+        file = await app.vault.create(normalizedPath, '');
+    }
+
+    return file;
+}
+
+export function openFileWithEventKeys(
+    app: App,
+    file: TFile,
+    event: MouseEvent | KeyboardEvent,
+) {
+    const { workspace } = app;
+
+    let leaf = workspace.activeLeaf;
+
+    // Shift key means we should be using a new leaf
+    if (event.shiftKey) {
+        leaf = workspace.createLeafBySplit(workspace.activeLeaf);
+        workspace.setActiveLeaf(leaf);
+    }
+
+    leaf.openFile(file);
 }

@@ -1,13 +1,14 @@
 import {
-    App, Instruction, normalizePath, TFile,
+    Instruction,
 } from 'obsidian';
 import {
     generateHotKeyText,
+    getOrCreateFile,
+    openFileWithEventKeys,
     OrderedSet,
     PaletteMatch, SuggestModalAdapter,
 } from 'src/utils';
 import { Match, UnsafeAppInterface } from 'src/types/types';
-import BetterCommandPalettePlugin from 'src/main';
 
 export default class BetterCommandPaletteFileAdapter extends SuggestModalAdapter {
     titleText: string;
@@ -23,15 +24,11 @@ export default class BetterCommandPaletteFileAdapter extends SuggestModalAdapter
 
     fileSearchPrefix: string;
 
-    constructor(app: App, plugin: BetterCommandPalettePlugin) {
-        super(app, new OrderedSet<Match>(), plugin);
-    }
-
     initialize() {
         super.initialize();
 
         this.titleText = 'Better Command Palette: Files';
-        this.emptyStateText = 'No matching files.⌘+Enter to create the file.';
+        this.emptyStateText = 'No matching files.';
         this.fileSearchPrefix = this.plugin.settings.fileSearchPrefix;
 
         this.allItems = [];
@@ -79,27 +76,7 @@ export default class BetterCommandPaletteFileAdapter extends SuggestModalAdapter
         }
     }
 
-    async getOrCreateFile(path: string) : Promise<TFile> {
-        let file = this.app.metadataCache.getFirstLinkpathDest(path, '');
-
-        if (!file) {
-            const normalizedPath = normalizePath(`${path}.md`);
-            const dirOnlyPath = normalizedPath.split('/').slice(0, -1).join('/');
-
-            try {
-                await this.app.vault.createFolder(dirOnlyPath);
-            } catch (e) {
-                // An error just means the folder path already exists
-            }
-
-            file = await this.app.vault.create(normalizedPath, '');
-        }
-
-        return file;
-    }
-
     async onChooseSuggestion(match: Match, event: MouseEvent | KeyboardEvent) {
-        const { workspace } = this.app;
         let path = match && match.id;
 
         // No match means we are trying to create new file
@@ -108,21 +85,13 @@ export default class BetterCommandPaletteFileAdapter extends SuggestModalAdapter
             path = el.value.replace(this.fileSearchPrefix, '');
         }
 
-        const file = await this.getOrCreateFile(path);
+        const file = await getOrCreateFile(this.app, path);
 
         // We might not have a file if only a directory was specified
         if (file) {
             this.getPrevItems().add(match || new PaletteMatch(file.path, file.path));
         }
 
-        let leaf = workspace.activeLeaf;
-
-        // Shift key means we should be using a new leaf
-        if (event.shiftKey) {
-            leaf = workspace.createLeafBySplit(workspace.activeLeaf);
-            workspace.setActiveLeaf(leaf);
-        }
-
-        leaf.openFile(file);
+        openFileWithEventKeys(this.app, file, event);
     }
 }
