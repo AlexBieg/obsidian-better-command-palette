@@ -100,15 +100,21 @@ class BetterCommandPaletteModal extends SuggestModal<Match> implements UnsafeSug
         this.setScopes(plugin);
     }
 
+    close(evt?: KeyboardEvent) {
+        super.close();
+
+        if (evt) {
+            evt.preventDefault();
+        }
+    }
+
     setScopes(plugin: BetterCommandPalettePlugin) {
         const closeModal = (event: KeyboardEvent) => {
             // Have to cast this to access `value`
             const el = event.target as HTMLInputElement;
 
             if (plugin.settings.closeWithBackspace && el.value === '') {
-                this.close();
-                // Stops the editor from using the backspace event
-                event.preventDefault();
+                this.close(event);
             }
         };
 
@@ -123,14 +129,21 @@ class BetterCommandPaletteModal extends SuggestModal<Match> implements UnsafeSug
         this.scope.register(['Mod'], 'Enter', (event: KeyboardEvent) => {
             if (this.actionType === this.ACTION_TYPE_FILES) {
                 this.currentAdapter.onChooseSuggestion(null, event);
-                this.close();
+                this.close(event);
             }
         });
 
         this.scope.register(['Mod', 'Shift'], 'Enter', (event: KeyboardEvent) => {
             if (this.actionType === this.ACTION_TYPE_FILES) {
                 this.currentAdapter.onChooseSuggestion(null, event);
-                this.close();
+                this.close(event);
+            }
+        });
+
+        this.scope.register(['Shift'], 'Enter', (event: KeyboardEvent) => {
+            if (this.actionType === this.ACTION_TYPE_FILES && this.currentSuggestions.length) {
+                this.currentAdapter.onChooseSuggestion(this.currentSuggestions[0], event);
+                this.close(event);
             }
         });
     }
