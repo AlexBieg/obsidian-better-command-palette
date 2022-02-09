@@ -1,5 +1,5 @@
 import typescript from 'rollup-plugin-typescript2';
-import { nodeResolve } from '@rollup/plugin-node-resolve';
+import nodeResolve from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
 import webWorkerLoader from 'rollup-plugin-web-worker-loader';
 import { terser } from 'rollup-plugin-terser';
@@ -28,8 +28,13 @@ export default {
         format: 'cjs',
         exports: 'default',
     },
-    external: ['obsidian', 'path', 'fs', 'util', 'events', 'stream', 'os'],
+    external: ['obsidian'],
     plugins: [
+        nodeResolve({
+            browser: true,
+            extensions: ['.ts', '.js', '.d.ts'],
+        }),
+        commonjs(),
         scss({
             output: `${outputLocation}/styles.css`,
         }),
@@ -47,11 +52,8 @@ export default {
             sourcemap: !isProduction,
             inline: true,
             forceInline: true,
-            external: ['obsidian'],
         }),
         typescript(),
-        nodeResolve({ browser: true }),
-        commonjs(),
         isProduction && terser(),
     ],
 };
