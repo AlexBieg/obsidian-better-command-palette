@@ -3,23 +3,27 @@
 
 import * as fuzzySearch from 'fuzzysort';
 import { Message } from 'src/types/types';
-import { QUERY_OR } from 'src/utils/constants';
+import { QUERY_OR, QUERY_TAG } from 'src/utils/constants';
 
 self.onmessage = (msg: Message) => {
     const { query, items } = msg.data;
 
-    // Just return everything if there is no query
-    if (query === '') return items;
+    const [mainQuery, ...tagQueries] = query.split(QUERY_TAG);
 
-    let results = [];
-    if (query.includes(QUERY_OR)) {
-        const subqueries = query.split(QUERY_OR).map((q) => q.trim());
+    let results = items;
+
+    if (mainQuery.includes(QUERY_OR)) {
+        const subqueries = mainQuery.split(QUERY_OR).map((q) => q.trim());
         results = items.filter((item) => subqueries.includes(item.text));
-    } else {
+    } else if (mainQuery !== '') {
         results = fuzzySearch
-            .go(query, items, { key: 'text' })
+            .go(mainQuery, items, { key: 'text' })
             .map((r) => r.obj);
     }
+
+    tagQueries.forEach((tq) => {
+        results = results.filter((r) => r.tags.includes(tq));
+    });
 
     return self.postMessage(results);
 };

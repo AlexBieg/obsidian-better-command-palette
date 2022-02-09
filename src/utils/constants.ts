@@ -1,4 +1,5 @@
 export const QUERY_OR = '||';
+export const QUERY_TAG = '@';
 
 export const HYPER_KEY_MODIFIERS_SET = new Set(['Alt', 'Ctrl', 'Mod', 'Shift']);
 

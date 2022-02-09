@@ -37,7 +37,12 @@ export default class BetterCommandPaletteFileAdapter extends SuggestModalAdapter
 
         Object.entries(this.app.metadataCache.unresolvedLinks)
             .forEach(([filePath, linkObject]: [string, Record<string, number>]) => {
-                this.allItems.push(new PaletteMatch(filePath, filePath));
+                const fileCache = this.app.metadataCache.getCache(filePath);
+                this.allItems.push(new PaletteMatch(
+                    filePath,
+                    filePath,
+                    (fileCache.tags || []).map((tc) => tc.tag),
+                ));
                 Object.keys(linkObject).forEach(
                     (p) => this.unresolvedItems.add(new PaletteMatch(p, p)),
                 );
@@ -46,7 +51,10 @@ export default class BetterCommandPaletteFileAdapter extends SuggestModalAdapter
         this.allItems = this.allItems.concat(Array.from(this.unresolvedItems.values())).reverse();
 
         this.app.workspace.getLastOpenFiles().reverse().forEach((path) => {
-            this.prevItems.add(new PaletteMatch(path, path));
+            const fileCache = this.app.metadataCache.getCache(path);
+            this.prevItems.add(
+                new PaletteMatch(path, path, (fileCache.tags || []).map((tc) => tc.tag)),
+            );
         });
     }
 
@@ -69,6 +77,11 @@ export default class BetterCommandPaletteFileAdapter extends SuggestModalAdapter
         const suggestionEl = el.createEl('span', {
             cls: 'suggestion-content',
             text: match.text,
+        });
+
+        el.createEl('span', {
+            cls: 'suggestion-sub-content',
+            text: `${match.tags.join(' ')}`,
         });
 
         if (this.unresolvedItems.has(match)) {

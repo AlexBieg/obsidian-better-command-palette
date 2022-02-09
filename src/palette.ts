@@ -169,8 +169,13 @@ class BetterCommandPaletteModal extends SuggestModal<Match> implements UnsafeSug
         }
     }
 
-    setQuery(newQuery: string) {
+    setQuery(newQuery: string, cursorPosition: number = -1) {
         this.inputEl.value = newQuery;
+
+        if (cursorPosition > -1) {
+            this.inputEl.setSelectionRange(cursorPosition, cursorPosition);
+        }
+
         this.updateSuggestions();
     }
 
@@ -229,7 +234,7 @@ class BetterCommandPaletteModal extends SuggestModal<Match> implements UnsafeSug
 
     receivedSuggestions(msg : MessageEvent) {
         const results = msg.data.slice(0, this.limit);
-        const matches = results.map((r : Record<string, string>) => new PaletteMatch(r.id, r.text));
+        const matches = results.map((r : Match) => new PaletteMatch(r.id, r.text, r.tags));
         this.currentSuggestions = matches;
         this.updateSuggestions();
     }

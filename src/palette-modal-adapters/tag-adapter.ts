@@ -1,13 +1,10 @@
 import { Instruction } from 'obsidian';
 import {
     generateHotKeyText,
-    getOrCreateFile,
-    openFileWithEventKeys,
-    OrderedSet,
     PaletteMatch, SuggestModalAdapter,
 }
     from 'src/utils';
-import { QUERY_OR } from 'src/utils/constants';
+import { QUERY_TAG } from 'src/utils/constants';
 import { Match, UnsafeAppInterface } from '../types/types';
 
 export default class BetterCommandPaletteTagAdapter extends SuggestModalAdapter {
@@ -20,8 +17,6 @@ export default class BetterCommandPaletteTagAdapter extends SuggestModalAdapter 
 
     allItems: Match[];
 
-    tagsToFiles: Map<string, string[]>;
-
     tagSearchPrefix: string;
 
     initialize(): void {
@@ -30,27 +25,14 @@ export default class BetterCommandPaletteTagAdapter extends SuggestModalAdapter 
         this.tagSearchPrefix = this.plugin.settings.tagSearchPrefix;
         this.titleText = 'Better Command Palette: Tags';
         this.emptyStateText = 'No matching tags.';
-        this.tagsToFiles = new Map();
 
-        this.allItems = this.app.metadataCache
-            .getCachedFiles().reduce((acc: OrderedSet<PaletteMatch>, path: string) => {
-                const fileCache = this.app.metadataCache.getCache(path);
-                (fileCache.tags || []).forEach((tc) => {
-                    const { tag } = tc;
-                    const fileList = this.tagsToFiles.get(tag) || [];
-
-                    fileList.push(path);
-                    this.tagsToFiles.set(tc.tag, fileList);
-                    acc.add(new PaletteMatch(tag, tag));
-                });
-
-                return acc;
-            }, new OrderedSet()).values();
+        this.allItems = Object.keys(this.app.metadataCache.getTags())
+            .map((tag) => new PaletteMatch(tag, tag));
     }
 
     getInstructions(): Instruction[] {
         return [
-            { command: generateHotKeyText({ modifiers: [], key: 'ENTER' }, this.plugin.settings), purpose: 'Open file' },
+            { command: generateHotKeyText({ modifiers: [], key: 'ENTER' }, this.plugin.settings), purpose: 'See file usage' },
             { command: generateHotKeyText({ modifiers: [], key: 'ESC' }, this.plugin.settings), purpose: 'Close Palette' },
         ];
     }
@@ -65,26 +47,17 @@ export default class BetterCommandPaletteTagAdapter extends SuggestModalAdapter 
             text: match.text,
         });
 
-        const filePaths = this.tagsToFiles.get(match.id);
+        const count = this.app.metadataCache.getTags()[match.text];
 
         el.createEl('span', {
             cls: 'suggestion-sub-content',
-            text: `Found in ${filePaths.length} file${filePaths.length === 1 ? '' : 's'}`,
+            text: `Found in ${count} file${count === 1 ? '' : 's'}`,
         });
     }
 
-    async onChooseSuggestion(match: Match, event: MouseEvent | KeyboardEvent) {
+    async onChooseSuggestion(match: Match) {
         this.getPrevItems().add(match);
-        const filePaths = this.tagsToFiles.get(match.id);
-
-        if (filePaths.length === 1) {
-            // If there is only one file, might as well open it
-            const file = await getOrCreateFile(this.app, filePaths[0]);
-            openFileWithEventKeys(this.app, file, event);
-        } else {
-            // If more than one file we should show them all of the files in the file search
-            this.palette.open();
-            this.palette.setQuery(`/${filePaths.join(QUERY_OR)}`);
-        }
+        this.palette.open();
+        this.palette.setQuery(`/${QUERY_TAG}${match.text}`, 1);
     }
 }
