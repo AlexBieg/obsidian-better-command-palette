@@ -29,7 +29,7 @@ export default class BetterCommandPaletteCommandAdapter extends SuggestModalAdap
             .map((c: Command): Match => new PaletteMatch(c.id, c.name));
 
         const pinnedCommands = this.app.internalPlugins.getPluginById('command-palette').instance.options.pinned || [];
-        this.pinnedItems = pinnedCommands.reverse().reduce(
+        this.pinnedItems = pinnedCommands.reduce(
             (acc: Match[], id: string): Match[] => {
                 const command = this.app.commands.findCommand(id);
 
@@ -41,7 +41,7 @@ export default class BetterCommandPaletteCommandAdapter extends SuggestModalAdap
                 return acc;
             },
             [],
-        );
+        ).reverse();
     }
 
     getInstructions(): Instruction[] {
