@@ -4,6 +4,7 @@ import {
     PaletteMatch, SuggestModalAdapter,
 }
     from 'src/utils';
+import { QUERY_TAG } from 'src/utils/constants';
 import { Match, UnsafeAppInterface } from '../types/types';
 
 export default class BetterCommandPaletteTagAdapter extends SuggestModalAdapter {
@@ -25,21 +26,13 @@ export default class BetterCommandPaletteTagAdapter extends SuggestModalAdapter 
         this.titleText = 'Better Command Palette: Tags';
         this.emptyStateText = 'No matching tags.';
 
-        this.allItems = this.app.metadataCache
-            .getCachedFiles().reduce((acc: PaletteMatch[], path: string) => {
-                const fileCache = this.app.metadataCache.getCache(path);
-                if (fileCache.tags) {
-                    const tagString = fileCache.tags.map((tc) => tc.tag).join(' ');
-                    acc.push(new PaletteMatch(path, tagString));
-                }
-
-                return acc;
-            }, []);
+        this.allItems = Object.entries(this.app.metadataCache.getTags())
+            .map(([tag, count]) => new PaletteMatch(tag, tag, [count]));
     }
 
     getInstructions(): Instruction[] {
         return [
-            { command: generateHotKeyText({ modifiers: [], key: 'ENTER' }, this.plugin.settings), purpose: 'Open file' },
+            { command: generateHotKeyText({ modifiers: [], key: 'ENTER' }, this.plugin.settings), purpose: 'See file usage' },
             { command: generateHotKeyText({ modifiers: [], key: 'ESC' }, this.plugin.settings), purpose: 'Close Palette' },
         ];
     }
@@ -51,18 +44,20 @@ export default class BetterCommandPaletteTagAdapter extends SuggestModalAdapter 
     renderSuggestion(match: Match, el: HTMLElement): void {
         el.createEl('span', {
             cls: 'suggestion-content',
-            text: match.id, // We're storing the file path in the id
+            text: match.text,
         });
+
+        const count = parseInt(match.tags[0], 10);
 
         el.createEl('span', {
             cls: 'suggestion-sub-content',
-            text: match.text,
+            text: `Found in ${count} file${count === 1 ? '' : 's'}`,
         });
     }
 
     async onChooseSuggestion(match: Match) {
         this.getPrevItems().add(match);
-        const file = this.app.metadataCache.getFirstLinkpathDest(match.id, '');
-        this.app.workspace.activeLeaf.openFile(file);
+        this.palette.open();
+        this.palette.setQuery(`/${QUERY_TAG}${match.text}`, 1);
     }
 }

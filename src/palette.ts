@@ -1,6 +1,6 @@
 import { App, SuggestModal } from 'obsidian';
 import {
-    OrderedSet, PaletteMatch, SuggestModalAdapter,
+    OrderedSet, PaletteMatch, renderPrevItems, SuggestModalAdapter,
 } from 'src/utils';
 import { Match, UnsafeSuggestModalInterface } from 'src/types/types';
 import {
@@ -70,15 +70,19 @@ class BetterCommandPaletteModal extends SuggestModal<Match> implements UnsafeSug
             app,
             prevCommands,
             plugin,
+            this,
         );
         this.fileAdapter = new BetterCommandPaletteFileAdapter(
             app,
+            new OrderedSet<Match>(),
             plugin,
+            this,
         );
         this.tagAdapter = new BetterCommandPaletteTagAdapter(
             app,
             prevTags,
             plugin,
+            this,
         );
 
         // Lets us do the suggestion fuzzy search in a different thread
@@ -156,8 +160,18 @@ class BetterCommandPaletteModal extends SuggestModal<Match> implements UnsafeSug
         // result flickering before this is set
         // As far as I can tell onOpen resets the value of the input so this is the first place
         if (this.initialInputValue) {
-            this.inputEl.value = this.initialInputValue;
+            this.setQuery(this.initialInputValue);
         }
+    }
+
+    setQuery(newQuery: string, cursorPosition: number = -1) {
+        this.inputEl.value = newQuery;
+
+        if (cursorPosition > -1) {
+            this.inputEl.setSelectionRange(cursorPosition, cursorPosition);
+        }
+
+        this.updateSuggestions();
     }
 
     updateActionType() : boolean {
@@ -215,7 +229,7 @@ class BetterCommandPaletteModal extends SuggestModal<Match> implements UnsafeSug
 
     receivedSuggestions(msg : MessageEvent) {
         const results = msg.data.slice(0, this.limit);
-        const matches = results.map((r : Record<string, string>) => new PaletteMatch(r.id, r.text));
+        const matches = results.map((r : Match) => new PaletteMatch(r.id, r.text, r.tags));
         this.currentSuggestions = matches;
         this.updateSuggestions();
     }
@@ -245,18 +259,8 @@ class BetterCommandPaletteModal extends SuggestModal<Match> implements UnsafeSug
         return this.currentSuggestions;
     }
 
-    renderPrevItems(match: Match, el: HTMLElement, prevItems: OrderedSet<Match>) {
-        if (prevItems.has(match)) {
-            el.addClass('recent');
-            el.createEl('span', {
-                cls: 'recent-text',
-                text: '(recently used)',
-            });
-        }
-    }
-
     renderSuggestion(match: Match, el: HTMLElement) {
-        this.renderPrevItems(match, el, this.currentAdapter.getPrevItems());
+        renderPrevItems(match, el, this.currentAdapter.getPrevItems());
         this.currentAdapter.renderSuggestion(match, el);
     }
 

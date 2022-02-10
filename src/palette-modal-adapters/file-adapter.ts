@@ -1,13 +1,14 @@
 import {
-    App, Instruction, normalizePath, TFile,
+    Instruction,
 } from 'obsidian';
 import {
     generateHotKeyText,
+    getOrCreateFile,
+    openFileWithEventKeys,
     OrderedSet,
     PaletteMatch, SuggestModalAdapter,
 } from 'src/utils';
 import { Match, UnsafeAppInterface } from 'src/types/types';
-import BetterCommandPalettePlugin from 'src/main';
 
 export default class BetterCommandPaletteFileAdapter extends SuggestModalAdapter {
     titleText: string;
@@ -23,33 +24,52 @@ export default class BetterCommandPaletteFileAdapter extends SuggestModalAdapter
 
     fileSearchPrefix: string;
 
-    constructor(app: App, plugin: BetterCommandPalettePlugin) {
-        super(app, new OrderedSet<Match>(), plugin);
-    }
-
     initialize() {
         super.initialize();
 
         this.titleText = 'Better Command Palette: Files';
-        this.emptyStateText = 'No matching files.⌘+Enter to create the file.';
+        this.emptyStateText = 'No matching files.';
         this.fileSearchPrefix = this.plugin.settings.fileSearchPrefix;
 
         this.allItems = [];
 
         this.unresolvedItems = new OrderedSet<Match>();
 
+        // Actually returns all files in the cache even if there are no unresolved links
         Object.entries(this.app.metadataCache.unresolvedLinks)
             .forEach(([filePath, linkObject]: [string, Record<string, number>]) => {
-                this.allItems.push(new PaletteMatch(filePath, filePath));
+                // Get the cache item for the file so that we can extract its tags
+                const fileCache = this.app.metadataCache.getCache(filePath);
+
+                // Sometimes the cache keeps files that have been deleted
+                if (!fileCache) return;
+
+                // Make the palette match
+                this.allItems.push(new PaletteMatch(
+                    filePath,
+                    filePath,
+                    (fileCache.tags || []).map((tc) => tc.tag),
+                ));
+
+                // Add any unresolved links to the set
                 Object.keys(linkObject).forEach(
                     (p) => this.unresolvedItems.add(new PaletteMatch(p, p)),
                 );
             });
 
+        // Add the deduped links to all items
         this.allItems = this.allItems.concat(Array.from(this.unresolvedItems.values())).reverse();
 
+        // Use obsidian's last open files as the previous items
         this.app.workspace.getLastOpenFiles().reverse().forEach((path) => {
-            this.prevItems.add(new PaletteMatch(path, path));
+            const fileCache = this.app.metadataCache.getCache(path);
+
+            // Sometimes the cache keeps files that have been deleted
+            if (!fileCache) return;
+
+            this.prevItems.add(
+                new PaletteMatch(path, path, (fileCache.tags || []).map((tc) => tc.tag)),
+            );
         });
     }
 
@@ -74,32 +94,17 @@ export default class BetterCommandPaletteFileAdapter extends SuggestModalAdapter
             text: match.text,
         });
 
+        el.createEl('span', {
+            cls: 'suggestion-sub-content',
+            text: `${match.tags.join(' ')}`,
+        });
+
         if (this.unresolvedItems.has(match)) {
             suggestionEl.addClass('unresolved');
         }
     }
 
-    async getOrCreateFile(path: string) : Promise<TFile> {
-        let file = this.app.metadataCache.getFirstLinkpathDest(path, '');
-
-        if (!file) {
-            const normalizedPath = normalizePath(`${path}.md`);
-            const dirOnlyPath = normalizedPath.split('/').slice(0, -1).join('/');
-
-            try {
-                await this.app.vault.createFolder(dirOnlyPath);
-            } catch (e) {
-                // An error just means the folder path already exists
-            }
-
-            file = await this.app.vault.create(normalizedPath, '');
-        }
-
-        return file;
-    }
-
     async onChooseSuggestion(match: Match, event: MouseEvent | KeyboardEvent) {
-        const { workspace } = this.app;
         let path = match && match.id;
 
         // No match means we are trying to create new file
@@ -108,21 +113,13 @@ export default class BetterCommandPaletteFileAdapter extends SuggestModalAdapter
             path = el.value.replace(this.fileSearchPrefix, '');
         }
 
-        const file = await this.getOrCreateFile(path);
+        const file = await getOrCreateFile(this.app, path);
 
         // We might not have a file if only a directory was specified
         if (file) {
             this.getPrevItems().add(match || new PaletteMatch(file.path, file.path));
         }
 
-        let leaf = workspace.activeLeaf;
-
-        // Shift key means we should be using a new leaf
-        if (event.shiftKey) {
-            leaf = workspace.createLeafBySplit(workspace.activeLeaf);
-            workspace.setActiveLeaf(leaf);
-        }
-
-        leaf.openFile(file);
+        openFileWithEventKeys(this.app, file, event);
     }
 }

@@ -5,9 +5,12 @@ export default class PaletteMatch implements Match {
 
     text: string;
 
-    constructor(id: string, text: string) {
+    tags: string[];
+
+    constructor(id: string, text: string, tags: string[] = []) {
         this.id = id;
         this.text = text;
+        this.tags = tags;
     }
 
     value(): string {

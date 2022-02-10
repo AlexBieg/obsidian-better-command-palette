@@ -28,6 +28,7 @@ export interface Comparable {
 export interface Match extends Comparable {
     text: string,
     id: string,
+    tags: string[],
 }
 
 // Unsafe Interfaces
@@ -44,6 +45,7 @@ export interface UnsafeSuggestModalInterface extends SuggestModal<Match> {
 
 interface UnsafeMetadataCacheInterface extends MetadataCache {
     getCachedFiles(): string[],
+    getTags(): Record<string, number>;
 }
 
 export interface UnsafeAppInterface extends App {
@@ -65,3 +67,10 @@ export interface UnsafeAppInterface extends App {
 }
 
 type HotkeyStyleType = 'auto' | 'mac' | 'windows';
+
+type Message = {
+    data: {
+        query: string,
+        items: Match[],
+    }
+};
