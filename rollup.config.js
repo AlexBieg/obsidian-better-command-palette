@@ -52,6 +52,7 @@ export default {
             sourcemap: !isProduction,
             inline: true,
             forceInline: true,
+            extensions: ['.ts'],
         }),
         typescript(),
         isProduction && terser(),

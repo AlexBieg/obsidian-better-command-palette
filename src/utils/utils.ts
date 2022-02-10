@@ -69,8 +69,6 @@ export function getCommandText(item: Command): string {
     return item.name;
 }
 
-export const identity = (item: any): any => item;
-
 export async function getOrCreateFile(app: App, path: string) : Promise < TFile > {
     let file = app.metadataCache.getFirstLinkpathDest(path, '');
 
