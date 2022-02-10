@@ -12,14 +12,14 @@ Choices that have been recently used will bubble up to the top of the command li
 Commands that have been pinned in the default `Command Palette` will be pinned here as well.
 
 ### File Opening
-Better Command Palette allows you to open files from the same input without needing to run a command or press `cmd+o first`. Once the palette is open just type `/` (This can be changed in the settings) and you will be searching files to open. Press `enter` to open the file in the active pane or prese `cmd+enter` to open the file in a new pane.
+Better Command Palette allows you to open files from the same input without needing to run a command or press `cmd+o first`. Once the palette is open just type `/` (This can be changed in the settings) and you will be searching files to open. Press `enter` to open the file.
 
 ### File Creation
 If after searching for files to open there are no results you may press `cmd+enter` to create a file with the same name as you have entered. You may specify directories. If the directory path does not exist it will create it.
 
 ### File Searching using Tags
 Better Command Palette allows you to find and open files that contain the tags you search for.
-Type `#` (configurable in the settings) to begin searching for files that have that tag. Press enter to open the selected file.
+Type `#` (configurable in the settings) to begin searching all of the tags in your vault. Press enter to use that tag to filter the file search.
 
 ### Macro Commands
 Macros can be created in the settings tab for Better Command Palette. Each Macro must be give a name, delay, and at least one command. If any of these are not set the macro will not show up in the command palette.
