@@ -107,3 +107,21 @@ export function openFileWithEventKeys(
 
     leaf.openFile(file);
 }
+
+export function matchTag(tags: string[], tagQueries: string[]): boolean {
+    for (let i = 0; i < tagQueries.length; i += 1) {
+        const tagSearch = tagQueries[i];
+
+        for (let ii = 0; ii < tags.length; ii += 1) {
+            const tag = tags[ii];
+
+            // If they are equal we have matched it
+            if (tag === tagSearch) return true;
+
+            // Check if the query could be a prefix for a nested tag
+            const prefixQuery = `${tagSearch}/`;
+            if (tag.startsWith(prefixQuery)) return true;
+        }
+    }
+    return false;
+}

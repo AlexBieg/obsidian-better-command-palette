@@ -3,6 +3,7 @@
 
 import * as fuzzySearch from 'fuzzysort';
 import { Message } from 'src/types/types';
+import { matchTag } from 'src/utils';
 import { QUERY_OR, QUERY_TAG } from 'src/utils/constants';
 
 self.onmessage = (msg: Message) => {
@@ -14,16 +15,16 @@ self.onmessage = (msg: Message) => {
 
     if (mainQuery.includes(QUERY_OR)) {
         const subqueries = mainQuery.split(QUERY_OR).map((q) => q.trim());
-        results = items.filter((item) => subqueries.includes(item.text));
+        results = items.filter((item) => subqueries.some((sq) => item.text.includes(sq)));
     } else if (mainQuery !== '') {
         results = fuzzySearch
             .go(mainQuery, items, { key: 'text' })
             .map((r) => r.obj);
     }
 
-    tagQueries.forEach((tq) => {
-        results = results.filter((r) => r.tags.includes(tq));
-    });
+    if (tagQueries.length) {
+        results = results.filter((r) => matchTag(r.tags, tagQueries));
+    }
 
     return self.postMessage(results);
 };

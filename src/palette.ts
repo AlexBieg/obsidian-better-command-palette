@@ -1,4 +1,4 @@
-import { App, SuggestModal } from 'obsidian';
+import { App, debounce, SuggestModal } from 'obsidian';
 import {
     OrderedSet, PaletteMatch, renderPrevItems, SuggestModalAdapter,
 } from 'src/utils';
@@ -239,13 +239,13 @@ class BetterCommandPaletteModal extends SuggestModal<Match> implements UnsafeSug
         this.updateSuggestions();
     }
 
-    getSuggestionsAsync(query: string) {
+    getSuggestionsAsync = debounce((query: string) => {
         const items = this.getItems();
         this.suggestionsWorker.postMessage({
             query,
             items,
         });
-    }
+    }, 200);
 
     getSuggestions(query: string): Match[] {
         // The action type might have changed

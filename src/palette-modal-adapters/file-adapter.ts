@@ -35,23 +35,38 @@ export default class BetterCommandPaletteFileAdapter extends SuggestModalAdapter
 
         this.unresolvedItems = new OrderedSet<Match>();
 
+        // Actually returns all files in the cache even if there are no unresolved links
         Object.entries(this.app.metadataCache.unresolvedLinks)
             .forEach(([filePath, linkObject]: [string, Record<string, number>]) => {
+                // Get the cache item for the file so that we can extract its tags
                 const fileCache = this.app.metadataCache.getCache(filePath);
+
+                // Sometimes the cache keeps files that have been deleted
+                if (!fileCache) return;
+
+                // Make the palette match
                 this.allItems.push(new PaletteMatch(
                     filePath,
                     filePath,
                     (fileCache.tags || []).map((tc) => tc.tag),
                 ));
+
+                // Add any unresolved links to the set
                 Object.keys(linkObject).forEach(
                     (p) => this.unresolvedItems.add(new PaletteMatch(p, p)),
                 );
             });
 
+        // Add the deduped links to all items
         this.allItems = this.allItems.concat(Array.from(this.unresolvedItems.values())).reverse();
 
+        // Use obsidian's last open files as the previous items
         this.app.workspace.getLastOpenFiles().reverse().forEach((path) => {
             const fileCache = this.app.metadataCache.getCache(path);
+
+            // Sometimes the cache keeps files that have been deleted
+            if (!fileCache) return;
+
             this.prevItems.add(
                 new PaletteMatch(path, path, (fileCache.tags || []).map((tc) => tc.tag)),
             );

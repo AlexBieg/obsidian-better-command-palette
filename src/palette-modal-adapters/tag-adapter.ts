@@ -26,8 +26,8 @@ export default class BetterCommandPaletteTagAdapter extends SuggestModalAdapter 
         this.titleText = 'Better Command Palette: Tags';
         this.emptyStateText = 'No matching tags.';
 
-        this.allItems = Object.keys(this.app.metadataCache.getTags())
-            .map((tag) => new PaletteMatch(tag, tag));
+        this.allItems = Object.entries(this.app.metadataCache.getTags())
+            .map(([tag, count]) => new PaletteMatch(tag, tag, [count]));
     }
 
     getInstructions(): Instruction[] {
@@ -47,7 +47,7 @@ export default class BetterCommandPaletteTagAdapter extends SuggestModalAdapter 
             text: match.text,
         });
 
-        const count = this.app.metadataCache.getTags()[match.text];
+        const count = parseInt(match.tags[0], 10);
 
         el.createEl('span', {
             cls: 'suggestion-sub-content',
