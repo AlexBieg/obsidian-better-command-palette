@@ -1,6 +1,5 @@
 import {
-    Instruction,
-    setIcon,
+    Instruction, setIcon,
 } from 'obsidian';
 import {
     generateHotKeyText,
@@ -8,7 +7,7 @@ import {
     openFileWithEventKeys,
     OrderedSet,
     PaletteMatch, SuggestModalAdapter,
-    createPaletteMatchFromFilePath,
+    createPaletteMatchesFromFilePath,
 } from 'src/utils';
 import { Match, UnsafeAppInterface } from 'src/types/types';
 
@@ -40,11 +39,8 @@ export default class BetterCommandPaletteFileAdapter extends SuggestModalAdapter
         // Actually returns all files in the cache even if there are no unresolved links
         Object.entries(this.app.metadataCache.unresolvedLinks)
             .forEach(([filePath, linkObject]: [string, Record<string, number>]) => {
-                const match = createPaletteMatchFromFilePath(this.app.metadataCache, filePath);
-
-                if (match) {
-                    this.allItems.push(match);
-                }
+                const matches = createPaletteMatchesFromFilePath(this.app.metadataCache, filePath);
+                this.allItems = this.allItems.concat(matches);
 
                 // Add any unresolved links to the set
                 Object.keys(linkObject).forEach(
@@ -57,10 +53,11 @@ export default class BetterCommandPaletteFileAdapter extends SuggestModalAdapter
 
         // Use obsidian's last open files as the previous items
         this.app.workspace.getLastOpenFiles().reverse().forEach((filePath) => {
-            const match = createPaletteMatchFromFilePath(this.app.metadataCache, filePath);
+            const matches = createPaletteMatchesFromFilePath(this.app.metadataCache, filePath);
 
-            if (match) {
-                this.prevItems.add(match);
+            // For previous items we only want the actual file, not any aliases
+            if (matches[0]) {
+                this.prevItems.add(matches[0]);
             }
         });
     }
@@ -81,30 +78,25 @@ export default class BetterCommandPaletteFileAdapter extends SuggestModalAdapter
     }
 
     renderSuggestion(match: Match, el: HTMLElement): void {
-        const [name, ...potentialAliases] = match.text.split(':');
-        const aliases = potentialAliases.filter((a) => a.length);
-
         const suggestionEl = el.createEl('span', {
             cls: 'suggestion-content',
-            text: name,
         });
+
+        if (match.id.includes(':')) {
+            setIcon(suggestionEl, 'forward-arrow');
+
+            const [, path] = match.id.split(':');
+            suggestionEl.ariaLabel = `Alias for: ${path}`;
+        }
+
+        suggestionEl.appendText(match.text);
 
         if (this.unresolvedItems.has(match)) {
             suggestionEl.addClass('unresolved');
         }
 
-        const subContentEl = el.createEl('div', {
+        el.createEl('div', {
             cls: 'suggestion-sub-content',
-        });
-
-        aliases.forEach((alias) => {
-            const aliasEl = subContentEl.createEl('span', { cls: 'suggestion-sub-content-alias' });
-            setIcon(aliasEl, 'forward-arrow');
-            aliasEl.appendText(alias);
-        });
-
-        subContentEl.createEl('span', {
-            cls: 'suggestion-sub-content-tags',
             text: `${match.tags.join(' ')}`,
         });
     }
@@ -116,6 +108,9 @@ export default class BetterCommandPaletteFileAdapter extends SuggestModalAdapter
         if (!match) {
             const el = event.target as HTMLInputElement;
             path = el.value.replace(this.fileSearchPrefix, '');
+        } else if (path.includes(':')) {
+            // If the path is an aliase, remove the alias prefix
+            [, path] = path.split(':');
         }
 
         const file = await getOrCreateFile(this.app, path);
