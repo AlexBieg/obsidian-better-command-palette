@@ -49,7 +49,7 @@ export default class BetterCommandPaletteTagAdapter extends SuggestModalAdapter 
 
         const count = parseInt(match.tags[0], 10);
 
-        el.createEl('span', {
+        el.createEl('div', {
             cls: 'suggestion-sub-content',
             text: `Found in ${count} file${count === 1 ? '' : 's'}`,
         });

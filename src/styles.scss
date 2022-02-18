@@ -10,9 +10,17 @@
         float: right;
     }
 
+
+
     .suggestion-sub-content {
         color: var(--text-faint);
-        display: block;
+
+        .suggestion-sub-content-alias {
+            display: inline-flex;
+            align-items: center;
+            margin-right: 10px;
+            color: var(--text-muted);
+        }
     }
 
     .unresolved {

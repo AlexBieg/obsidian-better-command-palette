@@ -1,5 +1,6 @@
 import {
     Instruction,
+    setIcon,
 } from 'obsidian';
 import {
     generateHotKeyText,
@@ -7,6 +8,7 @@ import {
     openFileWithEventKeys,
     OrderedSet,
     PaletteMatch, SuggestModalAdapter,
+    createPaletteMatchFromFilePath,
 } from 'src/utils';
 import { Match, UnsafeAppInterface } from 'src/types/types';
 
@@ -38,18 +40,11 @@ export default class BetterCommandPaletteFileAdapter extends SuggestModalAdapter
         // Actually returns all files in the cache even if there are no unresolved links
         Object.entries(this.app.metadataCache.unresolvedLinks)
             .forEach(([filePath, linkObject]: [string, Record<string, number>]) => {
-                // Get the cache item for the file so that we can extract its tags
-                const fileCache = this.app.metadataCache.getCache(filePath);
+                const match = createPaletteMatchFromFilePath(this.app.metadataCache, filePath);
 
-                // Sometimes the cache keeps files that have been deleted
-                if (!fileCache) return;
-
-                // Make the palette match
-                this.allItems.push(new PaletteMatch(
-                    filePath,
-                    filePath,
-                    (fileCache.tags || []).map((tc) => tc.tag),
-                ));
+                if (match) {
+                    this.allItems.push(match);
+                }
 
                 // Add any unresolved links to the set
                 Object.keys(linkObject).forEach(
@@ -61,15 +56,12 @@ export default class BetterCommandPaletteFileAdapter extends SuggestModalAdapter
         this.allItems = this.allItems.concat(Array.from(this.unresolvedItems.values())).reverse();
 
         // Use obsidian's last open files as the previous items
-        this.app.workspace.getLastOpenFiles().reverse().forEach((path) => {
-            const fileCache = this.app.metadataCache.getCache(path);
+        this.app.workspace.getLastOpenFiles().reverse().forEach((filePath) => {
+            const match = createPaletteMatchFromFilePath(this.app.metadataCache, filePath);
 
-            // Sometimes the cache keeps files that have been deleted
-            if (!fileCache) return;
-
-            this.prevItems.add(
-                new PaletteMatch(path, path, (fileCache.tags || []).map((tc) => tc.tag)),
-            );
+            if (match) {
+                this.prevItems.add(match);
+            }
         });
     }
 
@@ -89,19 +81,32 @@ export default class BetterCommandPaletteFileAdapter extends SuggestModalAdapter
     }
 
     renderSuggestion(match: Match, el: HTMLElement): void {
+        const [name, ...potentialAliases] = match.text.split(':');
+        const aliases = potentialAliases.filter((a) => a.length);
+
         const suggestionEl = el.createEl('span', {
             cls: 'suggestion-content',
-            text: match.text,
-        });
-
-        el.createEl('span', {
-            cls: 'suggestion-sub-content',
-            text: `${match.tags.join(' ')}`,
+            text: name,
         });
 
         if (this.unresolvedItems.has(match)) {
             suggestionEl.addClass('unresolved');
         }
+
+        const subContentEl = el.createEl('div', {
+            cls: 'suggestion-sub-content',
+        });
+
+        aliases.forEach((alias) => {
+            const aliasEl = subContentEl.createEl('span', { cls: 'suggestion-sub-content-alias' });
+            setIcon(aliasEl, 'forward-arrow');
+            aliasEl.appendText(alias);
+        });
+
+        subContentEl.createEl('span', {
+            cls: 'suggestion-sub-content-tags',
+            text: `${match.tags.join(' ')}`,
+        });
     }
 
     async onChooseSuggestion(match: Match, event: MouseEvent | KeyboardEvent) {

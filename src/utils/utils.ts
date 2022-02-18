@@ -3,7 +3,8 @@ import {
     Command, Hotkey, Modifier, normalizePath, Platform, TFile,
 } from 'obsidian';
 import { BetterCommandPalettePluginSettings } from 'src/settings';
-import { Match } from 'src/types/types';
+import { Match, UnsafeMetadataCacheInterface } from 'src/types/types';
+import PaletteMatch from './palette-match';
 import OrderedSet from './ordered-set';
 import {
     BASIC_MODIFIER_ICONS, HYPER_KEY_MODIFIERS_SET, MAC_MODIFIER_ICONS, SPECIAL_KEYS,
@@ -122,4 +123,26 @@ export function matchTag(tags: string[], tagQueries: string[]): boolean {
         }
     }
     return false;
+}
+
+export function createPaletteMatchFromFilePath(
+    metadataCache: UnsafeMetadataCacheInterface,
+    filePath: string,
+): PaletteMatch {
+    // Get the cache item for the file so that we can extract its tags
+    const fileCache = metadataCache.getCache(filePath);
+
+    // Sometimes the cache keeps files that have been deleted
+    if (!fileCache) return null;
+
+    const tags = (fileCache.tags || []).map((tc) => tc.tag);
+
+    const aliases = (fileCache?.frontmatter?.aliases || []).join(':');
+
+    // Make the palette match
+    return new PaletteMatch(
+        filePath,
+        `${filePath}:${aliases}`, // Concat our aliases and path to make searching easy
+        tags,
+    );
 }
