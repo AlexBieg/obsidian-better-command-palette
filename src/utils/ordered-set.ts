@@ -22,6 +22,10 @@ export default class OrderedSet<T extends Comparable> {
         return this.map.set(item.value(), item);
     }
 
+    addAll(items: T[]) {
+        items.forEach((item) => this.add(item));
+    }
+
     delete(item: T) {
         this.map.delete(item.value());
     }

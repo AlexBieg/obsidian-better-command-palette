@@ -125,24 +125,31 @@ export function matchTag(tags: string[], tagQueries: string[]): boolean {
     return false;
 }
 
-export function createPaletteMatchFromFilePath(
+export function createPaletteMatchesFromFilePath(
     metadataCache: UnsafeMetadataCacheInterface,
     filePath: string,
-): PaletteMatch {
+): PaletteMatch[] {
     // Get the cache item for the file so that we can extract its tags
     const fileCache = metadataCache.getCache(filePath);
 
     // Sometimes the cache keeps files that have been deleted
-    if (!fileCache) return null;
+    if (!fileCache) return [];
 
     const tags = (fileCache.tags || []).map((tc) => tc.tag);
 
-    const aliases = (fileCache?.frontmatter?.aliases || []).join(':');
+    const aliases = fileCache?.frontmatter?.aliases || [];
 
     // Make the palette match
-    return new PaletteMatch(
-        filePath,
-        `${filePath}:${aliases}`, // Concat our aliases and path to make searching easy
-        tags,
-    );
+    return [
+        new PaletteMatch(
+            filePath,
+            filePath, // Concat our aliases and path to make searching easy
+            tags,
+        ),
+        ...aliases.map((alias: string) => new PaletteMatch(
+            `${alias}:${filePath}`,
+            alias,
+            tags,
+        )),
+    ];
 }

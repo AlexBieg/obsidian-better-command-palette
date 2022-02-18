@@ -10,17 +10,18 @@
         float: right;
     }
 
+    .suggestion-content {
+        display: inline-flex;
+        align-items: center;
+
+        svg {
+            margin-right: 5px;
+        }
+    }
 
 
     .suggestion-sub-content {
         color: var(--text-faint);
-
-        .suggestion-sub-content-alias {
-            display: inline-flex;
-            align-items: center;
-            margin-right: 10px;
-            color: var(--text-muted);
-        }
     }
 
     .unresolved {
