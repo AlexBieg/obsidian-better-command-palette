@@ -37,13 +37,13 @@ export default class BetterCommandPaletteFileAdapter extends SuggestModalAdapter
         this.unresolvedItems = new OrderedSet<Match>();
 
         // Actually returns all files in the cache even if there are no unresolved links
-        Object.entries(this.app.metadataCache.unresolvedLinks)
-            .forEach(([filePath, linkObject]: [string, Record<string, number>]) => {
+        this.app.metadataCache.getCachedFiles()
+            .forEach((filePath: string) => {
                 const matches = createPaletteMatchesFromFilePath(this.app.metadataCache, filePath);
                 this.allItems = this.allItems.concat(matches);
 
                 // Add any unresolved links to the set
-                Object.keys(linkObject).forEach(
+                Object.keys(this.app.metadataCache.unresolvedLinks[filePath]).forEach(
                     (p) => this.unresolvedItems.add(new PaletteMatch(p, p)),
                 );
             });
