@@ -43,7 +43,7 @@ export default class BetterCommandPaletteFileAdapter extends SuggestModalAdapter
                 this.allItems = this.allItems.concat(matches);
 
                 // Add any unresolved links to the set
-                Object.keys(this.app.metadataCache.unresolvedLinks[filePath]).forEach(
+                Object.keys(this.app.metadataCache.unresolvedLinks[filePath] || {}).forEach(
                     (p) => this.unresolvedItems.add(new PaletteMatch(p, p)),
                 );
             });
