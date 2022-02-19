@@ -1,46 +1,47 @@
-.better-command-palette-title {
-    color: var(--text-accent);
-    margin: 5px;
-}
-
-.suggestion-item {
-    .recent-text {
-        color: var(--text-faint);
-        margin-left: 10px;
-        float: right;
+.better-command-palette{
+    .better-command-palette-title {
+        color: var(--text-accent);
+        margin: 5px;
     }
 
-    .suggestion-content {
-        display: inline-flex;
-        align-items: center;
-
-        svg {
-            margin: 0px 5px;
-            color: var(--text-muted);
-        }
-    }
-
-    .suggestion-description {
-        display: inline;
-        color: var(--text-muted);
-    }
-
-
-    .suggestion-sub-content {
-        color: var(--text-faint);
-    }
-
-    .unresolved {
-        color: var(--text-muted);
-
-        &::after {
-            content: '(Unresolved link)';
+    .suggestion-item {
+        .recent-text {
             color: var(--text-faint);
             margin-left: 10px;
+            float: right;
+        }
+
+        .suggestion-content {
+            display: inline-flex;
+            align-items: center;
+
+            svg {
+                margin: 0px 5px;
+                color: var(--text-muted);
+            }
+        }
+
+        .suggestion-description {
+            display: inline;
+            color: var(--text-muted);
+        }
+
+
+        .suggestion-sub-content {
+            color: var(--text-faint);
+        }
+
+        .unresolved {
+            color: var(--text-muted);
+
+            &::after {
+                content: '(Unresolved link)';
+                color: var(--text-faint);
+                margin-left: 10px;
+            }
         }
     }
 }
-
 
 /* Settings Styles */
 .macro-setting {

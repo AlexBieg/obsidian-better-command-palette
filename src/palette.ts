@@ -62,6 +62,8 @@ class BetterCommandPaletteModal extends SuggestModal<Match> implements UnsafeSug
         this.limit = plugin.settings.suggestionLimit;
         this.initialInputValue = initialInputValue;
 
+        this.modalEl.addClass('better-command-palette');
+
         // The only time the input will be empty will be when we are searching commands
         this.setPlaceholder('Select a command');
 
