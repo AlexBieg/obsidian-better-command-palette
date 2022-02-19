@@ -52,7 +52,7 @@ export default class BetterCommandPaletteFileAdapter extends SuggestModalAdapter
         this.allItems = this.allItems.concat(Array.from(this.unresolvedItems.values())).reverse();
 
         // Use obsidian's last open files as the previous items
-        this.app.workspace.getLastOpenFiles().reverse().forEach((filePath) => {
+        [...this.app.workspace.getLastOpenFiles()].reverse().forEach((filePath) => {
             const matches = createPaletteMatchesFromFilePath(this.app.metadataCache, filePath);
 
             // For previous items we only want the actual file, not any aliases
@@ -78,21 +78,29 @@ export default class BetterCommandPaletteFileAdapter extends SuggestModalAdapter
     }
 
     renderSuggestion(match: Match, el: HTMLElement): void {
-        const suggestionEl = el.createEl('span', {
+        const suggestionEl = el.createEl('div', {
             cls: 'suggestion-content',
+            text: match.text,
         });
-
-        if (match.id.includes(':')) {
-            setIcon(suggestionEl, 'forward-arrow');
-
-            const [, path] = match.id.split(':');
-            suggestionEl.ariaLabel = `Alias for: ${path}`;
-        }
-
-        suggestionEl.appendText(match.text);
 
         if (this.unresolvedItems.has(match)) {
             suggestionEl.addClass('unresolved');
+        }
+
+        if (match.id.includes(':')) {
+            // Set Icon will destroy the first element in a node. So we need to add one back
+            suggestionEl.createEl('div', {
+                cls: 'suggestion-name',
+                text: match.text,
+            }).ariaLabel = 'Alias';
+
+            setIcon(suggestionEl, 'right-arrow-with-tail');
+
+            const [, path] = match.id.split(':');
+            suggestionEl.createEl('div', {
+                cls: 'suggestion-description',
+                text: path,
+            });
         }
 
         el.createEl('div', {
