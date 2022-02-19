@@ -15,8 +15,14 @@
         align-items: center;
 
         svg {
-            margin-right: 5px;
+            margin: 0px 5px;
+            color: var(--text-muted);
         }
+    }
+
+    .suggestion-description {
+        display: inline;
+        color: var(--text-muted);
     }
 
 
@@ -29,8 +35,8 @@
 
         &::after {
             content: '(Unresolved link)';
-            float: right;
             color: var(--text-faint);
+            margin-left: 10px;
         }
     }
 }
