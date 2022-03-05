@@ -150,4 +150,66 @@ testCase.addTest('Search aliases (plural)', async () => {
     await testCase.pressKey('Esc');
 });
 
+testCase.addTest('Switch new pane and file creation modifiers', async () => {
+    await testCase.pressKey(',', { metaKey: true });
+    await testCase.clickEl('.vertical-tab-nav-item', { text: 'Better Command Palette' });
+
+    try {
+        await testCase.findEl('.setting-item:nth-child(5) .checkbox-container.is-enabled');
+    } catch (e) {
+        await testCase.clickEl('.setting-item:nth-child(5) .checkbox-container');
+    }
+
+    await testCase.pressKey('Esc');
+});
+
+testCase.addTest('Open file in new pane', async () => {
+    await testCase.pressKey('O', { metaKey: true });
+
+    await testCase.typeInEl('.prompt-input', 'e2e-test-file');
+    await testCase.pressKey('Enter', { metaKey: true, selector: '.prompt-input' });
+
+    await testCase.assertElCount('.view-header-title', 2);
+
+    await testCase.clickEl('.mod-close-leaf');
+    await testCase.clickEl('.mod-close-leaf');
+});
+
+testCase.addTest('Create arbitrary file', async () => {
+    await testCase.pressKey('O', { metaKey: true });
+
+    await testCase.typeInEl('.prompt-input', 'e2e-test-folder/e2e-test-file-4');
+    await testCase.pressKey('Enter', { shiftKey: true, selector: '.prompt-input' });
+
+    await testCase.assertElCount('.view-header-title', 1);
+    await testCase.findEl('.view-header-title', { text: 'e2e-test-file-4' });
+});
+
+testCase.addTest('Create arbitrary file in new pane', async () => {
+    await testCase.pressKey('O', { metaKey: true });
+
+    await testCase.typeInEl('.prompt-input', 'e2e-test-folder/e2e-test-file-5');
+    await testCase.pressKey('Enter', { shiftKey: true, metaKey: true, selector: '.prompt-input' });
+
+    await testCase.assertElCount('.view-header-title', 2);
+    await testCase.findEl('.view-header-title', { text: 'e2e-test-file-4' });
+    await testCase.findEl('.view-header-title', { text: 'e2e-test-file-5' });
+
+    await testCase.clickEl('.mod-close-leaf');
+    await testCase.clickEl('.mod-close-leaf');
+});
+
+testCase.addTest('Switch new pane and file creation modifiers back to default', async () => {
+    await testCase.pressKey(',', { metaKey: true });
+    await testCase.clickEl('.vertical-tab-nav-item', { text: 'Better Command Palette' });
+
+    try {
+        await testCase.findEl('.setting-item:nth-child(5) .checkbox-container:not(.is-enabled)');
+    } catch (e) {
+        await testCase.clickEl('.setting-item:nth-child(5) .checkbox-container');
+    }
+
+    await testCase.pressKey('Esc');
+});
+
 export default testCase;
