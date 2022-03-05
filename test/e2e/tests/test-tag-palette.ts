@@ -9,10 +9,19 @@ testCase.addTest('Open, search, and close', async () => {
     await testCase.assertElCount('.suggestion-item', 20);
 
     await testCase.typeInEl('.prompt-input', 'e2e-tag');
-    await testCase.assertElCount('.suggestion-item', 2);
+    await testCase.assertElCount('.suggestion-item', 3);
 
     await testCase.pressKey('Esc');
     await testCase.assertElCount('.better-command-palette', 0);
+});
+
+testCase.addTest('Finds frontmatter tags', async () => {
+    await testCase.pressKey('T', { metaKey: true });
+
+    await testCase.typeInEl('.prompt-input', 'e2e-frontmatter-tag');
+    await testCase.assertElCount('.suggestion-item', 1);
+
+    await testCase.pressKey('Esc');
 });
 
 testCase.addTest('Tag selection opens file search', async () => {

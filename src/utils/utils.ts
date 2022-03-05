@@ -1,6 +1,6 @@
 import {
-    App,
-    Command, Hotkey, Modifier, normalizePath, parseFrontMatterAliases, Platform, TFile,
+    App, Command, Hotkey, Modifier, normalizePath, parseFrontMatterAliases,
+    parseFrontMatterTags, Platform, TFile,
 } from 'obsidian';
 import { BetterCommandPalettePluginSettings } from 'src/settings';
 import { Match, UnsafeMetadataCacheInterface } from 'src/types/types';
@@ -135,7 +135,9 @@ export function createPaletteMatchesFromFilePath(
     // Sometimes the cache keeps files that have been deleted
     if (!fileCache) return [];
 
-    const tags = (fileCache.tags || []).map((tc) => tc.tag);
+    const cacheTags = (fileCache.tags || []).map((tc) => tc.tag);
+    const frontmatterTags = parseFrontMatterTags(fileCache.frontmatter) || [];
+    const tags = cacheTags.concat(frontmatterTags);
 
     const aliases = parseFrontMatterAliases(fileCache.frontmatter) || [];
 

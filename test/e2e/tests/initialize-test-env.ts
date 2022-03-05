@@ -21,7 +21,7 @@ testCase.addTest('Create test file', async () => {
 
 testCase.addTest('Add Frontmatter', async () => {
     await testCase.clickEl('.cm-content');
-    await testCase.typeInEl('.cm-content', '---\nalias: [e2e-alias-1]\n---');
+    await testCase.typeInEl('.cm-content', '---\nalias: [e2e-alias-1]\ntags: [e2e-frontmatter-tag]\n---');
 });
 
 testCase.addTest('Add Links', async () => {
