@@ -91,6 +91,7 @@ export async function getOrCreateFile(app: App, path: string) : Promise < TFile 
 
 export function openFileWithEventKeys(
     app: App,
+    settings: BetterCommandPalettePluginSettings,
     file: TFile,
     event: MouseEvent | KeyboardEvent,
 ) {
@@ -98,8 +99,10 @@ export function openFileWithEventKeys(
 
     let leaf = workspace.activeLeaf;
 
+    const createNewPane = settings.createNewPaneMod === 'Shift' ? event.shiftKey : event.metaKey;
+
     // Shift key means we should be using a new leaf
-    if (event.shiftKey) {
+    if (createNewPane) {
         leaf = workspace.createLeafBySplit(workspace.activeLeaf);
         workspace.setActiveLeaf(leaf);
     }

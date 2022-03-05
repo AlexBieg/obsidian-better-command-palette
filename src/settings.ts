@@ -1,5 +1,5 @@
 import {
-    App, Command, PluginSettingTab, setIcon, Setting,
+    App, Command, Modifier, PluginSettingTab, setIcon, Setting,
 } from 'obsidian';
 import BetterCommandPalettePlugin from 'src/main';
 import { HotkeyStyleType, MacroCommandInterface, UnsafeAppInterface } from './types/types';
@@ -14,6 +14,8 @@ export interface BetterCommandPalettePluginSettings {
     hyperKeyOverride: boolean,
     macros: MacroCommandInterface[],
     hotkeyStyle: HotkeyStyleType;
+    createNewFileMod: Modifier,
+    createNewPaneMod: Modifier,
 }
 
 export const DEFAULT_SETTINGS: BetterCommandPalettePluginSettings = {
@@ -25,6 +27,8 @@ export const DEFAULT_SETTINGS: BetterCommandPalettePluginSettings = {
     hyperKeyOverride: false,
     macros: [],
     hotkeyStyle: 'auto',
+    createNewFileMod: 'Mod',
+    createNewPaneMod: 'Shift',
 };
 
 export class BetterCommandPaletteSettingTab extends PluginSettingTab {
@@ -71,6 +75,15 @@ export class BetterCommandPaletteSettingTab extends PluginSettingTab {
             .setDesc('For those users who have use a "Hyper Key", enabling this maps the icons "⌥ ^ ⌘ ⇧" to the caps lock icon "⇪" ')
             .addToggle((t) => t.setValue(settings.hyperKeyOverride).onChange(async (val) => {
                 settings.hyperKeyOverride = val;
+                await this.plugin.saveSettings();
+            }));
+
+        new Setting(containerEl)
+            .setName('Use shift to create files and cmd to open in new panes')
+            .setDesc('By default cmd is used to create files and shift is used to open in new panes. This setting reverses that to mimic the functionality of the standard quick switcher')
+            .addToggle((t) => t.setValue(settings.createNewFileMod === 'Shift').onChange(async (val) => {
+                settings.createNewFileMod = val ? 'Shift' : 'Mod';
+                settings.createNewPaneMod = val ? 'Mod' : 'Shift';
                 await this.plugin.saveSettings();
             }));
 
