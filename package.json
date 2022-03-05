@@ -9,7 +9,8 @@
 		"build": "NODE_ENV=production rollup --config rollup.config.js",
 		"build-local": "NODE_ENV=production DEST=local rollup --config rollup.config.js",
 		"version": "node version-bump.mjs && git add manifest.json versions.json",
-		"lint": "eslint .",
+		"test:lint": "eslint .",
+		"test:e2e": "TYPE=test rollup --config rollup.config.js -w",
 		"tool:gen-files": "node ./tools/generate-test-files.js"
 	},
 	"keywords": [],
