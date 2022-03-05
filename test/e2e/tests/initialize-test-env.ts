@@ -19,14 +19,19 @@ testCase.addTest('Create test file', async () => {
     await testCase.findEl('.nav-file-title-content', { text: 'e2e-test-file' });
 });
 
+testCase.addTest('Add Frontmatter', async () => {
+    await testCase.clickEl('.cm-content');
+    await testCase.typeInEl('.cm-content', '---\nalias: [e2e-alias-1]\n---');
+});
+
 testCase.addTest('Add Links', async () => {
     await testCase.clickEl('.cm-content');
-    await testCase.typeInEl('.cm-content', '[[e2e-test-folder/e2e-unresolved-link]]');
+    await testCase.typeInEl('.cm-content', '\n[[e2e-test-folder/e2e-unresolved-link]]');
 });
 
 testCase.addTest('Add tags', async () => {
-    await testCase.typeInEl('.cm-content', ' #e2e-tag ');
-    await testCase.typeInEl('.cm-content', ' #e2e-tag/e2e-nested-tag ');
+    await testCase.typeInEl('.cm-content', '\n#e2e-tag ');
+    await testCase.typeInEl('.cm-content', '\n#e2e-tag/e2e-nested-tag ');
 });
 
 export default testCase;

@@ -109,17 +109,21 @@ export class TestCase {
         const el = this.findElInternal(selector)() as HTMLInputElement;
 
         if (el.isContentEditable) {
-            if (window.getSelection) {
-                const sel = window.getSelection();
-                if (sel.getRangeAt && sel.rangeCount) {
-                    const range = sel.getRangeAt(0);
-                    if (clearCurrentText) {
-                        range.deleteContents();
-                    }
-                    range.collapse(false);
-                    range.insertNode(document.createTextNode(text));
-                    range.collapse(false);
+            const sel = window.getSelection();
+            if (sel.getRangeAt && sel.rangeCount) {
+                const selection = window.getSelection();
+                const range = document.createRange();
+                range.selectNodeContents(el);
+                selection.removeAllRanges();
+                selection.addRange(range);
+
+                if (clearCurrentText) {
+                    range.deleteContents();
                 }
+
+                range.collapse(false);
+                range.insertNode(document.createTextNode(text));
+                range.collapse(false);
             }
         } else {
             if (clearCurrentText) {

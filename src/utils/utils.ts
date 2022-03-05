@@ -1,6 +1,6 @@
 import {
     App,
-    Command, Hotkey, Modifier, normalizePath, Platform, TFile,
+    Command, Hotkey, Modifier, normalizePath, parseFrontMatterAliases, Platform, TFile,
 } from 'obsidian';
 import { BetterCommandPalettePluginSettings } from 'src/settings';
 import { Match, UnsafeMetadataCacheInterface } from 'src/types/types';
@@ -137,7 +137,7 @@ export function createPaletteMatchesFromFilePath(
 
     const tags = (fileCache.tags || []).map((tc) => tc.tag);
 
-    const aliases = fileCache?.frontmatter?.aliases || [];
+    const aliases = parseFrontMatterAliases(fileCache.frontmatter) || [];
 
     // Make the palette match
     return [
