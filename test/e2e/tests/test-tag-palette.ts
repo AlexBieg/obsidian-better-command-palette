@@ -22,7 +22,7 @@ testCase.addTest('Tag selection opens file search', async () => {
     await testCase.pressKey('Enter');
     await testCase.assertElCount('.better-command-palette', 1);
     await testCase.findEl('.better-command-palette-title', { text: 'Files' });
-    await testCase.assertElCount('.suggestion-item', 1);
+    await testCase.assertElCount('.suggestion-item', 2);
     await testCase.pressKey('Esc');
 });
 
