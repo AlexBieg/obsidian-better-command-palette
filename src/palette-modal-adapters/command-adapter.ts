@@ -51,6 +51,8 @@ export default class BetterCommandPaletteCommandAdapter extends SuggestModalAdap
         return [
             { command: generateHotKeyText({ modifiers: [], key: 'ENTER' }, this.plugin.settings), purpose: 'Run command' },
             { command: `${backspaceHotkeyText} / ${escapeHotkeyText}`, purpose: 'Close palette' },
+            { command: this.plugin.settings.fileSearchPrefix, purpose: 'Search Files' },
+            { command: this.plugin.settings.tagSearchPrefix, purpose: 'Search Tags' },
         ];
     }
 

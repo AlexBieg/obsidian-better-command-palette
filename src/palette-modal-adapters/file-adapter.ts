@@ -69,6 +69,8 @@ export default class BetterCommandPaletteFileAdapter extends SuggestModalAdapter
             { command: generateHotKeyText({ modifiers: ['Mod'], key: 'ENTER' }, this.plugin.settings), purpose: 'Create file' },
             { command: generateHotKeyText({ modifiers: ['Mod', 'Shift'], key: 'ENTER' }, this.plugin.settings), purpose: 'Create file in new pane' },
             { command: generateHotKeyText({ modifiers: [], key: 'ESC' }, this.plugin.settings), purpose: 'Close palette' },
+            { command: generateHotKeyText({ modifiers: [], key: 'BACKSPACE' }, this.plugin.settings), purpose: 'Search Commands' },
+            { command: this.plugin.settings.tagSearchPrefix, purpose: 'Search Tags' },
         ];
     }
 
