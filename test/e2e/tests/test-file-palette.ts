@@ -115,6 +115,17 @@ testCase.addTest('Search nested tag', async () => {
     await testCase.pressKey('Enter', { selector: '.prompt-input' });
 });
 
+testCase.addTest('Search frontmatter tag', async () => {
+    await testCase.pressKey('O', { metaKey: true });
+    await testCase.assertElCount('.suggestion-item', 20);
+
+    await testCase.typeInEl('.prompt-input', '@#e2e-frontmatter-tag');
+    await testCase.assertElCount('.suggestion-item', 2);
+    await testCase.findEl('.suggestion-item', { text: 'e2e-test-file' });
+
+    await testCase.pressKey('Enter', { selector: '.prompt-input' });
+});
+
 testCase.addTest('Search alias (singular)', async () => {
     await testCase.pressKey('O', { metaKey: true });
     await testCase.assertElCount('.suggestion-item', 20);
