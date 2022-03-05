@@ -9,6 +9,7 @@ import scss from 'rollup-plugin-scss';
 
 const isProduction = process.env.NODE_ENV === 'production';
 const isLocal = process.env.DEST === 'local';
+const includeTestFiles = process.env.TYPE === 'test';
 
 let outputLocation = './test-vault/.obsidian/plugins/obsidian-better-command-palette';
 
@@ -21,9 +22,9 @@ if (isLocal) {
 }
 
 export default {
-    input: 'src/main.ts',
+    input: includeTestFiles ? 'test/e2e/test.ts' : 'src/main.ts',
     output: {
-        dir: outputLocation,
+        file: `${outputLocation}/main.js`,
         sourcemap: isProduction ? null : 'inline',
         format: 'cjs',
         exports: 'default',
