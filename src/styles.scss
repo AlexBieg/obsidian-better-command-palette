@@ -6,7 +6,7 @@
 
     .hidden-items-header {
         margin: 0px;
-        margin-left: 34px;
+        margin-left: 13px;
         margin-top: 10px;
         font-size: 15px;
         color: var(--text-faint);
@@ -17,27 +17,13 @@
         }
     }
 
-    .prompt-results, .hidden-items {
-        flex: 1 1 400px;
-    }
-
-    .hidden-items {
-        overflow-y: auto;
-        background-color: var(--background-primary-alt);
-        margin-bottom: 5px;
-
-        &.collapsed, &.empty {
-            display: none;
-        }
-
-        .suggestion-item:hover {
-            background: var(--background-secondary)
-        }
-    }
-
     .suggestion-item {
         .suggestion-flair {
             color: var(--text-faint);
+
+            &.hidden {
+                transform: rotate(45deg);
+            }
         }
 
         .recent-text {
