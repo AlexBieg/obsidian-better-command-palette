@@ -210,8 +210,8 @@ export class TestCase {
         return this.runCommandWithRetries(this.pressKeyInternal(key, options));
     }
 
-    async assertElCount(selector: string, count: number) {
-        return this.runCommandWithRetries(this.assertEqualInternal(selector, count));
+    async assertElCount(selector: string, count: number, options: Object = {}) {
+        return this.runCommandWithRetries(this.assertEqualInternal(selector, count, options));
     }
 
     async assertExists(val: any) {

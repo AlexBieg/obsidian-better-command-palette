@@ -24,6 +24,9 @@ export default class BetterCommandPaletteCommandAdapter extends SuggestModalAdap
         this.titleText = 'Better Command Palette: Commands';
         this.emptyStateText = 'No matching commands.';
 
+        this.hiddenIds = this.plugin.settings.hiddenCommands;
+        this.hiddenIdsSettingsKey = 'hiddenCommands';
+
         this.allItems = this.app.commands.listCommands()
             .sort((a: Command, b: Command) => b.name.localeCompare(a.name))
             .map((c: Command): Match => new PaletteMatch(c.id, c.name));
@@ -45,12 +48,8 @@ export default class BetterCommandPaletteCommandAdapter extends SuggestModalAdap
     }
 
     getInstructions(): Instruction[] {
-        const backspaceHotkeyText = generateHotKeyText({ modifiers: [], key: 'BACKSPACE' }, this.plugin.settings);
-        const escapeHotkeyText = generateHotKeyText({ modifiers: [], key: 'ESC' }, this.plugin.settings);
-
         return [
             { command: generateHotKeyText({ modifiers: [], key: 'ENTER' }, this.plugin.settings), purpose: 'Run command' },
-            { command: `${backspaceHotkeyText} / ${escapeHotkeyText}`, purpose: 'Close palette' },
             { command: this.plugin.settings.fileSearchPrefix, purpose: 'Search Files' },
             { command: this.plugin.settings.tagSearchPrefix, purpose: 'Search Tags' },
         ];
@@ -68,9 +67,10 @@ export default class BetterCommandPaletteCommandAdapter extends SuggestModalAdap
         const hotkeys = customHotkeys || defaultHotkeys || [];
 
         if (this.getPinnedItems().find((i) => i.id === match.id)) {
-            const flairContainer = el.createEl('span', 'suggestion-flair');
-            // 13 copied from current command palette
+            const flairContainer = el.querySelector('.suggestion-flair') as HTMLElement;
             setIcon(flairContainer, 'filled-pin', 13);
+            flairContainer.ariaLabel = 'Pinned';
+            flairContainer.onClickEvent(() => {});
         }
 
         let { text } = match;

@@ -25,6 +25,10 @@ export default abstract class SuggestModalAdapter {
 
     allItems: Match[];
 
+    hiddenIds: string[];
+
+    hiddenIdsSettingsKey: 'hiddenCommands' | 'hiddenFiles' | 'hiddenTags';
+
     abstract titleText: string;
 
     abstract emptyStateText: string;
@@ -46,6 +50,7 @@ export default abstract class SuggestModalAdapter {
         this.allItems = [];
         this.pinnedItems = [];
         this.initialized = false;
+        this.hiddenIds = [];
     }
 
     getTitleText(): string {
@@ -109,5 +114,20 @@ export default abstract class SuggestModalAdapter {
         });
 
         return allItems.valuesByLastAdd();
+    }
+
+    async toggleHideId(id: string) {
+        if (this.hiddenIds.includes(id)) {
+            this.hiddenIds = this.hiddenIds.filter((idToCheck) => id !== idToCheck);
+        } else {
+            this.hiddenIds.push(id);
+        }
+
+        this.plugin.settings[this.hiddenIdsSettingsKey] = this.hiddenIds;
+
+        await this.plugin.saveSettings();
+        await this.plugin.loadSettings();
+
+        this.palette.updateSuggestions();
     }
 }

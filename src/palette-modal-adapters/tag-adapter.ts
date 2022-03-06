@@ -22,6 +22,9 @@ export default class BetterCommandPaletteTagAdapter extends SuggestModalAdapter 
     initialize(): void {
         super.initialize();
 
+        this.hiddenIds = this.plugin.settings.hiddenTags;
+        this.hiddenIdsSettingsKey = 'hiddenTags';
+
         this.tagSearchPrefix = this.plugin.settings.tagSearchPrefix;
         this.titleText = 'Better Command Palette: Tags';
         this.emptyStateText = 'No matching tags.';
@@ -33,7 +36,6 @@ export default class BetterCommandPaletteTagAdapter extends SuggestModalAdapter 
     getInstructions(): Instruction[] {
         return [
             { command: generateHotKeyText({ modifiers: [], key: 'ENTER' }, this.plugin.settings), purpose: 'See file usage' },
-            { command: generateHotKeyText({ modifiers: [], key: 'ESC' }, this.plugin.settings), purpose: 'Close Palette' },
             { command: generateHotKeyText({ modifiers: [], key: 'BACKSPACE' }, this.plugin.settings), purpose: 'Search Commands' },
             { command: this.plugin.settings.fileSearchPrefix, purpose: 'Search Files' },
         ];

@@ -32,6 +32,9 @@ export default class BetterCommandPaletteFileAdapter extends SuggestModalAdapter
         this.emptyStateText = 'No matching files.';
         this.fileSearchPrefix = this.plugin.settings.fileSearchPrefix;
 
+        this.hiddenIds = this.plugin.settings.hiddenFiles;
+        this.hiddenIdsSettingsKey = 'hiddenFiles';
+
         this.allItems = [];
 
         this.unresolvedItems = new OrderedSet<Match>();
@@ -69,8 +72,6 @@ export default class BetterCommandPaletteFileAdapter extends SuggestModalAdapter
             { command: generateHotKeyText({ modifiers: [], key: 'ENTER' }, this.plugin.settings), purpose: 'Open file' },
             { command: generateHotKeyText({ modifiers: [createNewPaneMod], key: 'ENTER' }, this.plugin.settings), purpose: 'Open file in new pane' },
             { command: generateHotKeyText({ modifiers: [createNewFileMod], key: 'ENTER' }, this.plugin.settings), purpose: 'Create file' },
-            { command: generateHotKeyText({ modifiers: [createNewFileMod, createNewPaneMod], key: 'ENTER' }, this.plugin.settings), purpose: 'Create file in new pane' },
-            { command: generateHotKeyText({ modifiers: [], key: 'ESC' }, this.plugin.settings), purpose: 'Close palette' },
             { command: generateHotKeyText({ modifiers: [], key: 'BACKSPACE' }, this.plugin.settings), purpose: 'Search Commands' },
             { command: this.plugin.settings.tagSearchPrefix, purpose: 'Search Tags' },
         ];

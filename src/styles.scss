@@ -4,7 +4,32 @@
         margin: 5px;
     }
 
+    .hidden-items-header {
+        margin: 0px;
+        margin-left: 13px;
+        margin-top: 10px;
+        font-size: 15px;
+        color: var(--text-faint);
+
+        &:hover {
+            color: var(--text-muted);
+            cursor: pointer;
+        }
+    }
+
     .suggestion-item {
+        &.hidden {
+            color: var(--text-accent);
+
+            .suggestion-flair {
+                transform: rotate(45deg);
+            }
+        }
+
+        .suggestion-flair {
+            color: var(--text-faint);
+        }
+
         .recent-text {
             color: var(--text-faint);
             margin-left: 10px;
