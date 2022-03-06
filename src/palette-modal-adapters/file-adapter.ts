@@ -32,6 +32,9 @@ export default class BetterCommandPaletteFileAdapter extends SuggestModalAdapter
         this.emptyStateText = 'No matching files.';
         this.fileSearchPrefix = this.plugin.settings.fileSearchPrefix;
 
+        this.hiddenIds = this.plugin.settings.hiddenFiles;
+        this.hiddenIdsSettingsKey = 'hiddenFiles';
+
         this.allItems = [];
 
         this.unresolvedItems = new OrderedSet<Match>();

@@ -22,6 +22,9 @@ export default class BetterCommandPaletteTagAdapter extends SuggestModalAdapter 
     initialize(): void {
         super.initialize();
 
+        this.hiddenIds = this.plugin.settings.hiddenTags;
+        this.hiddenIdsSettingsKey = 'hiddenTags';
+
         this.tagSearchPrefix = this.plugin.settings.tagSearchPrefix;
         this.titleText = 'Better Command Palette: Tags';
         this.emptyStateText = 'No matching tags.';

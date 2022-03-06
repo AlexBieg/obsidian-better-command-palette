@@ -4,7 +4,42 @@
         margin: 5px;
     }
 
+    .hidden-items-header {
+        margin: 0px;
+        margin-left: 34px;
+        margin-top: 10px;
+        font-size: 15px;
+        color: var(--text-faint);
+
+        &:hover {
+            color: var(--text-muted);
+            cursor: pointer;
+        }
+    }
+
+    .prompt-results, .hidden-items {
+        flex: 1 1 400px;
+    }
+
+    .hidden-items {
+        overflow-y: auto;
+        background-color: var(--background-primary-alt);
+        margin-bottom: 5px;
+
+        &.collapsed, &.empty {
+            display: none;
+        }
+
+        .suggestion-item:hover {
+            background: var(--background-secondary)
+        }
+    }
+
     .suggestion-item {
+        .suggestion-flair {
+            color: var(--text-faint);
+        }
+
         .recent-text {
             color: var(--text-faint);
             margin-left: 10px;

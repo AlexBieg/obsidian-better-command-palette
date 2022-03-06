@@ -1,4 +1,4 @@
-import { App, SuggestModal } from 'obsidian';
+import { App, setIcon, SuggestModal } from 'obsidian';
 import {
     OrderedSet, PaletteMatch, renderPrevItems, SuggestModalAdapter,
 } from 'src/utils';
@@ -36,6 +36,10 @@ class BetterCommandPaletteModal extends SuggestModal<Match> implements UnsafeSug
 
     modalTitleEl: HTMLElement;
 
+    hiddenItemsEl: HTMLElement;
+
+    hiddenItemsHeaderEl: HTMLElement;
+
     initialInputValue: string;
 
     commandAdapter: BetterCommandPaletteCommandAdapter;
@@ -45,6 +49,8 @@ class BetterCommandPaletteModal extends SuggestModal<Match> implements UnsafeSug
     tagAdapter: BetterCommandPaletteTagAdapter;
 
     currentAdapter: SuggestModalAdapter;
+
+    suggestionLimit: number;
 
     constructor(
         app: App,
@@ -59,7 +65,7 @@ class BetterCommandPaletteModal extends SuggestModal<Match> implements UnsafeSug
         // General instance variables
         this.fileSearchPrefix = plugin.settings.fileSearchPrefix;
         this.tagSearchPrefix = plugin.settings.tagSearchPrefix;
-        this.limit = plugin.settings.suggestionLimit;
+        this.suggestionLimit = plugin.settings.suggestionLimit;
         this.initialInputValue = initialInputValue;
 
         this.modalEl.addClass('better-command-palette');
@@ -101,6 +107,15 @@ class BetterCommandPaletteModal extends SuggestModal<Match> implements UnsafeSug
 
         // Add in the title element
         this.modalEl.insertBefore(this.modalTitleEl, this.modalEl.firstChild);
+
+        this.hiddenItemsHeaderEl = createEl('p', 'hidden-items-header');
+        this.hiddenItemsEl = createEl('div', { cls: ['hidden-items', 'collapsed'] });
+
+        this.hiddenItemsHeaderEl.onClickEvent(() => {
+            this.hiddenItemsEl.toggleClass('collapsed', !this.hiddenItemsEl.hasClass('collapsed'));
+        });
+        this.modalEl.insertBefore(this.hiddenItemsHeaderEl, this.resultContainerEl);
+        this.modalEl.insertBefore(this.hiddenItemsEl, this.resultContainerEl);
 
         // Set our scopes for the modal
         this.setScopes(plugin);
@@ -153,6 +168,10 @@ class BetterCommandPaletteModal extends SuggestModal<Match> implements UnsafeSug
                 this.currentAdapter.onChooseSuggestion(this.currentSuggestions[0], event);
                 this.close(event);
             }
+        });
+
+        this.scope.register(['Mod'], 'I', () => {
+            this.hiddenItemsEl.toggleClass('collapsed', !this.hiddenItemsEl.hasClass('collapsed'));
         });
     }
 
@@ -232,9 +251,24 @@ class BetterCommandPaletteModal extends SuggestModal<Match> implements UnsafeSug
     }
 
     receivedSuggestions(msg : MessageEvent) {
-        const results = msg.data.slice(0, this.limit);
+        const results = [];
+        let hiddenCount = 0;
+
+        for (
+            let i = 0;
+            i < msg.data.length && results.length < this.suggestionLimit + hiddenCount;
+            i += 1
+        ) {
+            results.push(msg.data[i]);
+
+            if (this.currentAdapter.hiddenIds.includes(msg.data[i].id)) {
+                hiddenCount += 1;
+            }
+        }
+
         const matches = results.map((r : Match) => new PaletteMatch(r.id, r.text, r.tags));
         this.currentSuggestions = matches;
+        this.limit = this.currentSuggestions.length;
         this.updateSuggestions();
     }
 
@@ -259,13 +293,50 @@ class BetterCommandPaletteModal extends SuggestModal<Match> implements UnsafeSug
             this.getSuggestionsAsync(fixedQuery);
         }
 
+        // Clear out hidden items div
+        this.hiddenItemsHeaderEl.innerText = '';
+        this.hiddenItemsEl.empty();
+
         // For now return what we currently have. We'll populate results later if we need to
         return this.currentSuggestions;
     }
 
     renderSuggestion(match: Match, el: HTMLElement) {
         renderPrevItems(match, el, this.currentAdapter.getPrevItems());
+
+        const isHidden = this.currentAdapter.hiddenIds.includes(match.id);
+        const icon = isHidden ? 'plus-with-circle' : 'minus-with-circle';
+
+        const flairContainer = el.createEl('span', 'suggestion-flair');
+
+        setIcon(flairContainer, icon, 13);
+        flairContainer.ariaLabel = isHidden ? 'Click to Show' : 'Click to Hide';
+        flairContainer.setAttr('data-command-id', match.id);
+
+        flairContainer.onClickEvent((event) => {
+            event.preventDefault();
+            event.stopPropagation();
+
+            const hideEl = event.target as HTMLElement;
+
+            this.currentAdapter.toggleHideId(hideEl.getAttr('data-command-id'));
+        });
+
         this.currentAdapter.renderSuggestion(match, el);
+
+        if (this.currentAdapter.hiddenIds.includes(match.id)) {
+            // I have no idea why, but when I append the element to my hidden elements div
+            // it is automatically removed from the normal suggestions. It's what we want,
+            // but I'm just not sure why it's happening.
+            this.hiddenItemsEl.appendChild(el);
+            el.onClickEvent((event) => {
+                this.close();
+                this.onChooseSuggestion(match, event);
+            });
+            this.hiddenItemsHeaderEl.innerText = `hidden items (${this.hiddenItemsEl.childElementCount})`;
+        }
+
+        this.hiddenItemsEl.toggleClass('empty', this.hiddenItemsEl.childElementCount === 0);
     }
 
     async onChooseSuggestion(item: Match, event: MouseEvent | KeyboardEvent) {

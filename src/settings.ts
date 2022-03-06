@@ -16,6 +16,9 @@ export interface BetterCommandPalettePluginSettings {
     hotkeyStyle: HotkeyStyleType;
     createNewFileMod: Modifier,
     createNewPaneMod: Modifier,
+    hiddenCommands: string[],
+    hiddenFiles: string[],
+    hiddenTags: string[],
 }
 
 export const DEFAULT_SETTINGS: BetterCommandPalettePluginSettings = {
@@ -29,6 +32,9 @@ export const DEFAULT_SETTINGS: BetterCommandPalettePluginSettings = {
     hotkeyStyle: 'auto',
     createNewFileMod: 'Mod',
     createNewPaneMod: 'Shift',
+    hiddenCommands: [],
+    hiddenFiles: [],
+    hiddenTags: [],
 };
 
 export class BetterCommandPaletteSettingTab extends PluginSettingTab {
