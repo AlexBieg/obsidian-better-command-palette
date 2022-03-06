@@ -212,4 +212,47 @@ testCase.addTest('Switch new pane and file creation modifiers back to default', 
     await testCase.pressKey('Esc');
 });
 
+testCase.addTest('Empty Hidden File Header', async () => {
+    await testCase.pressKey('O', { metaKey: true });
+    await testCase.assertElCount('.hidden-items-header', 1, { text: '' });
+    await testCase.pressKey('Esc');
+});
+
+testCase.addTest('Hide File', async () => {
+    await testCase.pressKey('O', { metaKey: true });
+    await testCase.typeInEl('.prompt-input', 'e2e-unresolved-link');
+    await testCase.clickEl('.suggestion-flair');
+
+    await testCase.assertElCount('.hidden-items-header', 1, { text: 'Show hidden items (1)' });
+    await testCase.assertElCount('.suggestion-item', 0);
+    await testCase.pressKey('Esc');
+});
+
+testCase.addTest('Show/Hide Hidden File', async () => {
+    await testCase.pressKey('O', { metaKey: true });
+    await testCase.typeInEl('.prompt-input', 'e2e-unresolved-link');
+
+    await testCase.assertElCount('.hidden-items-header', 1, { text: 'Show hidden items (1)' });
+    await testCase.assertElCount('.suggestion-item', 0);
+
+    await testCase.clickEl('.hidden-items-header');
+    await testCase.findEl('.suggestion-item.hidden', { text: 'e2e-unresolved-link' });
+    await testCase.findEl('.hidden-items-header', { text: 'Hide hidden items (1)' });
+
+    await testCase.clickEl('.hidden-items-header');
+    await testCase.assertElCount('.suggestion-item', 0);
+    await testCase.pressKey('Esc');
+});
+
+testCase.addTest('Unhide File', async () => {
+    await testCase.pressKey('O', { metaKey: true });
+    await testCase.typeInEl('.prompt-input', 'e2e-unresolved-link');
+    await testCase.clickEl('.hidden-items-header');
+    await testCase.clickEl('.suggestion-flair');
+
+    await testCase.assertElCount('.hidden-items-header', 1, { text: '' });
+    await testCase.assertElCount('.suggestion-item', 1);
+    await testCase.pressKey('Esc');
+});
+
 export default testCase;
