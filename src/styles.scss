@@ -18,12 +18,16 @@
     }
 
     .suggestion-item {
-        .suggestion-flair {
-            color: var(--text-faint);
+        &.hidden {
+            color: var(--text-accent);
 
-            &.hidden {
+            .suggestion-flair {
                 transform: rotate(45deg);
             }
+        }
+
+        .suggestion-flair {
+            color: var(--text-faint);
         }
 
         .recent-text {
