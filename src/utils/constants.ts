@@ -30,6 +30,7 @@ export const SPECIAL_KEYS: Record<string, string> = {
     ARROWDOWN: '↓',
     BACKSPACE: '⌫',
     ESC: 'Esc',
+    ESCAPE: 'Esc',
 };
 
 export const MACRO_COMMAND_ID_PREFIX = 'obsidian-better-command-palette-macro-';
