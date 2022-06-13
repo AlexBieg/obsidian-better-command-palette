@@ -2,6 +2,7 @@ export const QUERY_OR = '||';
 export const QUERY_TAG = '@';
 
 export const HYPER_KEY_MODIFIERS_SET = new Set(['Alt', 'Ctrl', 'Mod', 'Shift']);
+export const MEH_KEY_MODIFIERS_SET = new Set(['Alt', 'Ctrl', 'Shift']);
 
 export const BASIC_MODIFIER_ICONS = {
     Mod: 'Ctrl +',
@@ -10,6 +11,7 @@ export const BASIC_MODIFIER_ICONS = {
     Alt: 'Alt +',
     Shift: 'Shift +',
     Hyper: 'Caps +',
+    Meh: 'Meh +',
 };
 
 export const MAC_MODIFIER_ICONS = {
@@ -19,6 +21,8 @@ export const MAC_MODIFIER_ICONS = {
     Alt: '⌥',
     Shift: '⇧',
     Hyper: '⇪',
+    Meh: '☉',
+    Esc: '⎋',
 };
 
 export const SPECIAL_KEYS: Record<string, string> = {
