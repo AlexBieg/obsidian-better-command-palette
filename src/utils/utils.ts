@@ -51,13 +51,7 @@ export function generateHotKeyText(
 
     if (settings.hyperKeyOverride && isHyperKey(hotkey.modifiers)) {
         hotKeyStrings.push(modifierIcons.Hyper);
-    } else {
-        hotkey.modifiers.forEach((mod: Modifier) => {
-            hotKeyStrings.push(modifierIcons[mod]);
-        });
-    }
-
-    if (settings.mehKeyOverride && isMehKey(hotkey.modifiers)) {
+    } else if (settings.mehKeyOverride && isMehKey(hotkey.modifiers)) {
         hotKeyStrings.push(modifierIcons.Meh);
     } else {
         hotkey.modifiers.forEach((mod: Modifier) => {
