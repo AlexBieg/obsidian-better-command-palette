@@ -22,6 +22,13 @@ function isHyperKey(modifiers: Modifier[]) : boolean {
 
     return modifiers.every((m) => HYPER_KEY_MODIFIERS_SET.has(m));
 }
+function isMehKey(modifiers: Modifier[]) : boolean {
+    if (modifiers.length !== 3) {
+        return false;
+    }
+
+    return modifiers.every((m) => HYPER_KEY_MODIFIERS_SET.has(m));
+}
 
 /**
  * A utility that generates the text of a Hotkey for UIs
@@ -44,6 +51,14 @@ export function generateHotKeyText(
 
     if (settings.hyperKeyOverride && isHyperKey(hotkey.modifiers)) {
         hotKeyStrings.push(modifierIcons.Hyper);
+    } else {
+        hotkey.modifiers.forEach((mod: Modifier) => {
+            hotKeyStrings.push(modifierIcons[mod]);
+        });
+    }
+
+    if (settings.mehKeyOverride && isMehKey(hotkey.modifiers)) {
+        hotKeyStrings.push(modifierIcons.Meh);
     } else {
         hotkey.modifiers.forEach((mod: Modifier) => {
             hotKeyStrings.push(modifierIcons[mod]);

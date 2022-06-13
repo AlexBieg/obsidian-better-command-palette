@@ -12,6 +12,7 @@ export interface BetterCommandPalettePluginSettings {
     suggestionLimit: number,
     recentAbovePinned: boolean,
     hyperKeyOverride: boolean,
+    mehKeyOverride: boolean,
     macros: MacroCommandInterface[],
     hotkeyStyle: HotkeyStyleType;
     createNewFileMod: Modifier,
@@ -28,6 +29,7 @@ export const DEFAULT_SETTINGS: BetterCommandPalettePluginSettings = {
     suggestionLimit: 50,
     recentAbovePinned: false,
     hyperKeyOverride: false,
+    mehKeyOverride: false,
     macros: [],
     hotkeyStyle: 'auto',
     createNewFileMod: 'Mod',
@@ -81,6 +83,14 @@ export class BetterCommandPaletteSettingTab extends PluginSettingTab {
             .setDesc('For those users who have use a "Hyper Key", enabling this maps the icons "⌥ ^ ⌘ ⇧" to the caps lock icon "⇪" ')
             .addToggle((t) => t.setValue(settings.hyperKeyOverride).onChange(async (val) => {
                 settings.hyperKeyOverride = val;
+                await this.plugin.saveSettings();
+            }));
+
+        new Setting(containerEl)
+            .setName('Meh Key Hotkey Override')
+            .setDesc('For those users who have use a "Meh Key", enabling this maps the icons "⌥ ^ ⇧" to the Meh icon "☉" ')
+            .addToggle((t) => t.setValue(settings.mehKeyOverride).onChange(async (val) => {
+                settings.mehKeyOverride = val;
                 await this.plugin.saveSettings();
             }));
 
