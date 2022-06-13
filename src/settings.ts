@@ -2,6 +2,7 @@ import {
     App, Command, Modifier, PluginSettingTab, setIcon, Setting,
 } from 'obsidian';
 import BetterCommandPalettePlugin from 'src/main';
+import { MAC_MODIFIER_ICONS } from './utils/constants';
 import { HotkeyStyleType, MacroCommandInterface, UnsafeAppInterface } from './types/types';
 import { SettingsCommandSuggestModal } from './utils';
 
@@ -80,7 +81,7 @@ export class BetterCommandPaletteSettingTab extends PluginSettingTab {
 
         new Setting(containerEl)
             .setName('Caps Lock Hyper Key Hotkey Override')
-            .setDesc('For those users who have use a "Hyper Key", enabling this maps the icons "⌥ ^ ⌘ ⇧" to the caps lock icon "⇪" ')
+            .setDesc(`For those users who have use a "Hyper Key", enabling this maps the icons "⌥ ^ ⌘ ⇧" to the caps lock icon "${MAC_MODIFIER_ICONS.Hyper}"`)
             .addToggle((t) => t.setValue(settings.hyperKeyOverride).onChange(async (val) => {
                 settings.hyperKeyOverride = val;
                 await this.plugin.saveSettings();
@@ -88,7 +89,7 @@ export class BetterCommandPaletteSettingTab extends PluginSettingTab {
 
         new Setting(containerEl)
             .setName('Meh Key Hotkey Override')
-            .setDesc('For those users who have use a "Meh Key", enabling this maps the icons "⌥ ^ ⇧" to the Meh icon "☉" ')
+            .setDesc(`For those users who have use a "Hyper Key", enabling this maps the icons "⌥ ^ ⇧" to the Meh icon "${MAC_MODIFIER_ICONS.Meh}"`)
             .addToggle((t) => t.setValue(settings.mehKeyOverride).onChange(async (val) => {
                 settings.mehKeyOverride = val;
                 await this.plugin.saveSettings();
