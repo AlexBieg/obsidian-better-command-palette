@@ -7,6 +7,7 @@ import { SettingsCommandSuggestModal } from './utils';
 
 export interface BetterCommandPalettePluginSettings {
     closeWithBackspace: boolean,
+    showPluginName: boolean,
     fileSearchPrefix: string,
     tagSearchPrefix: string,
     suggestionLimit: number,
@@ -23,6 +24,7 @@ export interface BetterCommandPalettePluginSettings {
 
 export const DEFAULT_SETTINGS: BetterCommandPalettePluginSettings = {
     closeWithBackspace: true,
+    showPluginName: true,
     fileSearchPrefix: '/',
     tagSearchPrefix: '#',
     suggestionLimit: 50,
@@ -65,6 +67,14 @@ export class BetterCommandPaletteSettingTab extends PluginSettingTab {
             .setDesc('Close the palette when there is no text and backspace is pressed')
             .addToggle((t) => t.setValue(settings.closeWithBackspace).onChange(async (val) => {
                 settings.closeWithBackspace = val;
+                await this.plugin.saveSettings();
+            }));
+
+        new Setting(containerEl)
+            .setName('Show Plugin Name')
+            .setDesc('Close show the plugin name in the command palette')
+            .addToggle((t) => t.setValue(settings.showPluginName).onChange(async (val) => {
+                settings.showPluginName = val;
                 await this.plugin.saveSettings();
             }));
 

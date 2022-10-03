@@ -84,10 +84,12 @@ export default class BetterCommandPaletteCommandAdapter extends SuggestModalAdap
             const prefix = split.shift();
             text = split.join(this.COMMAND_PLUGIN_NAME_SEPARATOR);
 
-            el.createEl('span', {
-                cls: 'suggestion-prefix',
-                text: prefix,
-            });
+            if (this.plugin.settings.showPluginName) {
+                el.createEl('span', {
+                    cls: 'suggestion-prefix',
+                    text: prefix,
+                });
+            }
         }
 
         el.createEl('span', {
