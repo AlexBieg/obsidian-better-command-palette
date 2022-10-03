@@ -28,6 +28,14 @@
 
         .suggestion-flair {
             color: var(--text-faint);
+            margin-right: 10px;
+        }
+
+        .suggestion-hotkey {
+            white-space: nowrap;
+            margin-left: 10px;
+            float: right;
+            padding: 0px 10px;
         }
 
         .recent-text {
