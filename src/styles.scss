@@ -66,6 +66,10 @@
             }
         }
     }
+
+    .suggestion-prefix:after {
+        content: ": ";
+    }
 }
 
 /* Settings Styles */
