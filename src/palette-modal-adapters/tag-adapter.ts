@@ -45,16 +45,16 @@ export default class BetterCommandPaletteTagAdapter extends SuggestModalAdapter 
         return query.replace(this.tagSearchPrefix, '');
     }
 
-    renderSuggestion(match: Match, el: HTMLElement): void {
-        el.createEl('span', {
+    renderSuggestion(match: Match, content: HTMLElement, aux: HTMLElement): void {
+        content.createEl('span', {
             cls: 'suggestion-content',
             text: match.text,
         });
 
         const count = parseInt(match.tags[0], 10);
 
-        el.createEl('div', {
-            cls: 'suggestion-sub-content',
+        aux.createEl('span', {
+            cls: 'suggestion-flair',
             text: `Found in ${count} file${count === 1 ? '' : 's'}`,
         });
     }

@@ -33,7 +33,7 @@ export default abstract class SuggestModalAdapter {
 
     abstract emptyStateText: string;
 
-    abstract renderSuggestion(match: Match, el: HTMLElement): void;
+    abstract renderSuggestion(match: Match, content: HTMLElement, aux: HTMLElement): void;
     abstract onChooseSuggestion(match: Match, event: MouseEvent | KeyboardEvent): void;
 
     constructor(

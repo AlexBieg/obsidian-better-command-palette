@@ -60,7 +60,7 @@ export function renderPrevItems(match: Match, el: HTMLElement, prevItems: Ordere
     if (prevItems.has(match)) {
         el.addClass('recent');
         el.createEl('span', {
-            cls: 'recent-text',
+            cls: 'suggestion-note',
             text: '(recently used)',
         });
     }

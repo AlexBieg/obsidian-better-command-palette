@@ -82,9 +82,9 @@ export default class BetterCommandPaletteFileAdapter extends SuggestModalAdapter
         return newQuery;
     }
 
-    renderSuggestion(match: Match, el: HTMLElement): void {
-        const suggestionEl = el.createEl('div', {
-            cls: 'suggestion-content',
+    renderSuggestion(match: Match, content: HTMLElement): void {
+        const suggestionEl = content.createEl('div', {
+            cls: 'suggestion-title',
             text: match.text,
         });
 
@@ -94,7 +94,7 @@ export default class BetterCommandPaletteFileAdapter extends SuggestModalAdapter
 
         if (match.id.includes(':')) {
             // Set Icon will destroy the first element in a node. So we need to add one back
-            suggestionEl.createEl('div', {
+            suggestionEl.createEl('span', {
                 cls: 'suggestion-name',
                 text: match.text,
             }).ariaLabel = 'Alias';
@@ -102,14 +102,14 @@ export default class BetterCommandPaletteFileAdapter extends SuggestModalAdapter
             setIcon(suggestionEl, 'right-arrow-with-tail');
 
             const [, path] = match.id.split(':');
-            suggestionEl.createEl('div', {
-                cls: 'suggestion-description',
+            suggestionEl.createEl('span', {
+                cls: 'suggestion-note',
                 text: path,
             });
         }
 
-        el.createEl('div', {
-            cls: 'suggestion-sub-content',
+        content.createEl('div', {
+            cls: 'suggestion-note',
             text: `${match.tags.join(' ')}`,
         });
     }
