@@ -55,7 +55,7 @@ export default class BetterCommandPaletteCommandAdapter extends SuggestModalAdap
         ];
     }
 
-    renderSuggestion(match: Match, el: HTMLElement): void {
+    renderSuggestion(match: Match, content: HTMLElement, aux: HTMLElement): void {
         const command = this.app.commands.findCommand(match.id);
         const customHotkeys = this.app.hotkeyManager.getHotkeys(command.id);
         const defaultHotkeys = this.app.hotkeyManager.getDefaultHotkeys(command.id);
@@ -67,13 +67,14 @@ export default class BetterCommandPaletteCommandAdapter extends SuggestModalAdap
         const hotkeys = customHotkeys || defaultHotkeys || [];
 
         if (this.getPinnedItems().find((i) => i.id === match.id)) {
-            const flairContainer = el.querySelector('.suggestion-flair') as HTMLElement;
+            const flairContainer = aux.querySelector('.suggestion-flair') as HTMLElement;
             setIcon(flairContainer, 'filled-pin', 13);
             flairContainer.ariaLabel = 'Pinned';
             flairContainer.onClickEvent(() => {});
         }
 
         let { text } = match;
+        let prefix = '';
 
         // Has a plugin name prefix
         if (text.includes(this.COMMAND_PLUGIN_NAME_SEPARATOR)) {
@@ -81,22 +82,24 @@ export default class BetterCommandPaletteCommandAdapter extends SuggestModalAdap
             // Seems like this is how the acutal command palette does it though
             const split = text.split(this.COMMAND_PLUGIN_NAME_SEPARATOR);
             // Get first element
-            const prefix = split.shift();
+            prefix = split.shift();
             text = split.join(this.COMMAND_PLUGIN_NAME_SEPARATOR);
+        }
 
-            el.createEl('span', {
-                cls: 'suggestion-prefix',
+        content.createEl('span', {
+            cls: 'suggestion-title',
+            text,
+        });
+
+        if (prefix && this.plugin.settings.showPluginName) {
+            content.createEl('span', {
+                cls: 'suggestion-note',
                 text: prefix,
             });
         }
 
-        el.createEl('span', {
-            cls: 'suggestion-content',
-            text,
-        });
-
         hotkeys.forEach((hotkey) => {
-            el.createEl('kbd', {
+            aux.createEl('kbd', {
                 cls: 'suggestion-hotkey',
                 text: generateHotKeyText(hotkey, this.plugin.settings),
             });

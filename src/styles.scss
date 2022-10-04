@@ -28,32 +28,33 @@
 
         .suggestion-flair {
             color: var(--text-faint);
+            margin-right: 10px;
         }
 
-        .recent-text {
-            color: var(--text-faint);
+        .suggestion-hotkey {
+            white-space: nowrap;
             margin-left: 10px;
-            float: right;
+            padding: 0px 10px;
         }
 
         .suggestion-content {
-            display: inline-flex;
-            align-items: center;
-
             svg {
                 margin: 0px 5px;
                 color: var(--text-muted);
             }
         }
 
-        .suggestion-description {
-            display: inline;
-            color: var(--text-muted);
+        .suggestion-aux {
+            flex-direction: row-reverse;
         }
 
+        .suggestion-title {
+            display: flex;
+            align-items: center;
+        }
 
-        .suggestion-sub-content {
-            color: var(--text-faint);
+        .suggestion-note {
+            flex: 1;
         }
 
         .unresolved {
@@ -65,10 +66,6 @@
                 margin-left: 10px;
             }
         }
-    }
-
-    .suggestion-prefix:after {
-        content: ": ";
     }
 }
 

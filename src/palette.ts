@@ -327,17 +327,21 @@ class BetterCommandPaletteModal extends SuggestModal<Match> implements UnsafeSug
     }
 
     renderSuggestion(match: Match, el: HTMLElement) {
+        el.addClass('mod-complex');
+
         const isHidden = this.currentAdapter.hiddenIds.includes(match.id);
 
         if (isHidden) {
             el.addClass('hidden');
         }
 
-        renderPrevItems(match, el, this.currentAdapter.getPrevItems());
-
         const icon = 'cross';
 
-        const flairContainer = el.createEl('span', 'suggestion-flair');
+        const suggestionContent = el.createEl('span', 'suggestion-content');
+        const suggestionAux = el.createEl('span', 'suggestion-aux');
+
+        const flairContainer = suggestionAux.createEl('span', 'suggestion-flair');
+        renderPrevItems(match, suggestionContent, this.currentAdapter.getPrevItems());
 
         setIcon(flairContainer, icon, 13);
         flairContainer.ariaLabel = isHidden ? 'Click to Unhide' : 'Click to Hide';
@@ -352,7 +356,7 @@ class BetterCommandPaletteModal extends SuggestModal<Match> implements UnsafeSug
             this.currentAdapter.toggleHideId(hideEl.getAttr('data-id'));
         });
 
-        this.currentAdapter.renderSuggestion(match, el);
+        this.currentAdapter.renderSuggestion(match, suggestionContent, suggestionAux);
     }
 
     async onChooseSuggestion(item: Match, event: MouseEvent | KeyboardEvent) {
