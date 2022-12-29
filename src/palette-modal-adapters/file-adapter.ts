@@ -43,6 +43,11 @@ export default class BetterCommandPaletteFileAdapter extends SuggestModalAdapter
         // Actually returns all files in the cache even if there are no unresolved links
         this.app.metadataCache.getCachedFiles()
             .forEach((filePath: string) => {
+                const badfileType = this.plugin.settings.fileTypeExclusion.some((suf) => filePath.endsWith(`.${suf}`));
+
+                // If we shouldn't show the file type just return right now
+                if (badfileType) return;
+
                 const matches = createPaletteMatchesFromFilePath(this.app.metadataCache, filePath);
                 this.allItems = this.allItems.concat(matches);
 
