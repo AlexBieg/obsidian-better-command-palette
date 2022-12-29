@@ -23,6 +23,7 @@ export interface BetterCommandPalettePluginSettings {
     hiddenCommands: string[],
     hiddenFiles: string[],
     hiddenTags: string[],
+    fileTypeExclusion: string[],
 }
 
 export const DEFAULT_SETTINGS: BetterCommandPalettePluginSettings = {
@@ -43,6 +44,7 @@ export const DEFAULT_SETTINGS: BetterCommandPalettePluginSettings = {
     hiddenCommands: [],
     hiddenFiles: [],
     hiddenTags: [],
+    fileTypeExclusion: [],
 };
 
 export class BetterCommandPaletteSettingTab extends PluginSettingTab {
@@ -106,6 +108,15 @@ export class BetterCommandPaletteSettingTab extends PluginSettingTab {
             .addToggle((t) => t.setValue(settings.createNewFileMod === 'Shift').onChange(async (val) => {
                 settings.createNewFileMod = val ? 'Shift' : 'Mod';
                 settings.createNewPaneMod = val ? 'Mod' : 'Shift';
+                await this.plugin.saveSettings();
+            }));
+
+        new Setting(containerEl)
+            .setName('File Type Exclusions')
+            .setDesc('A comma separated list of file extensions (ex: "pdf,jpg,png") that should not be shown when searching files.')
+            .addText((t) => t.setValue(settings.fileTypeExclusion.join(',')).onChange(async (val) => {
+                const list = val.split(',').map((e) => e.trim());
+                settings.fileTypeExclusion = list;
                 await this.plugin.saveSettings();
             }));
 
