@@ -101,6 +101,16 @@ export default class BetterCommandPalettePlugin extends Plugin {
             );
 
             this.addCommand(macro);
+
+            if (this.prevCommands) {
+                this.prevCommands = this.prevCommands.values().reduce((acc, match) => {
+                    if (match.id === macro.id && match.text !== macro.name) return acc;
+
+                    acc.add(match);
+
+                    return acc;
+                }, new OrderedSet<Match>());
+            }
         });
     }
 
