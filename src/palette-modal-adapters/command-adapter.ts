@@ -3,6 +3,7 @@ import {
     generateHotKeyText, PaletteMatch, SuggestModalAdapter,
 } from 'src/utils';
 import { Match, UnsafeAppInterface } from 'src/types/types';
+import { ActionType } from 'src/utils/constants';
 
 export default class BetterCommandPaletteCommandAdapter extends SuggestModalAdapter {
     titleText: string;
@@ -47,11 +48,18 @@ export default class BetterCommandPaletteCommandAdapter extends SuggestModalAdap
         ).reverse();
     }
 
+    mount(): void {
+        this.keymapHandlers = [
+            this.palette.scope.register(['Mod'], this.plugin.settings.fileSearchHotkey, () => this.palette.changeActionType(ActionType.Files)),
+            this.palette.scope.register(['Mod'], this.plugin.settings.tagSearchHotkey, () => this.palette.changeActionType(ActionType.Tags)),
+        ];
+    }
+
     getInstructions(): Instruction[] {
         return [
             { command: generateHotKeyText({ modifiers: [], key: 'ENTER' }, this.plugin.settings), purpose: 'Run command' },
-            { command: this.plugin.settings.fileSearchPrefix, purpose: 'Search Files' },
-            { command: this.plugin.settings.tagSearchPrefix, purpose: 'Search Tags' },
+            { command: generateHotKeyText({ modifiers: ['Mod'], key: this.plugin.settings.fileSearchHotkey }, this.plugin.settings), purpose: 'Search Files' },
+            { command: generateHotKeyText({ modifiers: ['Mod'], key: this.plugin.settings.tagSearchHotkey }, this.plugin.settings), purpose: 'Search Tags' },
         ];
     }
 

@@ -10,14 +10,9 @@ import {
     BetterCommandPaletteTagAdapter,
 } from 'src/palette-modal-adapters';
 import BetterCommandPalettePlugin from 'src/main';
+import { ActionType } from './utils/constants';
 
 class BetterCommandPaletteModal extends SuggestModal<Match> implements UnsafeSuggestModalInterface {
-    ACTION_TYPE_COMMAND = 1;
-
-    ACTION_TYPE_FILES = 2;
-
-    ACTION_TYPE_TAGS = 3;
-
     // Unsafe interface
     chooser: UnsafeSuggestModalInterface['chooser'];
 
@@ -25,7 +20,7 @@ class BetterCommandPaletteModal extends SuggestModal<Match> implements UnsafeSug
 
     plugin: BetterCommandPalettePlugin;
 
-    actionType: number;
+    actionType: ActionType;
 
     fileSearchPrefix: string;
 
@@ -153,21 +148,21 @@ class BetterCommandPaletteModal extends SuggestModal<Match> implements UnsafeSug
         });
 
         this.scope.register([createNewFileMod], 'Enter', (event: KeyboardEvent) => {
-            if (this.actionType === this.ACTION_TYPE_FILES) {
+            if (this.actionType === ActionType.Files) {
                 this.currentAdapter.onChooseSuggestion(null, event);
                 this.close(event);
             }
         });
 
         this.scope.register([createNewFileMod, createNewPaneMod], 'Enter', (event: KeyboardEvent) => {
-            if (this.actionType === this.ACTION_TYPE_FILES) {
+            if (this.actionType === ActionType.Files) {
                 this.currentAdapter.onChooseSuggestion(null, event);
                 this.close(event);
             }
         });
 
         this.scope.register([createNewPaneMod], 'Enter', (event: KeyboardEvent) => {
-            if (this.actionType === this.ACTION_TYPE_FILES && this.currentSuggestions.length) {
+            if (this.actionType === ActionType.Files && this.currentSuggestions.length) {
                 this.currentAdapter.onChooseSuggestion(this.currentSuggestions[0], event);
                 this.close(event);
             }
@@ -193,7 +188,24 @@ class BetterCommandPaletteModal extends SuggestModal<Match> implements UnsafeSug
         }
     }
 
-    setQuery(newQuery: string, cursorPosition: number = -1) {
+    changeActionType(actionType:ActionType) {
+        let prefix = '';
+        if (actionType === ActionType.Files) {
+            prefix = this.plugin.settings.fileSearchPrefix;
+        } else if (actionType === ActionType.Tags) {
+            prefix = this.plugin.settings.tagSearchPrefix;
+        }
+        const currentQuery: string = this.inputEl.value;
+        const cleanQuery = this.currentAdapter.cleanQuery(currentQuery);
+
+        this.inputEl.value = prefix + cleanQuery;
+        this.updateSuggestions();
+    }
+
+    setQuery(
+        newQuery: string,
+        cursorPosition: number = -1,
+    ) {
         this.inputEl.value = newQuery;
 
         if (cursorPosition > -1) {
@@ -205,17 +217,24 @@ class BetterCommandPaletteModal extends SuggestModal<Match> implements UnsafeSug
 
     updateActionType() : boolean {
         const text: string = this.inputEl.value;
+        let nextAdapter;
         let type;
 
         if (text.startsWith(this.fileSearchPrefix)) {
-            type = this.ACTION_TYPE_FILES;
-            this.currentAdapter = this.fileAdapter;
+            type = ActionType.Files;
+            nextAdapter = this.fileAdapter;
         } else if (text.startsWith(this.tagSearchPrefix)) {
-            type = this.ACTION_TYPE_TAGS;
-            this.currentAdapter = this.tagAdapter;
+            type = ActionType.Tags;
+            nextAdapter = this.tagAdapter;
         } else {
-            type = this.ACTION_TYPE_COMMAND;
-            this.currentAdapter = this.commandAdapter;
+            type = ActionType.Commands;
+            nextAdapter = this.commandAdapter;
+        }
+
+        if (type !== this.actionType) {
+            this.currentAdapter?.unmount();
+            this.currentAdapter = nextAdapter;
+            this.currentAdapter.mount();
         }
 
         if (!this.currentAdapter.initialized) {

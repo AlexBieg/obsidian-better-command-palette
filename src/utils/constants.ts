@@ -33,3 +33,9 @@ export const SPECIAL_KEYS: Record<string, string> = {
 };
 
 export const MACRO_COMMAND_ID_PREFIX = 'obsidian-better-command-palette-macro-';
+
+export enum ActionType {
+    Commands,
+    Files,
+    Tags,
+}

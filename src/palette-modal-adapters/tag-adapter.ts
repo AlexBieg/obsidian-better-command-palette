@@ -4,7 +4,7 @@ import {
     PaletteMatch, SuggestModalAdapter,
 }
     from 'src/utils';
-import { QUERY_TAG } from 'src/utils/constants';
+import { ActionType, QUERY_TAG } from 'src/utils/constants';
 import { Match, UnsafeAppInterface } from '../types/types';
 
 export default class BetterCommandPaletteTagAdapter extends SuggestModalAdapter {
@@ -33,11 +33,18 @@ export default class BetterCommandPaletteTagAdapter extends SuggestModalAdapter 
             .map(([tag, count]) => new PaletteMatch(tag, tag, [count]));
     }
 
+    mount(): void {
+        this.keymapHandlers = [
+            this.palette.scope.register(['Mod'], this.plugin.settings.commandSearchHotkey, () => this.palette.changeActionType(ActionType.Commands)),
+            this.palette.scope.register(['Mod'], this.plugin.settings.fileSearchHotkey, () => this.palette.changeActionType(ActionType.Files)),
+        ];
+    }
+
     getInstructions(): Instruction[] {
         return [
             { command: generateHotKeyText({ modifiers: [], key: 'ENTER' }, this.plugin.settings), purpose: 'See file usage' },
-            { command: generateHotKeyText({ modifiers: [], key: 'BACKSPACE' }, this.plugin.settings), purpose: 'Search Commands' },
-            { command: this.plugin.settings.fileSearchPrefix, purpose: 'Search Files' },
+            { command: generateHotKeyText({ modifiers: ['Mod'], key: this.plugin.settings.commandSearchHotkey }, this.plugin.settings), purpose: 'Search Commands' },
+            { command: generateHotKeyText({ modifiers: ['Mod'], key: this.plugin.settings.fileSearchHotkey }, this.plugin.settings), purpose: 'Search Files' },
         ];
     }
 

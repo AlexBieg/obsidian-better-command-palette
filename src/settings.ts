@@ -10,6 +10,9 @@ export interface BetterCommandPalettePluginSettings {
     showPluginName: boolean,
     fileSearchPrefix: string,
     tagSearchPrefix: string,
+    commandSearchHotkey: string,
+    fileSearchHotkey: string,
+    tagSearchHotkey: string,
     suggestionLimit: number,
     recentAbovePinned: boolean,
     hyperKeyOverride: boolean,
@@ -27,6 +30,9 @@ export const DEFAULT_SETTINGS: BetterCommandPalettePluginSettings = {
     showPluginName: true,
     fileSearchPrefix: '/',
     tagSearchPrefix: '#',
+    commandSearchHotkey: 'p',
+    fileSearchHotkey: 'o',
+    tagSearchHotkey: 't',
     suggestionLimit: 50,
     recentAbovePinned: false,
     hyperKeyOverride: false,
@@ -72,7 +78,7 @@ export class BetterCommandPaletteSettingTab extends PluginSettingTab {
 
         new Setting(containerEl)
             .setName('Show Plugin Name')
-            .setDesc('Close show the plugin name in the command palette')
+            .setDesc('Show the plugin name in the command palette')
             .addToggle((t) => t.setValue(settings.showPluginName).onChange(async (val) => {
                 settings.showPluginName = val;
                 await this.plugin.saveSettings();
@@ -116,6 +122,30 @@ export class BetterCommandPaletteSettingTab extends PluginSettingTab {
             .setDesc('The prefix used to tell the palette you want to search tags')
             .addText((t) => t.setValue(settings.tagSearchPrefix).onChange(async (val) => {
                 settings.tagSearchPrefix = val;
+                await this.plugin.saveSettings();
+            }));
+
+        new Setting(containerEl)
+            .setName('Command Search Hotkey')
+            .setDesc('The hotkey used to switch to command search while using the command palette.')
+            .addText((t) => t.setValue(settings.commandSearchHotkey).onChange(async (val) => {
+                settings.commandSearchHotkey = val;
+                await this.plugin.saveSettings();
+            }));
+
+        new Setting(containerEl)
+            .setName('File Search Hotkey')
+            .setDesc('The hotkey used to switch to file search while using the command palette.')
+            .addText((t) => t.setValue(settings.fileSearchHotkey).onChange(async (val) => {
+                settings.fileSearchHotkey = val;
+                await this.plugin.saveSettings();
+            }));
+
+        new Setting(containerEl)
+            .setName('Tag Search Hotkey')
+            .setDesc('The hotkey used to switch to tag search while using the command palette.')
+            .addText((t) => t.setValue(settings.tagSearchHotkey).onChange(async (val) => {
+                settings.tagSearchHotkey = val;
                 await this.plugin.saveSettings();
             }));
 
