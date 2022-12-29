@@ -1,4 +1,4 @@
-import { App, Instruction } from 'obsidian';
+import { App, Instruction, KeymapEventHandler } from 'obsidian';
 import BetterCommandPalettePlugin from 'src/main';
 import BetterCommandPaletteModal from 'src/palette';
 import { Match } from 'src/types/types';
@@ -29,6 +29,8 @@ export default abstract class SuggestModalAdapter {
 
     hiddenIdsSettingsKey: 'hiddenCommands' | 'hiddenFiles' | 'hiddenTags';
 
+    keymapHandlers: KeymapEventHandler[];
+
     abstract titleText: string;
 
     abstract emptyStateText: string;
@@ -51,6 +53,7 @@ export default abstract class SuggestModalAdapter {
         this.pinnedItems = [];
         this.initialized = false;
         this.hiddenIds = [];
+        this.keymapHandlers = [];
     }
 
     getTitleText(): string {
@@ -73,6 +76,13 @@ export default abstract class SuggestModalAdapter {
 
     initialize() {
         this.initialized = true;
+    }
+
+    mount() {}
+
+    unmount() {
+        this.keymapHandlers.forEach((kh) => this.palette.scope.unregister(kh));
+        this.keymapHandlers = [];
     }
 
     cleanQuery(query: string) {

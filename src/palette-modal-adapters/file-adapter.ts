@@ -10,6 +10,7 @@ import {
     createPaletteMatchesFromFilePath,
 } from 'src/utils';
 import { Match, UnsafeAppInterface } from 'src/types/types';
+import { ActionType } from 'src/utils/constants';
 
 export default class BetterCommandPaletteFileAdapter extends SuggestModalAdapter {
     titleText: string;
@@ -65,6 +66,13 @@ export default class BetterCommandPaletteFileAdapter extends SuggestModalAdapter
         });
     }
 
+    mount(): void {
+        this.keymapHandlers = [
+            this.palette.scope.register(['Mod'], this.plugin.settings.commandSearchHotkey, () => this.palette.changeActionType(ActionType.Commands)),
+            this.palette.scope.register(['Mod'], this.plugin.settings.tagSearchHotkey, () => this.palette.changeActionType(ActionType.Tags)),
+        ];
+    }
+
     getInstructions(): Instruction[] {
         const { createNewPaneMod, createNewFileMod } = this.plugin.settings;
 
@@ -72,8 +80,8 @@ export default class BetterCommandPaletteFileAdapter extends SuggestModalAdapter
             { command: generateHotKeyText({ modifiers: [], key: 'ENTER' }, this.plugin.settings), purpose: 'Open file' },
             { command: generateHotKeyText({ modifiers: [createNewPaneMod], key: 'ENTER' }, this.plugin.settings), purpose: 'Open file in new pane' },
             { command: generateHotKeyText({ modifiers: [createNewFileMod], key: 'ENTER' }, this.plugin.settings), purpose: 'Create file' },
-            { command: generateHotKeyText({ modifiers: [], key: 'BACKSPACE' }, this.plugin.settings), purpose: 'Search Commands' },
-            { command: this.plugin.settings.tagSearchPrefix, purpose: 'Search Tags' },
+            { command: generateHotKeyText({ modifiers: ['Mod'], key: this.plugin.settings.commandSearchHotkey }, this.plugin.settings), purpose: 'Search Commands' },
+            { command: generateHotKeyText({ modifiers: ['Mod'], key: this.plugin.settings.tagSearchHotkey }, this.plugin.settings), purpose: 'Search Tags' },
         ];
     }
 
