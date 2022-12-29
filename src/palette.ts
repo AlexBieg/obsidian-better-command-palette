@@ -257,7 +257,11 @@ class BetterCommandPaletteModal extends SuggestModal<Match> implements UnsafeSug
     }
 
     updateTitleText() {
-        this.modalTitleEl.setText(this.currentAdapter.getTitleText());
+        if (this.plugin.settings.showPluginName) {
+            this.modalTitleEl.setText(this.currentAdapter.getTitleText());
+        } else {
+            this.modalTitleEl.setText('');
+        }
     }
 
     updateEmptyStateText() {
