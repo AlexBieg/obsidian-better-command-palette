@@ -302,6 +302,11 @@ class BetterCommandPaletteModal extends SuggestModal<Match> implements UnsafeSug
         }
 
         const matches = results.map((r : Match) => new PaletteMatch(r.id, r.text, r.tags));
+
+        // Sort the suggestions so that previously searched items are first
+        const prevItems = this.currentAdapter.getPrevItems();
+        matches.sort((a, b) => (+prevItems.has(b)) - (+prevItems.has(a)));
+
         this.currentSuggestions = matches;
         this.limit = this.currentSuggestions.length;
         this.updateSuggestions();
