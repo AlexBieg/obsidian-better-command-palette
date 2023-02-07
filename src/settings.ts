@@ -2,6 +2,7 @@ import {
     App, Command, Modifier, PluginSettingTab, setIcon, Setting,
 } from 'obsidian';
 import BetterCommandPalettePlugin from 'src/main';
+import { MAC_MODIFIER_ICONS } from './utils/constants';
 import { HotkeyStyleType, MacroCommandInterface, UnsafeAppInterface } from './types/types';
 import { SettingsCommandSuggestModal } from './utils';
 
@@ -16,6 +17,7 @@ export interface BetterCommandPalettePluginSettings {
     suggestionLimit: number,
     recentAbovePinned: boolean,
     hyperKeyOverride: boolean,
+    mehKeyOverride: boolean,
     macros: MacroCommandInterface[],
     hotkeyStyle: HotkeyStyleType;
     createNewFileMod: Modifier,
@@ -37,6 +39,7 @@ export const DEFAULT_SETTINGS: BetterCommandPalettePluginSettings = {
     suggestionLimit: 50,
     recentAbovePinned: false,
     hyperKeyOverride: false,
+    mehKeyOverride: false,
     macros: [],
     hotkeyStyle: 'auto',
     createNewFileMod: 'Mod',
@@ -96,9 +99,17 @@ export class BetterCommandPaletteSettingTab extends PluginSettingTab {
 
         new Setting(containerEl)
             .setName('Caps Lock Hyper Key Hotkey Override')
-            .setDesc('For those users who have use a "Hyper Key", enabling this maps the icons "⌥ ^ ⌘ ⇧" to the caps lock icon "⇪" ')
+            .setDesc(`For those users who have use a "Hyper Key", enabling this maps the icons "⌥ ^ ⌘ ⇧" to the caps lock icon "${MAC_MODIFIER_ICONS.Hyper}"`)
             .addToggle((t) => t.setValue(settings.hyperKeyOverride).onChange(async (val) => {
                 settings.hyperKeyOverride = val;
+                await this.plugin.saveSettings();
+            }));
+
+        new Setting(containerEl)
+            .setName('Meh Key Hotkey Override')
+            .setDesc(`For those users who have use a "Hyper Key", enabling this maps the icons "⌥ ^ ⇧" to the Meh icon "${MAC_MODIFIER_ICONS.Meh}"`)
+            .addToggle((t) => t.setValue(settings.mehKeyOverride).onChange(async (val) => {
+                settings.mehKeyOverride = val;
                 await this.plugin.saveSettings();
             }));
 
