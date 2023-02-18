@@ -17,6 +17,7 @@ export interface BetterCommandPalettePluginSettings {
     recentAbovePinned: boolean,
     hyperKeyOverride: boolean,
     displayOnlyNotesNames: boolean,
+    hideMdExtension: boolean,
     macros: MacroCommandInterface[],
     hotkeyStyle: HotkeyStyleType;
     createNewFileMod: Modifier,
@@ -39,6 +40,7 @@ export const DEFAULT_SETTINGS: BetterCommandPalettePluginSettings = {
     recentAbovePinned: false,
     hyperKeyOverride: false,
     displayOnlyNotesNames: false,
+    hideMdExtension: false,
     macros: [],
     hotkeyStyle: 'auto',
     createNewFileMod: 'Mod',
@@ -118,6 +120,14 @@ export class BetterCommandPaletteSettingTab extends PluginSettingTab {
             .setDesc("If enabled, only notes names will be displayed in Quick Switcher mode instead of their full path.")
             .addToggle((t) => t.setValue(settings.displayOnlyNotesNames).onChange(async (val) => {
                 settings.displayOnlyNotesNames = val;
+                await this.plugin.saveSettings();
+            }));
+
+        new Setting(containerEl)
+            .setName("Hide .md extensions")
+            .setDesc("If enabled, Markdown notes will be displayed without their .md extension in Quick Switcher mode")
+            .addToggle((t) => t.setValue(settings.hideMdExtension).onChange(async (val) => {
+                settings.hideMdExtension = val;
                 await this.plugin.saveSettings();
             }));
 
