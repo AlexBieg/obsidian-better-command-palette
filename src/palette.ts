@@ -194,6 +194,7 @@ class BetterCommandPaletteModal extends SuggestModal<Match> implements UnsafeSug
             prefix = this.plugin.settings.fileSearchPrefix;
         } else if (actionType === ActionType.Tags) {
             prefix = this.plugin.settings.tagSearchPrefix;
+
         }
         const currentQuery: string = this.inputEl.value;
         const cleanQuery = this.currentAdapter.cleanQuery(currentQuery);
@@ -223,12 +224,15 @@ class BetterCommandPaletteModal extends SuggestModal<Match> implements UnsafeSug
         if (text.startsWith(this.fileSearchPrefix)) {
             type = ActionType.Files;
             nextAdapter = this.fileAdapter;
+            this.modalEl.setAttribute("palette-mode", "files");
         } else if (text.startsWith(this.tagSearchPrefix)) {
             type = ActionType.Tags;
             nextAdapter = this.tagAdapter;
+            this.modalEl.setAttribute("palette-mode", "tags");
         } else {
             type = ActionType.Commands;
             nextAdapter = this.commandAdapter;
+            this.modalEl.setAttribute("palette-mode", "commands");
         }
 
         if (type !== this.actionType) {
