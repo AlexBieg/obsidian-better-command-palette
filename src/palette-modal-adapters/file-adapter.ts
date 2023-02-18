@@ -26,7 +26,7 @@ export default class BetterCommandPaletteFileAdapter extends SuggestModalAdapter
 
     fileSearchPrefix: string;
 
-    initialize() {
+    initialize () {
         super.initialize();
 
         this.titleText = 'Better Command Palette: Files';
@@ -71,31 +71,31 @@ export default class BetterCommandPaletteFileAdapter extends SuggestModalAdapter
         });
     }
 
-    mount(): void {
+    mount (): void {
         this.keymapHandlers = [
             this.palette.scope.register(['Mod'], this.plugin.settings.commandSearchHotkey, () => this.palette.changeActionType(ActionType.Commands)),
             this.palette.scope.register(['Mod'], this.plugin.settings.tagSearchHotkey, () => this.palette.changeActionType(ActionType.Tags)),
         ];
     }
 
-    getInstructions(): Instruction[] {
-        const { createNewPaneMod, createNewFileMod } = this.plugin.settings;
+    getInstructions (): Instruction[] {
+        const { openInNewTabMod, createNewFileMod } = this.plugin.settings;
 
         return [
             { command: generateHotKeyText({ modifiers: [], key: 'ENTER' }, this.plugin.settings), purpose: 'Open file' },
-            { command: generateHotKeyText({ modifiers: [createNewPaneMod], key: 'ENTER' }, this.plugin.settings), purpose: 'Open file in new pane' },
+            { command: generateHotKeyText({ modifiers: [openInNewTabMod], key: 'ENTER' }, this.plugin.settings), purpose: 'Open file in new pane' },
             { command: generateHotKeyText({ modifiers: [createNewFileMod], key: 'ENTER' }, this.plugin.settings), purpose: 'Create file' },
             { command: generateHotKeyText({ modifiers: ['Mod'], key: this.plugin.settings.commandSearchHotkey }, this.plugin.settings), purpose: 'Search Commands' },
             { command: generateHotKeyText({ modifiers: ['Mod'], key: this.plugin.settings.tagSearchHotkey }, this.plugin.settings), purpose: 'Search Tags' },
         ];
     }
 
-    cleanQuery(query: string): string {
+    cleanQuery (query: string): string {
         const newQuery = query.replace(this.fileSearchPrefix, '');
         return newQuery;
     }
 
-    renderSuggestion(match: Match, content: HTMLElement): void {
+    renderSuggestion (match: Match, content: HTMLElement): void {
         const suggestionEl = content.createEl('div', {
             cls: 'suggestion-title',
             text: match.text,
@@ -127,7 +127,7 @@ export default class BetterCommandPaletteFileAdapter extends SuggestModalAdapter
         });
     }
 
-    async onChooseSuggestion(match: Match, event: MouseEvent | KeyboardEvent) {
+    async onChooseSuggestion (match: Match, event: MouseEvent | KeyboardEvent) {
         let path = match && match.id;
 
         // No match means we are trying to create new file

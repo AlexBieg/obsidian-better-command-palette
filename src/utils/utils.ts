@@ -95,19 +95,11 @@ export function openFileWithEventKeys (
     file: TFile,
     event: MouseEvent | KeyboardEvent,
 ) {
-    const { workspace } = app;
+    // Figure if the file should be opened in a new tab
+    const openInNewTab = settings.openInNewTabMod === 'Shift' ? event.shiftKey : event.metaKey || event.ctrlKey;
 
-    let leaf = workspace.activeLeaf;
-
-    const createNewPane = settings.createNewPaneMod === 'Shift' ? event.shiftKey : event.metaKey || event.ctrlKey;
-
-    // Shift key means we should be using a new leaf
-    if (createNewPane) {
-        leaf = workspace.createLeafBySplit(workspace.activeLeaf);
-        workspace.setActiveLeaf(leaf);
-    }
-
-    leaf.openFile(file);
+    // Open the file
+    app.workspace.openLinkText(file.path, file.path, openInNewTab);
 }
 
 export function matchTag (tags: string[], tagQueries: string[]): boolean {

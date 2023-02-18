@@ -137,7 +137,7 @@ class BetterCommandPaletteModal extends SuggestModal<Match> implements UnsafeSug
             }
         };
 
-        const { createNewPaneMod, createNewFileMod } = plugin.settings;
+        const { openInNewTabMod, createNewFileMod } = plugin.settings;
 
         this.scope.register([], 'Backspace', (event: KeyboardEvent) => {
             closeModal(event);
@@ -154,14 +154,14 @@ class BetterCommandPaletteModal extends SuggestModal<Match> implements UnsafeSug
             }
         });
 
-        this.scope.register([createNewFileMod, createNewPaneMod], 'Enter', (event: KeyboardEvent) => {
+        this.scope.register([createNewFileMod, openInNewTabMod], 'Enter', (event: KeyboardEvent) => {
             if (this.actionType === ActionType.Files) {
                 this.currentAdapter.onChooseSuggestion(null, event);
                 this.close(event);
             }
         });
 
-        this.scope.register([createNewPaneMod], 'Enter', (event: KeyboardEvent) => {
+        this.scope.register([openInNewTabMod], 'Enter', (event: KeyboardEvent) => {
             if (this.actionType === ActionType.Files && this.currentSuggestions.length) {
                 this.currentAdapter.onChooseSuggestion(this.currentSuggestions[0], event);
                 this.close(event);

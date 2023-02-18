@@ -19,7 +19,7 @@ export interface BetterCommandPalettePluginSettings {
     macros: MacroCommandInterface[],
     hotkeyStyle: HotkeyStyleType;
     createNewFileMod: Modifier,
-    createNewPaneMod: Modifier,
+    openInNewTabMod: Modifier,
     hiddenCommands: string[],
     hiddenFiles: string[],
     hiddenTags: string[],
@@ -40,7 +40,7 @@ export const DEFAULT_SETTINGS: BetterCommandPalettePluginSettings = {
     macros: [],
     hotkeyStyle: 'auto',
     createNewFileMod: 'Mod',
-    createNewPaneMod: 'Shift',
+    openInNewTabMod: 'Shift',
     hiddenCommands: [],
     hiddenFiles: [],
     hiddenTags: [],
@@ -52,18 +52,18 @@ export class BetterCommandPaletteSettingTab extends PluginSettingTab {
 
     app: UnsafeAppInterface;
 
-    constructor(app: App, plugin: BetterCommandPalettePlugin) {
+    constructor (app: App, plugin: BetterCommandPalettePlugin) {
         super(app, plugin);
         this.plugin = plugin;
     }
 
-    display(): void {
+    display (): void {
         this.containerEl.empty();
         this.displayBasicSettings();
         this.displayMacroSettings();
     }
 
-    displayBasicSettings(): void {
+    displayBasicSettings (): void {
         const { containerEl } = this;
         const { settings } = this.plugin;
 
@@ -103,11 +103,11 @@ export class BetterCommandPaletteSettingTab extends PluginSettingTab {
             }));
 
         new Setting(containerEl)
-            .setName('Use shift to create files and cmd to open in new panes')
-            .setDesc('By default cmd is used to create files and shift is used to open in new panes. This setting reverses that to mimic the functionality of the standard quick switcher')
+            .setName('Use shift to create files and cmd/CTRL to open in new tab')
+            .setDesc('By default cmd/ctrl is used to create files and shift is used to open in new tab. This setting reverses that to mimic the behavior of the standard quick switcher.')
             .addToggle((t) => t.setValue(settings.createNewFileMod === 'Shift').onChange(async (val) => {
                 settings.createNewFileMod = val ? 'Shift' : 'Mod';
-                settings.createNewPaneMod = val ? 'Mod' : 'Shift';
+                settings.openInNewTabMod = val ? 'Mod' : 'Shift';
                 await this.plugin.saveSettings();
             }));
 
@@ -208,7 +208,7 @@ export class BetterCommandPaletteSettingTab extends PluginSettingTab {
                 }));
     }
 
-    displayMacroSettings(): void {
+    displayMacroSettings (): void {
         const { containerEl } = this;
         const { settings } = this.plugin;
 
