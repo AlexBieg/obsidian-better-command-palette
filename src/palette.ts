@@ -50,7 +50,7 @@ class BetterCommandPaletteModal extends SuggestModal<Match> implements UnsafeSug
 
     suggestionLimit: number;
 
-    constructor(
+    constructor (
         app: App,
         prevCommands: OrderedSet<Match>,
         prevTags: OrderedSet<Match>,
@@ -119,7 +119,7 @@ class BetterCommandPaletteModal extends SuggestModal<Match> implements UnsafeSug
         this.setScopes(plugin);
     }
 
-    close(evt?: KeyboardEvent) {
+    close (evt?: KeyboardEvent) {
         super.close();
 
         if (evt) {
@@ -127,7 +127,7 @@ class BetterCommandPaletteModal extends SuggestModal<Match> implements UnsafeSug
         }
     }
 
-    setScopes(plugin: BetterCommandPalettePlugin) {
+    setScopes (plugin: BetterCommandPalettePlugin) {
         const closeModal = (event: KeyboardEvent) => {
             // Have to cast this to access `value`
             const el = event.target as HTMLInputElement;
@@ -176,7 +176,7 @@ class BetterCommandPaletteModal extends SuggestModal<Match> implements UnsafeSug
         this.updateSuggestions();
     };
 
-    onOpen() {
+    onOpen () {
         super.onOpen();
 
         // Add the initial value to the input
@@ -188,7 +188,7 @@ class BetterCommandPaletteModal extends SuggestModal<Match> implements UnsafeSug
         }
     }
 
-    changeActionType(actionType:ActionType) {
+    changeActionType (actionType: ActionType) {
         let prefix = '';
         if (actionType === ActionType.Files) {
             prefix = this.plugin.settings.fileSearchPrefix;
@@ -202,7 +202,7 @@ class BetterCommandPaletteModal extends SuggestModal<Match> implements UnsafeSug
         this.updateSuggestions();
     }
 
-    setQuery(
+    setQuery (
         newQuery: string,
         cursorPosition: number = -1,
     ) {
@@ -215,7 +215,7 @@ class BetterCommandPaletteModal extends SuggestModal<Match> implements UnsafeSug
         this.updateSuggestions();
     }
 
-    updateActionType() : boolean {
+    updateActionType (): boolean {
         const text: string = this.inputEl.value;
         let nextAdapter;
         let type;
@@ -256,7 +256,7 @@ class BetterCommandPaletteModal extends SuggestModal<Match> implements UnsafeSug
         return wasUpdated;
     }
 
-    updateTitleText() {
+    updateTitleText () {
         if (this.plugin.settings.showPluginName) {
             this.modalTitleEl.setText(this.currentAdapter.getTitleText());
         } else {
@@ -264,11 +264,11 @@ class BetterCommandPaletteModal extends SuggestModal<Match> implements UnsafeSug
         }
     }
 
-    updateEmptyStateText() {
+    updateEmptyStateText () {
         this.emptyStateText = this.currentAdapter.getEmptyStateText();
     }
 
-    updateInstructions() {
+    updateInstructions () {
         Array.from(this.modalEl.getElementsByClassName('prompt-instructions'))
             .forEach((instruction) => {
                 this.modalEl.removeChild(instruction);
@@ -281,11 +281,11 @@ class BetterCommandPaletteModal extends SuggestModal<Match> implements UnsafeSug
         ]);
     }
 
-    getItems(): Match[] {
+    getItems (): Match[] {
         return this.currentAdapter.getSortedItems();
     }
 
-    receivedSuggestions(msg : MessageEvent) {
+    receivedSuggestions (msg: MessageEvent) {
         const results = [];
         let hiddenCount = 0;
 
@@ -301,7 +301,7 @@ class BetterCommandPaletteModal extends SuggestModal<Match> implements UnsafeSug
             }
         }
 
-        const matches = results.map((r : Match) => new PaletteMatch(r.id, r.text, r.tags));
+        const matches = results.map((r: Match) => new PaletteMatch(r.id, r.text, r.tags));
 
         // Sort the suggestions so that previously searched items are first
         const prevItems = this.currentAdapter.getPrevItems();
@@ -312,7 +312,7 @@ class BetterCommandPaletteModal extends SuggestModal<Match> implements UnsafeSug
         this.updateSuggestions();
     }
 
-    getSuggestionsAsync(query: string) {
+    getSuggestionsAsync (query: string) {
         const items = this.getItems();
         this.suggestionsWorker.postMessage({
             query,
@@ -320,7 +320,7 @@ class BetterCommandPaletteModal extends SuggestModal<Match> implements UnsafeSug
         });
     }
 
-    getSuggestions(query: string): Match[] {
+    getSuggestions (query: string): Match[] {
         // The action type might have changed
         this.updateActionType();
 
@@ -345,7 +345,7 @@ class BetterCommandPaletteModal extends SuggestModal<Match> implements UnsafeSug
         return this.showHiddenItems ? this.currentSuggestions : visibleItems;
     }
 
-    updateHiddenItemCountHeader(hiddenItemCount: number) {
+    updateHiddenItemCountHeader (hiddenItemCount: number) {
         this.hiddenItemsHeaderEl.empty();
 
         if (hiddenItemCount !== 0) {
@@ -354,7 +354,7 @@ class BetterCommandPaletteModal extends SuggestModal<Match> implements UnsafeSug
         }
     }
 
-    renderSuggestion(match: Match, el: HTMLElement) {
+    renderSuggestion (match: Match, el: HTMLElement) {
         el.addClass('mod-complex');
 
         const isHidden = this.currentAdapter.hiddenIds.includes(match.id);
@@ -387,7 +387,7 @@ class BetterCommandPaletteModal extends SuggestModal<Match> implements UnsafeSug
         this.currentAdapter.renderSuggestion(match, suggestionContent, suggestionAux);
     }
 
-    async onChooseSuggestion(item: Match, event: MouseEvent | KeyboardEvent) {
+    async onChooseSuggestion (item: Match, event: MouseEvent | KeyboardEvent) {
         this.currentAdapter.onChooseSuggestion(item, event);
     }
 }
