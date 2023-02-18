@@ -16,6 +16,7 @@ export interface BetterCommandPalettePluginSettings {
     suggestionLimit: number,
     recentAbovePinned: boolean,
     hyperKeyOverride: boolean,
+    displayOnlyNotesNames: boolean,
     macros: MacroCommandInterface[],
     hotkeyStyle: HotkeyStyleType;
     createNewFileMod: Modifier,
@@ -37,6 +38,7 @@ export const DEFAULT_SETTINGS: BetterCommandPalettePluginSettings = {
     suggestionLimit: 50,
     recentAbovePinned: false,
     hyperKeyOverride: false,
+    displayOnlyNotesNames: false,
     macros: [],
     hotkeyStyle: 'auto',
     createNewFileMod: 'Mod',
@@ -108,6 +110,14 @@ export class BetterCommandPaletteSettingTab extends PluginSettingTab {
             .addToggle((t) => t.setValue(settings.createNewFileMod === 'Shift').onChange(async (val) => {
                 settings.createNewFileMod = val ? 'Shift' : 'Mod';
                 settings.openInNewTabMod = val ? 'Mod' : 'Shift';
+                await this.plugin.saveSettings();
+            }));
+
+        new Setting(containerEl)
+            .setName("Display only notes' names")
+            .setDesc("If enabled, only notes names will be displayed in Quick Switcher mode instead of their full path.")
+            .addToggle((t) => t.setValue(settings.displayOnlyNotesNames).onChange(async (val) => {
+                settings.displayOnlyNotesNames = val;
                 await this.plugin.saveSettings();
             }));
 

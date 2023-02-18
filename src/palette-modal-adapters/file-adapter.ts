@@ -96,9 +96,12 @@ export default class BetterCommandPaletteFileAdapter extends SuggestModalAdapter
     }
 
     renderSuggestion (match: Match, content: HTMLElement): void {
+        // Build the displayed note name without its full path if required
+        const noteName = this.plugin.settings.displayOnlyNotesNames ? match.text.split("/").pop() : match.text;
+
         const suggestionEl = content.createEl('div', {
             cls: 'suggestion-title',
-            text: match.text,
+            text: noteName
         });
 
         if (this.unresolvedItems.has(match)) {
