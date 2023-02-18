@@ -373,7 +373,7 @@ class BetterCommandPaletteModal extends SuggestModal<Match> implements UnsafeSug
         const suggestionAux = el.createEl('span', 'suggestion-aux');
 
         const flairContainer = suggestionAux.createEl('span', 'suggestion-flair');
-        renderPrevItems(match, suggestionContent, this.currentAdapter.getPrevItems());
+        renderPrevItems(this.plugin.settings, match, suggestionContent, this.currentAdapter.getPrevItems());
 
         setIcon(flairContainer, icon, 13);
         flairContainer.ariaLabel = isHidden ? 'Click to Unhide' : 'Click to Hide';

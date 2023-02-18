@@ -18,6 +18,7 @@ export interface BetterCommandPalettePluginSettings {
     hyperKeyOverride: boolean,
     displayOnlyNotesNames: boolean,
     hideMdExtension: boolean,
+    recentlyUsedText: string,
     macros: MacroCommandInterface[],
     hotkeyStyle: HotkeyStyleType;
     createNewFileMod: Modifier,
@@ -41,6 +42,7 @@ export const DEFAULT_SETTINGS: BetterCommandPalettePluginSettings = {
     hyperKeyOverride: false,
     displayOnlyNotesNames: false,
     hideMdExtension: false,
+    recentlyUsedText: '(recently used)',
     macros: [],
     hotkeyStyle: 'auto',
     createNewFileMod: 'Mod',
@@ -128,6 +130,15 @@ export class BetterCommandPaletteSettingTab extends PluginSettingTab {
             .setDesc("If enabled, Markdown notes will be displayed without their .md extension in Quick Switcher mode")
             .addToggle((t) => t.setValue(settings.hideMdExtension).onChange(async (val) => {
                 settings.hideMdExtension = val;
+                await this.plugin.saveSettings();
+            }));
+
+
+        new Setting(containerEl)
+            .setName('Recently used text')
+            .setDesc('This text will be displayed next to recently used items')
+            .addText((t) => t.setValue(settings.recentlyUsedText).onChange(async (val) => {
+                settings.recentlyUsedText = val;
                 await this.plugin.saveSettings();
             }));
 

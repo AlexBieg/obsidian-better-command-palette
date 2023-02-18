@@ -56,12 +56,12 @@ export function generateHotKeyText (
     return hotKeyStrings.join(' ');
 }
 
-export function renderPrevItems (match: Match, el: HTMLElement, prevItems: OrderedSet<Match>) {
+export function renderPrevItems (settings: BetterCommandPalettePluginSettings, match: Match, el: HTMLElement, prevItems: OrderedSet<Match>) {
     if (prevItems.has(match)) {
         el.addClass('recent');
         el.createEl('span', {
             cls: 'suggestion-note',
-            text: '(recently used)',
+            text: settings.recentlyUsedText,
         });
     }
 }
