@@ -395,8 +395,6 @@ class BetterCommandPaletteModal extends SuggestModal<Match> implements UnsafeSug
     }
 
     async onChooseSuggestion (item: Match, event: MouseEvent | KeyboardEvent) {
-        console.log("ITEM");
-        console.log(item);
         this.currentAdapter.onChooseSuggestion(item, event);
     }
 }
