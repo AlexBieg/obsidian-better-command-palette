@@ -163,7 +163,10 @@ class BetterCommandPaletteModal extends SuggestModal<Match> implements UnsafeSug
 
         this.scope.register([openInNewTabMod], 'Enter', (event: KeyboardEvent) => {
             if (this.actionType === ActionType.Files && this.currentSuggestions.length) {
-                this.currentAdapter.onChooseSuggestion(this.currentSuggestions[0], event);
+                const promptResults = document.querySelector(".better-command-palette .prompt-results");
+                const selected = document.querySelector(".better-command-palette .is-selected");
+                const selectedIndex = Array.from(promptResults.children).indexOf(selected);
+                this.currentAdapter.onChooseSuggestion(this.currentSuggestions[selectedIndex], event);
                 this.close(event);
             }
         });
@@ -392,6 +395,8 @@ class BetterCommandPaletteModal extends SuggestModal<Match> implements UnsafeSug
     }
 
     async onChooseSuggestion (item: Match, event: MouseEvent | KeyboardEvent) {
+        console.log("ITEM");
+        console.log(item);
         this.currentAdapter.onChooseSuggestion(item, event);
     }
 }

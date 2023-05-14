@@ -80,7 +80,6 @@ export default class BetterCommandPaletteFileAdapter extends SuggestModalAdapter
 
     getInstructions (): Instruction[] {
         const { openInNewTabMod, createNewFileMod } = this.plugin.settings;
-
         return [
             { command: generateHotKeyText({ modifiers: [], key: 'ENTER' }, this.plugin.settings), purpose: 'Open file' },
             { command: generateHotKeyText({ modifiers: [openInNewTabMod], key: 'ENTER' }, this.plugin.settings), purpose: 'Open file in new pane' },
