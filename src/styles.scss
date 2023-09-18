@@ -4,6 +4,11 @@
         margin: 5px;
     }
 
+    .better-command-palette-buttons {
+        display: flex;
+        flex-direction: row;
+    }
+
     .hidden-items-header {
         margin: 0px;
         margin-left: 13px;

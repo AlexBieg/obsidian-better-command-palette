@@ -3,6 +3,12 @@ export const QUERY_TAG = '@';
 
 export const HYPER_KEY_MODIFIERS_SET = new Set(['Alt', 'Ctrl', 'Mod', 'Shift']);
 
+export const BASIC_MODIFIER_NAMES = {
+    Mod: 'Ctrl',
+    Alt: 'Alt',
+    Shift: 'Shift',
+};
+
 export const BASIC_MODIFIER_ICONS = {
     Mod: 'Ctrl +',
     Ctrl: 'Ctrl +',
@@ -38,4 +44,5 @@ export enum ActionType {
     Commands,
     Files,
     Tags,
+    Hotkey,
 }
