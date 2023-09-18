@@ -42,7 +42,7 @@ class BetterCommandPaletteModal extends SuggestModal<Match> implements UnsafeSug
 
     lastQuery!: string;
 
-    modalTitleEl: HTMLElement;
+    modalTitleEl: HTMLElement | undefined;
 
     hiddenItemsHeaderEl: HTMLElement;
 
@@ -143,15 +143,19 @@ class BetterCommandPaletteModal extends SuggestModal<Match> implements UnsafeSug
         }
 
         // Add our custom title element
-        this.modalTitleEl = createEl('p', {
-            cls: 'better-command-palette-title',
-        });
+        if (this.plugin.settings.showPluginName) {
+            this.modalTitleEl = createEl('p', {
+                cls: 'better-command-palette-title',
+            });
+        }
 
         // Update our action type before adding in our title element so the text is correct
         this.updateActionType();
 
         // Add in the title element
-        this.modalEl.insertBefore(this.modalTitleEl, this.modalEl.firstChild);
+        if (this.modalTitleEl) {
+            this.modalEl.insertBefore(this.modalTitleEl, this.modalEl.firstChild);
+        }
 
         this.hiddenItemsHeaderEl = createEl('p', 'hidden-items-header');
         this.showHiddenItems = false;
@@ -339,25 +343,7 @@ class BetterCommandPaletteModal extends SuggestModal<Match> implements UnsafeSug
     }
 
     updateTitleText() {
-        if (this.plugin.settings.showPluginName) {
-            // if (Platform.isMobile) {
-            //     this.modalTitleEl.setText('');
-            //     const setting = new Setting(this.modalTitleEl);
-            //     setting.setName(this.currentAdapter.getTitleText());
-            //     setting.addExtraButton((btn) => {
-            //         btn
-            //             .setIcon('x')
-            //             .onClick(() => {
-            //                 this.close();
-            //             });
-            //     });
-            //     setting.nameEl.addClass('better-command-palette-title');
-            // } else {
-            this.modalTitleEl.setText(this.currentAdapter.getTitleText());
-            // }
-        } else {
-            this.modalTitleEl.setText('');
-        }
+        this.modalTitleEl?.setText(this.currentAdapter.getTitleText());
     }
 
     updateEmptyStateText() {
