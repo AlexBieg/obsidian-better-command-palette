@@ -35,7 +35,7 @@ export const SPECIAL_KEYS: Record<string, string> = {
     ' ': 'Space',
 };
 
-export const BASIC_MODIFIER_ORDER: readonly Modifier[] = ['Shift', 'Mod', 'Alt', 'Meta'];
+export const BASIC_MODIFIER_ORDER: readonly Modifier[] = ['Mod', 'Alt', 'Shift', 'Meta'];
 
 export const MAC_MODIFIER_ORDER: readonly Modifier[] = ['Shift', 'Ctrl', 'Alt', 'Mod'];
 

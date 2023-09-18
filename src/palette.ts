@@ -1,5 +1,5 @@
 import {
-    App, ButtonComponent, Modifier, Notice, setIcon, Setting, SuggestModal,
+    App, ButtonComponent, ExtraButtonComponent, Modifier, Notice, Platform, setIcon, SuggestModal,
 } from 'obsidian';
 import BetterCommandPalettePlugin from 'src/main';
 import {
@@ -118,30 +118,29 @@ class BetterCommandPaletteModal extends SuggestModal<Match> implements UnsafeSug
         this.suggestionsWorker = suggestionsWorker;
         this.suggestionsWorker.onmessage = (msg: MessageEvent) => this.receivedSuggestions(msg);
 
-        const buttonBox = this.modalEl.createDiv({ cls: 'better-command-palette-buttons' });
+        if (Platform.isMobile) {
+            const buttonBox = this.modalEl.createDiv({ cls: 'better-command-palette-buttons' });
 
-        const modifierNames = getModifierIcons(this.plugin.settings);
-        const setting = new Setting(buttonBox);
-        getModifierNameOrder(this.plugin.settings).forEach((modifier) => {
-            setting.addButton((btn) => {
+            const modifierNames = getModifierIcons(this.plugin.settings);
+            getModifierNameOrder(this.plugin.settings).forEach((modifier) => {
+                const btn = new ButtonComponent(buttonBox);
                 this.modButtons.set(modifier, btn);
                 btn
                     .setButtonText(modifierNames[modifier].replace(' +', ''))
                     .onClick(() => this.toggleModifier(modifier));
             });
-        });
-        setting.controlEl.createDiv({ cls: 'better-command-palette-spacer' });
-        setting.addExtraButton((btn) => {
-            btn
+            buttonBox.createDiv({ cls: 'better-command-palette-spacer' });
+            const closeButton = new ExtraButtonComponent(buttonBox);
+            closeButton
                 .setIcon('x')
                 .onClick(() => {
                     this.close();
                 });
-        });
-        setting.controlEl.querySelectorAll('button').forEach((el) => {
-            el.setAttribute('tabindex', '-1');
-        });
-        this.modalEl.insertBefore(buttonBox, this.modalEl.firstChild);
+            buttonBox.querySelectorAll('button').forEach((el) => {
+                el.setAttribute('tabindex', '-1');
+            });
+            this.modalEl.insertBefore(buttonBox, this.modalEl.firstChild);
+        }
 
         // Add our custom title element
         this.modalTitleEl = createEl('p', {
@@ -341,7 +340,21 @@ class BetterCommandPaletteModal extends SuggestModal<Match> implements UnsafeSug
 
     updateTitleText() {
         if (this.plugin.settings.showPluginName) {
+            // if (Platform.isMobile) {
+            //     this.modalTitleEl.setText('');
+            //     const setting = new Setting(this.modalTitleEl);
+            //     setting.setName(this.currentAdapter.getTitleText());
+            //     setting.addExtraButton((btn) => {
+            //         btn
+            //             .setIcon('x')
+            //             .onClick(() => {
+            //                 this.close();
+            //             });
+            //     });
+            //     setting.nameEl.addClass('better-command-palette-title');
+            // } else {
             this.modalTitleEl.setText(this.currentAdapter.getTitleText());
+            // }
         } else {
             this.modalTitleEl.setText('');
         }
@@ -357,15 +370,10 @@ class BetterCommandPaletteModal extends SuggestModal<Match> implements UnsafeSug
                 this.modalEl.removeChild(instruction);
             });
 
-        const defaultInstructions = this.expectingHotkey
-            ? []
-            : [
-                { command: generateHotKeyText({ modifiers: [], key: 'ESC' }, this.plugin.settings), purpose: 'Close palette' },
-                { command: generateHotKeyText({ modifiers: ['Mod'], key: 'I' }, this.plugin.settings), purpose: 'Toggle Hidden Items' },
-            ];
         this.setInstructions([
             ...this.currentAdapter.getInstructions(),
-            ...defaultInstructions,
+            { command: generateHotKeyText({ modifiers: [], key: 'ESC' }, this.plugin.settings), purpose: 'Close palette' },
+            { command: generateHotKeyText({ modifiers: ['Mod'], key: 'I' }, this.plugin.settings), purpose: 'Toggle Hidden Items' },
         ]);
     }
 
@@ -481,7 +489,6 @@ class BetterCommandPaletteModal extends SuggestModal<Match> implements UnsafeSug
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     runHotkey(event: KeyboardEvent) {
-        console.log('KeyboardEvent', event);
         if (DOM_MODIFIER_KEYS.includes(event.key) || !this.modifiersAreValid()) {
             return;
         }

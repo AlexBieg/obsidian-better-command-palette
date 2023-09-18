@@ -31,25 +31,29 @@ function isHyperKey(modifiers: Modifier[]) : boolean {
 export function getModifierIcons(
     settings: BetterCommandPalettePluginSettings,
 ): typeof BASIC_MODIFIER_ICONS {
-    let modifierIcons = Platform.isMacOS ? MAC_MODIFIER_ICONS : BASIC_MODIFIER_ICONS;
     if (settings.hotkeyStyle === 'mac') {
-        modifierIcons = MAC_MODIFIER_ICONS;
-    } else if (settings.hotkeyStyle === 'windows') {
-        modifierIcons = BASIC_MODIFIER_ICONS;
+        return MAC_MODIFIER_ICONS;
     }
-    return modifierIcons;
+    if (settings.hotkeyStyle === 'windows') {
+        return BASIC_MODIFIER_ICONS;
+    }
+    return Platform.isMacOS || Platform.isIosApp
+        ? MAC_MODIFIER_ICONS
+        : BASIC_MODIFIER_ICONS;
 }
 
 export function getModifierNameOrder(
     settings: BetterCommandPalettePluginSettings,
 ): readonly Modifier[] {
-    let modifierOrder = Platform.isMacOS ? MAC_MODIFIER_ORDER : BASIC_MODIFIER_ORDER;
     if (settings.hotkeyStyle === 'mac') {
-        modifierOrder = MAC_MODIFIER_ORDER;
-    } else if (settings.hotkeyStyle === 'windows') {
-        modifierOrder = BASIC_MODIFIER_ORDER;
+        return MAC_MODIFIER_ORDER;
     }
-    return modifierOrder;
+    if (settings.hotkeyStyle === 'windows') {
+        return BASIC_MODIFIER_ORDER;
+    }
+    return Platform.isMacOS || Platform.isIosApp
+        ? MAC_MODIFIER_ORDER
+        : BASIC_MODIFIER_ORDER;
 }
 
 /**
