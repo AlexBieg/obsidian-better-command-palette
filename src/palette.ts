@@ -1,5 +1,5 @@
 import {
-    App, ButtonComponent, Modifier, Notice, Platform, setIcon, Setting, SuggestModal,
+    App, ButtonComponent, Modifier, Notice, setIcon, Setting, SuggestModal,
 } from 'obsidian';
 import BetterCommandPalettePlugin from 'src/main';
 import {
@@ -11,11 +11,13 @@ import {
 import { Match, UnsafeAppInterface, UnsafeSuggestModalInterface } from 'src/types/types';
 import {
     generateHotKeyText,
-    OrderedSet, PaletteMatch, renderPrevItems, SuggestModalAdapter,
+    getModifierIcons,
+    getModifierNameOrder,
+    OrderedSet, PaletteMatch, renderPrevItems, sameSet, SuggestModalAdapter,
 } from 'src/utils';
-import { ActionType, BASIC_MODIFIER_NAMES, MAC_MODIFIER_ICONS } from './utils/constants';
+import { ActionType } from './utils/constants';
 
-type ActiveMods = Record<Modifier, boolean>;
+const DOM_MODIFIER_KEYS: readonly string[] = ['Shift', 'Control', 'Alt', 'Meta'];
 
 class BetterCommandPaletteModal extends SuggestModal<Match> implements UnsafeSuggestModalInterface {
     // Unsafe interfaces
@@ -60,21 +62,11 @@ class BetterCommandPaletteModal extends SuggestModal<Match> implements UnsafeSug
 
     suggestionLimit: number;
 
-    readonly activeMods: ActiveMods = {
-        Mod: false,
-        Alt: false,
-        Shift: false,
-        Ctrl: false,
-        Meta: false,
-    };
+    readonly activeMods = new Set<Modifier>();
 
-    modButton: ButtonComponent;
+    readonly modButtons = new Map<Modifier, ButtonComponent>();
 
-    altButton: ButtonComponent;
-
-    modAltButton: ButtonComponent;
-
-    shiftButton: ButtonComponent;
+    expectingHotkey = false;
 
     constructor(
         app: App,
@@ -117,7 +109,7 @@ class BetterCommandPaletteModal extends SuggestModal<Match> implements UnsafeSug
         );
         this.hotkeyAdapter = new BetterCommandPaletteHotkeyAdapter(
             app,
-            prevTags,
+            new OrderedSet<Match>(),
             plugin,
             this,
         );
@@ -127,57 +119,28 @@ class BetterCommandPaletteModal extends SuggestModal<Match> implements UnsafeSug
         this.suggestionsWorker.onmessage = (msg: MessageEvent) => this.receivedSuggestions(msg);
 
         const buttonBox = this.modalEl.createDiv({ cls: 'better-command-palette-buttons' });
-        const modifiers = this.plugin.settings.hotkeyStyle === 'mac' ? MAC_MODIFIER_ICONS : BASIC_MODIFIER_NAMES;
-        const allModsOff: Partial<ActiveMods> = { Mod: false, Alt: false };
-        new Setting(buttonBox)
-            .addButton((btn) => {
-                this.modButton = btn;
-                btn.buttonEl.setAttribute('tabindex', '-1');
+
+        const modifierNames = getModifierIcons(this.plugin.settings);
+        const setting = new Setting(buttonBox);
+        getModifierNameOrder(this.plugin.settings).forEach((modifier) => {
+            setting.addButton((btn) => {
+                this.modButtons.set(modifier, btn);
                 btn
-                    .setButtonText(modifiers.Mod)
-                    .onClick(() => {
-                        this.updateMods(
-                            this.activeMods.Mod && !this.activeMods.Alt
-                                ? allModsOff
-                                : { Mod: true, Alt: false },
-                        );
-                    });
-            })
-            .addButton((btn) => {
-                this.altButton = btn;
-                btn.buttonEl.setAttribute('tabindex', '-1');
-                btn
-                    .setButtonText(modifiers.Alt)
-                    .onClick(() => {
-                        this.updateMods(
-                            !this.activeMods.Mod && this.activeMods.Alt
-                                ? allModsOff
-                                : { Mod: false, Alt: true },
-                        );
-                    });
-            })
-            .addButton((btn) => {
-                this.modAltButton = btn;
-                btn.buttonEl.setAttribute('tabindex', '-1');
-                btn
-                    .setButtonText(`${modifiers.Mod} + ${modifiers.Alt}`)
-                    .onClick(() => {
-                        this.updateMods(
-                            this.activeMods.Mod && this.activeMods.Alt
-                                ? allModsOff
-                                : { Mod: true, Alt: true },
-                        );
-                    });
-            })
-            .addButton((btn) => {
-                this.shiftButton = btn;
-                btn.buttonEl.setAttribute('tabindex', '-1');
-                btn
-                    .setButtonText(modifiers.Shift)
-                    .onClick(() => {
-                        this.updateMods({ Shift: !this.activeMods.Shift });
-                    });
+                    .setButtonText(modifierNames[modifier].replace(' +', ''))
+                    .onClick(() => this.toggleModifier(modifier));
             });
+        });
+        setting.controlEl.createDiv({ cls: 'better-command-palette-spacer' });
+        setting.addExtraButton((btn) => {
+            btn
+                .setIcon('x')
+                .onClick(() => {
+                    this.close();
+                });
+        });
+        setting.controlEl.querySelectorAll('button').forEach((el) => {
+            el.setAttribute('tabindex', '-1');
+        });
         this.modalEl.insertBefore(buttonBox, this.modalEl.firstChild);
 
         // Add our custom title element
@@ -202,32 +165,30 @@ class BetterCommandPaletteModal extends SuggestModal<Match> implements UnsafeSug
         this.setScopes(plugin);
     }
 
-    updateMods(update: Partial<ActiveMods>): void {
-        Object.assign(this.activeMods, update);
-        const setCtaIff = (condition: boolean, button: ButtonComponent) => {
-            if (condition) {
-                button.setCta();
-            } else {
-                button.removeCta();
-            }
-        };
-        setCtaIff(this.activeMods.Mod && !this.activeMods.Alt, this.modButton);
-        setCtaIff(!this.activeMods.Mod && this.activeMods.Alt, this.altButton);
-        setCtaIff(this.activeMods.Mod && this.activeMods.Alt, this.modAltButton);
-        setCtaIff(this.activeMods.Shift, this.shiftButton);
-
-        if (this.expectingHotkey()) {
-            this.setPlaceholder('Type a hotkey');
-            this.setQuery('');
-            this.inputEl.focus();
+    toggleModifier(modifier: Modifier): void {
+        if (this.activeMods.has(modifier)) {
+            this.activeMods.delete(modifier);
+            this.modButtons.get(modifier)?.removeCta();
         } else {
-            this.setPlaceholder('Select a command');
+            this.activeMods.add(modifier);
+            this.modButtons.get(modifier)?.setCta();
+        }
+        this.expectingHotkey = this.activeMods.size !== 0;
+        this.setQuery('');
+        this.inputEl.focus();
+
+        if (this.expectingHotkey) {
+            if (!this.modifiersAreValid()) {
+                this.setPlaceholder('Select another modifier');
+            } else {
+                this.setPlaceholder('Type a hotkey');
+            }
         }
         this.updateActionType();
     }
 
-    expectingHotkey(): boolean {
-        return this.activeMods.Mod || this.activeMods.Alt;
+    modifiersAreValid(): boolean {
+        return this.activeMods.size >= 2 || (this.activeMods.size === 1 && !this.activeMods.has('Shift'));
     }
 
     close(evt?: KeyboardEvent) {
@@ -243,7 +204,7 @@ class BetterCommandPaletteModal extends SuggestModal<Match> implements UnsafeSug
             // Have to cast this to access `value`
             const el = event.target as HTMLInputElement;
 
-            if (plugin.settings.closeWithBackspace && el.value === '') {
+            if (plugin.settings.closeWithBackspace && el.value === '' && !this.expectingHotkey) {
                 this.close(event);
             }
         };
@@ -259,21 +220,23 @@ class BetterCommandPaletteModal extends SuggestModal<Match> implements UnsafeSug
         });
 
         this.scope.register([createNewFileMod], 'Enter', (event: KeyboardEvent) => {
-            if (this.actionType === ActionType.Files) {
+            if (this.actionType === ActionType.Files && !this.expectingHotkey) {
                 this.currentAdapter.onChooseSuggestion(null, event);
                 this.close(event);
             }
         });
 
         this.scope.register([createNewFileMod, createNewPaneMod], 'Enter', (event: KeyboardEvent) => {
-            if (this.actionType === ActionType.Files) {
+            if (this.actionType === ActionType.Files && !this.expectingHotkey) {
                 this.currentAdapter.onChooseSuggestion(null, event);
                 this.close(event);
             }
         });
 
         this.scope.register([createNewPaneMod], 'Enter', (event: KeyboardEvent) => {
-            if (this.actionType === ActionType.Files && this.currentSuggestions.length) {
+            if (this.actionType === ActionType.Files
+                && this.currentSuggestions.length
+                && !this.expectingHotkey) {
                 this.currentAdapter.onChooseSuggestion(this.currentSuggestions[0], event);
                 this.close(event);
             }
@@ -283,8 +246,10 @@ class BetterCommandPaletteModal extends SuggestModal<Match> implements UnsafeSug
     }
 
     toggleHiddenItems = () => {
-        this.showHiddenItems = !this.showHiddenItems;
-        this.updateSuggestions();
+        if (!this.expectingHotkey) {
+            this.showHiddenItems = !this.showHiddenItems;
+            this.updateSuggestions();
+        }
     };
 
     onOpen() {
@@ -297,7 +262,6 @@ class BetterCommandPaletteModal extends SuggestModal<Match> implements UnsafeSug
         if (this.initialInputValue) {
             this.setQuery(this.initialInputValue);
         }
-        this.updateMods({});
     }
 
     changeActionType(actionType:ActionType) {
@@ -332,7 +296,7 @@ class BetterCommandPaletteModal extends SuggestModal<Match> implements UnsafeSug
         let nextAdapter;
         let type;
 
-        if (this.expectingHotkey()) {
+        if (this.expectingHotkey) {
             type = ActionType.Hotkey;
             nextAdapter = this.hotkeyAdapter;
         } else if (text.startsWith(this.fileSearchPrefix)) {
@@ -344,6 +308,10 @@ class BetterCommandPaletteModal extends SuggestModal<Match> implements UnsafeSug
         } else {
             type = ActionType.Commands;
             nextAdapter = this.commandAdapter;
+        }
+
+        if (!this.expectingHotkey) {
+            this.setPlaceholder('Select a command');
         }
 
         if (type !== this.actionType) {
@@ -389,10 +357,15 @@ class BetterCommandPaletteModal extends SuggestModal<Match> implements UnsafeSug
                 this.modalEl.removeChild(instruction);
             });
 
+        const defaultInstructions = this.expectingHotkey
+            ? []
+            : [
+                { command: generateHotKeyText({ modifiers: [], key: 'ESC' }, this.plugin.settings), purpose: 'Close palette' },
+                { command: generateHotKeyText({ modifiers: ['Mod'], key: 'I' }, this.plugin.settings), purpose: 'Toggle Hidden Items' },
+            ];
         this.setInstructions([
             ...this.currentAdapter.getInstructions(),
-            { command: generateHotKeyText({ modifiers: [], key: 'ESC' }, this.plugin.settings), purpose: 'Close palette' },
-            { command: generateHotKeyText({ modifiers: ['Mod'], key: 'I' }, this.plugin.settings), purpose: 'Toggle Hidden Items' },
+            ...defaultInstructions,
         ]);
     }
 
@@ -508,27 +481,25 @@ class BetterCommandPaletteModal extends SuggestModal<Match> implements UnsafeSug
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     runHotkey(event: KeyboardEvent) {
-        if (event.key === 'Shift' || event.key === 'Ctrl' || event.key === 'Alt' || event.key === 'Meta') {
+        console.log('KeyboardEvent', event);
+        if (DOM_MODIFIER_KEYS.includes(event.key) || !this.modifiersAreValid()) {
             return;
         }
         this.close(event);
-        const key = event.key.toLowerCase();
+        const key = event.key.toUpperCase();
         const commandToRun = this.app.commands.listCommands().find(
             (command) => command.hotkeys?.some(
-                (hotkey) => hotkey.key.toLowerCase() === key && hotkey.modifiers.every(
-                    (m) => this.activeMods[m],
-                ),
+                (hotkey) => hotkey.key === key && sameSet(hotkey.modifiers, this.activeMods),
             ),
         );
         if (commandToRun) {
             this.app.commands.executeCommandById(commandToRun.id);
         } else {
-            const modifiers = Object
-                .entries(this.activeMods)
-                .filter(([, value]) => value)
-                .map(([k]) => k);
             // eslint-disable-next-line no-new
-            new Notice(`Hokey not found: ${generateHotKeyText({ key, modifiers }, this.plugin.settings)}`, 2000);
+            new Notice(
+                `Hokey not found: ${generateHotKeyText({ key, modifiers: Array.from(this.activeMods) }, this.plugin.settings)}`,
+                2000,
+            );
         }
     }
 }

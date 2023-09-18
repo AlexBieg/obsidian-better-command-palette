@@ -7,7 +7,12 @@ import { Match, UnsafeMetadataCacheInterface } from 'src/types/types';
 import PaletteMatch from './palette-match';
 import OrderedSet from './ordered-set';
 import {
-    BASIC_MODIFIER_ICONS, HYPER_KEY_MODIFIERS_SET, MAC_MODIFIER_ICONS, SPECIAL_KEYS,
+    BASIC_MODIFIER_ICONS,
+    BASIC_MODIFIER_ORDER,
+    HYPER_KEY_MODIFIERS_SET,
+    MAC_MODIFIER_ICONS,
+    MAC_MODIFIER_ORDER,
+    SPECIAL_KEYS,
 } from './constants';
 
 /**
@@ -23,6 +28,30 @@ function isHyperKey(modifiers: Modifier[]) : boolean {
     return modifiers.every((m) => HYPER_KEY_MODIFIERS_SET.has(m));
 }
 
+export function getModifierIcons(
+    settings: BetterCommandPalettePluginSettings,
+): typeof BASIC_MODIFIER_ICONS {
+    let modifierIcons = Platform.isMacOS ? MAC_MODIFIER_ICONS : BASIC_MODIFIER_ICONS;
+    if (settings.hotkeyStyle === 'mac') {
+        modifierIcons = MAC_MODIFIER_ICONS;
+    } else if (settings.hotkeyStyle === 'windows') {
+        modifierIcons = BASIC_MODIFIER_ICONS;
+    }
+    return modifierIcons;
+}
+
+export function getModifierNameOrder(
+    settings: BetterCommandPalettePluginSettings,
+): readonly Modifier[] {
+    let modifierOrder = Platform.isMacOS ? MAC_MODIFIER_ORDER : BASIC_MODIFIER_ORDER;
+    if (settings.hotkeyStyle === 'mac') {
+        modifierOrder = MAC_MODIFIER_ORDER;
+    } else if (settings.hotkeyStyle === 'windows') {
+        modifierOrder = BASIC_MODIFIER_ORDER;
+    }
+    return modifierOrder;
+}
+
 /**
  * A utility that generates the text of a Hotkey for UIs
  * @param {Hotkey} hotkey The hotkey to generate text for
@@ -32,13 +61,7 @@ export function generateHotKeyText(
     hotkey: Hotkey,
     settings: BetterCommandPalettePluginSettings,
 ): string {
-    let modifierIcons = Platform.isMacOS ? MAC_MODIFIER_ICONS : BASIC_MODIFIER_ICONS;
-
-    if (settings.hotkeyStyle === 'mac') {
-        modifierIcons = MAC_MODIFIER_ICONS;
-    } else if (settings.hotkeyStyle === 'windows') {
-        modifierIcons = BASIC_MODIFIER_ICONS;
-    }
+    const modifierIcons = getModifierIcons(settings);
 
     const hotKeyStrings: string[] = [];
 
@@ -157,4 +180,18 @@ export function createPaletteMatchesFromFilePath(
             tags,
         )),
     ];
+}
+
+/**
+ * Tests if two sets have the same members, or if a and array and a set contain
+ * the same items.
+ *
+ * Will erroneously return false if `a` is an array with duplicate entires.
+ */
+export function sameSet<T>(a: Set<T> | T[], b: Set<T>): boolean {
+    const left = a instanceof Array ? a : Array.from(a);
+    if (left.length !== b.size) {
+        return false;
+    }
+    return left.every((value) => b.has(value));
 }

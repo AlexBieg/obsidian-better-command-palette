@@ -18,6 +18,17 @@ export default class BetterCommandPaletteHotkeyAdapter extends SuggestModalAdapt
 
     pinnedItems: Match[];
 
+    readonly onChangeListener = () => {
+        if (this.palette.inputEl.value !== '') {
+            this.palette.inputEl.value = '';
+        }
+    };
+
+    onKeyDownListener = (event: KeyboardEvent) => {
+        event.preventDefault();
+        this.palette.runHotkey(event);
+    };
+
     initialize() {
         super.initialize();
 
@@ -27,7 +38,12 @@ export default class BetterCommandPaletteHotkeyAdapter extends SuggestModalAdapt
 
     mount(): void {
         const { palette } = this;
-        palette.inputEl.addEventListener('keydown', (event) => palette.runHotkey(event));
+        this.keymapHandlers = [
+            palette.scope.register([], null, (event: KeyboardEvent) => {
+                event.preventDefault();
+                this.palette.runHotkey(event);
+            }),
+        ];
         palette.resultContainerEl.setAttribute('hidden', 'true');
     }
 

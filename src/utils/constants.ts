@@ -1,13 +1,9 @@
+import { Modifier } from 'obsidian';
+
 export const QUERY_OR = '||';
 export const QUERY_TAG = '@';
 
 export const HYPER_KEY_MODIFIERS_SET = new Set(['Alt', 'Ctrl', 'Mod', 'Shift']);
-
-export const BASIC_MODIFIER_NAMES = {
-    Mod: 'Ctrl',
-    Alt: 'Alt',
-    Shift: 'Shift',
-};
 
 export const BASIC_MODIFIER_ICONS = {
     Mod: 'Ctrl +',
@@ -36,7 +32,12 @@ export const SPECIAL_KEYS: Record<string, string> = {
     ARROWDOWN: '↓',
     BACKSPACE: '⌫',
     ESC: 'Esc',
+    ' ': 'Space',
 };
+
+export const BASIC_MODIFIER_ORDER: readonly Modifier[] = ['Shift', 'Mod', 'Alt', 'Meta'];
+
+export const MAC_MODIFIER_ORDER: readonly Modifier[] = ['Shift', 'Ctrl', 'Alt', 'Mod'];
 
 export const MACRO_COMMAND_ID_PREFIX = 'obsidian-better-command-palette-macro-';
 

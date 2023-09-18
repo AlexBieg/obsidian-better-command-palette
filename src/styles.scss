@@ -4,9 +4,28 @@
         margin: 5px;
     }
 
+    .better-command-palette-spacer {
+        flex-grow: 1;
+    }
+
     .better-command-palette-buttons {
+        button {
+            user-select: none;
+        }
         display: flex;
         flex-direction: row;
+        .setting-item {
+            width: 100%;
+        }
+        .setting-item > *:first-child {
+            margin-right: var(--size-4-4);
+        }
+        .setting-item > *:last-child {
+            margin-right: var(--size-4-4);
+        } 
+        .setting-item-control {
+            width: 100%;
+        }
     }
 
     .hidden-items-header {
