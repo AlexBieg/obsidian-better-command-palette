@@ -7,11 +7,9 @@ import { Match, UnsafeMetadataCacheInterface } from 'src/types/types';
 import PaletteMatch from './palette-match';
 import OrderedSet from './ordered-set';
 import {
-    BASIC_MODIFIER_ICONS,
-    BASIC_MODIFIER_ORDER,
     HYPER_KEY_MODIFIERS_SET,
-    MAC_MODIFIER_ICONS,
-    MAC_MODIFIER_ORDER,
+    MODIFIER_INFO,
+    ModifierInfo,
     SPECIAL_KEYS,
 } from './constants';
 
@@ -20,7 +18,7 @@ import {
  * @param {Modifier[]} modifiers An array of modifiers
  * @returns {boolean} Do the modifiers make up a hyper key command
  */
-function isHyperKey(modifiers: Modifier[]) : boolean {
+function isHyperKey(modifiers: Modifier[]): boolean {
     if (modifiers.length !== 4) {
         return false;
     }
@@ -28,32 +26,21 @@ function isHyperKey(modifiers: Modifier[]) : boolean {
     return modifiers.every((m) => HYPER_KEY_MODIFIERS_SET.has(m));
 }
 
-export function getModifierIcons(
+export function getEffectiveHotkeyStyle(
     settings: BetterCommandPalettePluginSettings,
-): typeof BASIC_MODIFIER_ICONS {
-    if (settings.hotkeyStyle === 'mac') {
-        return MAC_MODIFIER_ICONS;
+): 'mac' | 'windows' {
+    if (settings.hotkeyStyle === 'auto') {
+        return Platform.isMacOS || Platform.isIosApp
+            ? 'mac'
+            : 'windows';
     }
-    if (settings.hotkeyStyle === 'windows') {
-        return BASIC_MODIFIER_ICONS;
-    }
-    return Platform.isMacOS || Platform.isIosApp
-        ? MAC_MODIFIER_ICONS
-        : BASIC_MODIFIER_ICONS;
+    return settings.hotkeyStyle;
 }
 
-export function getModifierNameOrder(
+export function getModifierInfo(
     settings: BetterCommandPalettePluginSettings,
-): readonly Modifier[] {
-    if (settings.hotkeyStyle === 'mac') {
-        return MAC_MODIFIER_ORDER;
-    }
-    if (settings.hotkeyStyle === 'windows') {
-        return BASIC_MODIFIER_ORDER;
-    }
-    return Platform.isMacOS || Platform.isIosApp
-        ? MAC_MODIFIER_ORDER
-        : BASIC_MODIFIER_ORDER;
+): ModifierInfo {
+    return MODIFIER_INFO[getEffectiveHotkeyStyle(settings)];
 }
 
 /**
@@ -65,22 +52,22 @@ export function generateHotKeyText(
     hotkey: Hotkey,
     settings: BetterCommandPalettePluginSettings,
 ): string {
-    const modifierIcons = getModifierIcons(settings);
+    const modifierInfo = getModifierInfo(settings);
 
     const hotKeyStrings: string[] = [];
 
     if (settings.hyperKeyOverride && isHyperKey(hotkey.modifiers)) {
-        hotKeyStrings.push(modifierIcons.Hyper);
+        hotKeyStrings.push(modifierInfo.icons.Hyper);
     } else {
         hotkey.modifiers.forEach((mod: Modifier) => {
-            hotKeyStrings.push(modifierIcons[mod]);
+            hotKeyStrings.push(modifierInfo.icons[mod]);
         });
     }
 
     const key = hotkey.key.toUpperCase();
     hotKeyStrings.push(SPECIAL_KEYS[key] || key);
 
-    return hotKeyStrings.join(' ');
+    return hotKeyStrings.join(modifierInfo.separator);
 }
 
 export function renderPrevItems(match: Match, el: HTMLElement, prevItems: OrderedSet<Match>) {
@@ -97,7 +84,7 @@ export function getCommandText(item: Command): string {
     return item.name;
 }
 
-export async function getOrCreateFile(app: App, path: string) : Promise < TFile > {
+export async function getOrCreateFile(app: App, path: string): Promise<TFile> {
     let file = app.metadataCache.getFirstLinkpathDest(path, '');
 
     if (!file) {
