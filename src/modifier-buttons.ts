@@ -94,10 +94,12 @@ export default class ModifierButtons {
                 this.modifierButtons.get(modifier)?.removeCta();
             }
         });
-        if (sameSet(this.activeModifiers, HYPER_KEY_MODIFIERS_SET)) {
-            this.hyperButton.setCta();
-        } else {
-            this.hyperButton.removeCta();
+        if (this.hyperButton) {
+            if (sameSet(this.activeModifiers, HYPER_KEY_MODIFIERS_SET)) {
+                this.hyperButton.setCta();
+            } else {
+                this.hyperButton.removeCta();
+            }
         }
 
         this.onModifiersChanged();

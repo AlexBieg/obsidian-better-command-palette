@@ -64,7 +64,10 @@ export function generateHotKeyText(
         });
     }
 
-    const key = hotkey.key.toUpperCase();
+    let { key } = hotkey;
+    if (key.length === 1) {
+        key = key.toUpperCase();
+    }
     hotKeyStrings.push(SPECIAL_KEYS[key] || key);
 
     return hotKeyStrings.join(modifierInfo.separator);

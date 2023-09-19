@@ -449,19 +449,25 @@ class BetterCommandPaletteModal extends SuggestModal<Match> implements UnsafeSug
         if (DOM_MODIFIER_KEYS.includes(event.key) || !modifiersAreValid) {
             return;
         }
+
         this.close(event);
-        const key = event.key.toUpperCase();
+        const upperKey = event.key.toUpperCase();
         const commandToRun = this.app.commands.listCommands().find(
             (command) => command.hotkeys?.some(
-                (hotkey) => hotkey.key === key && sameSet(hotkey.modifiers, activeModifiers),
+                (hotkey) => hotkey.key.toUpperCase() === upperKey
+                    && sameSet(hotkey.modifiers, activeModifiers),
             ),
         );
+
         if (commandToRun) {
             this.app.commands.executeCommandById(commandToRun.id);
         } else {
             // eslint-disable-next-line no-new
             new Notice(
-                `Hokey not found: ${generateHotKeyText({ key, modifiers: Array.from(activeModifiers) }, this.plugin.settings)}`,
+                `Hotkey not found: ${generateHotKeyText(
+                    { key: event.key, modifiers: Array.from(activeModifiers) },
+                    this.plugin.settings,
+                )}`,
                 2000,
             );
         }

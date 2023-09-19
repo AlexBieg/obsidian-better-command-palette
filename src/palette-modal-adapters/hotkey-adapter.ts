@@ -24,7 +24,7 @@ export default class BetterCommandPaletteHotkeyAdapter extends SuggestModalAdapt
         }
     };
 
-    onKeyDownListener = (event: KeyboardEvent) => {
+    readonly onKeyDownListener = (event: KeyboardEvent) => {
         event.preventDefault();
         this.palette.runHotkey(event);
     };
@@ -38,17 +38,14 @@ export default class BetterCommandPaletteHotkeyAdapter extends SuggestModalAdapt
 
     mount(): void {
         const { palette } = this;
-        this.keymapHandlers = [
-            palette.scope.register([], null, (event: KeyboardEvent) => {
-                event.preventDefault();
-                this.palette.runHotkey(event);
-            }),
-        ];
+        palette.modalEl.addEventListener('keydown', this.onKeyDownListener);
         palette.resultContainerEl.setAttribute('hidden', 'true');
     }
 
     unmount(): void {
-        this.palette.resultContainerEl.removeAttribute('hidden');
+        const { palette } = this;
+        palette.modalEl.addEventListener('keydown', this.onKeyDownListener);
+        palette.resultContainerEl.removeAttribute('hidden');
     }
 
     getInstructions(): Instruction[] {
