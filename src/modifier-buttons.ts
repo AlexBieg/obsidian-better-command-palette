@@ -1,5 +1,5 @@
 import {
-    ButtonComponent, ExtraButtonComponent, Modifier,
+    ButtonComponent, Modifier,
 } from 'obsidian';
 import BetterCommandPalettePlugin from 'src/main';
 import {
@@ -25,18 +25,18 @@ export default class ModifierButtons {
 
     constructor(
         private readonly plugin: BetterCommandPalettePlugin,
-        private readonly onClose: () => void,
         private readonly onModifiersChanged: () => void,
     ) {
         this.modifierInfo = getModifierInfo(this.plugin.settings);
 
-        this.modifiersEl = createDiv({ cls: 'better-command-palette-buttons' });
+        this.modifiersEl = createDiv({ cls: 'better-command-palette-button-box' });
 
         this.modifierInfo.order.forEach((modifier) => {
             this.modifierButtons.set(
                 modifier,
                 new ButtonComponent(this.modifiersEl)
                     .setButtonText(this.modifierInfo.icons[modifier])
+                    .setClass('better-command-palette-button')
                     .onClick(() => this.toggleModifier(modifier)),
             );
         });
@@ -46,12 +46,6 @@ export default class ModifierButtons {
                 .setButtonText(this.modifierInfo.icons.Hyper)
                 .onClick(() => this.onHyper());
         }
-
-        this.modifiersEl.createDiv({ cls: 'better-command-palette-spacer' });
-        const closeButton = new ExtraButtonComponent(this.modifiersEl);
-        closeButton
-            .setIcon('x')
-            .onClick(this.onClose);
 
         this.modifiersEl.querySelectorAll('button').forEach((el) => {
             el.setAttribute('tabindex', '-1');

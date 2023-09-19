@@ -16,8 +16,6 @@ import {
 import { ActionType } from './utils/constants';
 import ModifierButtons from './modifier-buttons';
 
-const DOM_MODIFIER_KEYS: readonly string[] = ['Shift', 'Control', 'Alt', 'Meta'];
-
 class BetterCommandPaletteModal extends SuggestModal<Match> implements UnsafeSuggestModalInterface {
     // Unsafe interfaces
 
@@ -116,7 +114,6 @@ class BetterCommandPaletteModal extends SuggestModal<Match> implements UnsafeSug
         if (Platform.isMobile) {
             this.modifierButtons = new ModifierButtons(
                 this.plugin,
-                () => this.close(),
                 () => this.onModifiersChanged(),
             );
 
@@ -422,7 +419,7 @@ class BetterCommandPaletteModal extends SuggestModal<Match> implements UnsafeSug
         const flairContainer = suggestionAux.createEl('span', 'suggestion-flair');
         renderPrevItems(match, suggestionContent, this.currentAdapter.getPrevItems());
 
-        setIcon(flairContainer, icon, 13);
+        setIcon(flairContainer, icon);
         flairContainer.ariaLabel = isHidden ? 'Click to Unhide' : 'Click to Hide';
         flairContainer.setAttr('data-id', match.id);
 
@@ -443,15 +440,11 @@ class BetterCommandPaletteModal extends SuggestModal<Match> implements UnsafeSug
     }
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    runHotkey(event: KeyboardEvent) {
-        const { modifiersAreValid, activeModifiers } = this.modifierButtons;
+    runHotkey(key: string) {
+        this.close();
 
-        if (DOM_MODIFIER_KEYS.includes(event.key) || !modifiersAreValid) {
-            return;
-        }
-
-        this.close(event);
-        const upperKey = event.key.toUpperCase();
+        const { activeModifiers } = this.modifierButtons!;
+        const upperKey = key.toUpperCase();
         const commandToRun = this.app.commands.listCommands().find(
             (command) => command.hotkeys?.some(
                 (hotkey) => hotkey.key.toUpperCase() === upperKey
@@ -465,7 +458,7 @@ class BetterCommandPaletteModal extends SuggestModal<Match> implements UnsafeSug
             // eslint-disable-next-line no-new
             new Notice(
                 `Hotkey not found: ${generateHotKeyText(
-                    { key: event.key, modifiers: Array.from(activeModifiers) },
+                    { key: key.toUpperCase(), modifiers: Array.from(activeModifiers) },
                     this.plugin.settings,
                 )}`,
                 2000,

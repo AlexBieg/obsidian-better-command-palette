@@ -37,7 +37,7 @@ export const MODIFIER_INFO: Record<'windows' | 'mac', ModifierInfo> = {
         order: ['Shift', 'Ctrl', 'Alt', 'Mod'],
     },
 };
- 
+
 export const SPECIAL_KEYS: Record<string, string> = {
     Tab: '↹',
     Enter: '↵',

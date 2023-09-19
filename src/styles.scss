@@ -4,15 +4,9 @@
         margin: 5px;
     }
 
-    .better-command-palette-spacer {
-        flex-grow: 1;
-    }
-
-    .better-command-palette-buttons {
+    .better-command-palette-button-box {
         display: flex;
-        flex-direction: row;
-        align-items: flex-start;
-        button {
+        .better-command-palette-button {
             margin-left: 0.5ch;
             margin-right: 0.5ch;
             &:first-child {

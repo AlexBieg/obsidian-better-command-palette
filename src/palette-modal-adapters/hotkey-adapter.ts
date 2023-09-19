@@ -19,14 +19,13 @@ export default class BetterCommandPaletteHotkeyAdapter extends SuggestModalAdapt
     pinnedItems: Match[];
 
     readonly onChangeListener = () => {
-        if (this.palette.inputEl.value !== '') {
+        const { value } = this.palette.inputEl;
+        if (value !== '') {
+            if (value.length === 1) {
+                this.palette.runHotkey(value);
+            }
             this.palette.inputEl.value = '';
         }
-    };
-
-    readonly onKeyDownListener = (event: KeyboardEvent) => {
-        event.preventDefault();
-        this.palette.runHotkey(event);
     };
 
     initialize() {
@@ -38,13 +37,13 @@ export default class BetterCommandPaletteHotkeyAdapter extends SuggestModalAdapt
 
     mount(): void {
         const { palette } = this;
-        palette.modalEl.addEventListener('keydown', this.onKeyDownListener);
+        palette.inputEl.addEventListener('input', this.onChangeListener);
         palette.resultContainerEl.setAttribute('hidden', 'true');
     }
 
     unmount(): void {
         const { palette } = this;
-        palette.modalEl.addEventListener('keydown', this.onKeyDownListener);
+        palette.inputEl.addEventListener('input', this.onChangeListener);
         palette.resultContainerEl.removeAttribute('hidden');
     }
 
