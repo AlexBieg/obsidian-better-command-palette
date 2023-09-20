@@ -9,15 +9,15 @@ import { MACRO_COMMAND_ID_PREFIX } from './utils/constants';
 import './styles.scss';
 
 export default class BetterCommandPalettePlugin extends Plugin {
-    app: UnsafeAppInterface;
+    declare app: UnsafeAppInterface;
 
-    settings: BetterCommandPalettePluginSettings;
+    settings!: BetterCommandPalettePluginSettings;
 
-    prevCommands: OrderedSet<Match>;
+    prevCommands!: OrderedSet<Match>;
 
-    prevTags: OrderedSet<Match>;
+    prevTags!: OrderedSet<Match>;
 
-    suggestionsWorker: Worker;
+    suggestionsWorker!: Worker;
 
     async onload() {
         // eslint-disable-next-line no-console

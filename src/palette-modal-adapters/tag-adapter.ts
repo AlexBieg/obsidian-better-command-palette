@@ -8,16 +8,16 @@ import { ActionType, QUERY_TAG } from 'src/utils/constants';
 import { Match, UnsafeAppInterface } from '../types/types';
 
 export default class BetterCommandPaletteTagAdapter extends SuggestModalAdapter {
-    titleText: string;
+    titleText!: string;
 
-    emptyStateText: string;
+    emptyStateText!: string;
 
     // Unsafe interface
-    app: UnsafeAppInterface;
+    declare app: UnsafeAppInterface;
 
-    allItems: Match[];
+    allItems!: Match[];
 
-    tagSearchPrefix: string;
+    tagSearchPrefix!: string;
 
     initialize(): void {
         super.initialize();

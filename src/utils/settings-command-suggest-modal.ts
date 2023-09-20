@@ -3,7 +3,7 @@ import { UnsafeAppInterface } from 'src/types/types';
 import { getCommandText } from './utils';
 
 export default class CommandSuggestModal extends FuzzySuggestModal<Command> {
-    app: UnsafeAppInterface;
+    declare app: UnsafeAppInterface;
 
     callback: (item: Command) => void;
 
