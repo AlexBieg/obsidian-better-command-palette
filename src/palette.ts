@@ -14,13 +14,13 @@ import { ActionType } from './utils/constants';
 
 class BetterCommandPaletteModal extends SuggestModal<Match> implements UnsafeSuggestModalInterface {
     // Unsafe interface
-    chooser: UnsafeSuggestModalInterface['chooser'];
+    declare chooser: UnsafeSuggestModalInterface['chooser'];
 
-    updateSuggestions: UnsafeSuggestModalInterface['updateSuggestions'];
+    declare updateSuggestions: UnsafeSuggestModalInterface['updateSuggestions'];
 
     plugin: BetterCommandPalettePlugin;
 
-    actionType: ActionType;
+    actionType!: ActionType;
 
     fileSearchPrefix: string;
 
@@ -28,9 +28,9 @@ class BetterCommandPaletteModal extends SuggestModal<Match> implements UnsafeSug
 
     suggestionsWorker: Worker;
 
-    currentSuggestions: Match[];
+    currentSuggestions!: Match[];
 
-    lastQuery: string;
+    lastQuery!: string;
 
     modalTitleEl: HTMLElement;
 
@@ -46,7 +46,7 @@ class BetterCommandPaletteModal extends SuggestModal<Match> implements UnsafeSug
 
     tagAdapter: BetterCommandPaletteTagAdapter;
 
-    currentAdapter: SuggestModalAdapter;
+    currentAdapter!: SuggestModalAdapter;
 
     suggestionLimit: number;
 
@@ -381,7 +381,7 @@ class BetterCommandPaletteModal extends SuggestModal<Match> implements UnsafeSug
 
             const hideEl = event.target as HTMLElement;
 
-            this.currentAdapter.toggleHideId(hideEl.getAttr('data-id'));
+            this.currentAdapter.toggleHideId(hideEl.getAttr('data-id')!);
         });
 
         this.currentAdapter.renderSuggestion(match, suggestionContent, suggestionAux);

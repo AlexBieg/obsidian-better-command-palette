@@ -103,11 +103,11 @@ export function openFileWithEventKeys(
 
     // Shift key means we should be using a new leaf
     if (createNewPane) {
-        leaf = workspace.createLeafBySplit(workspace.activeLeaf);
+        leaf = workspace.createLeafBySplit(workspace.activeLeaf!);
         workspace.setActiveLeaf(leaf);
     }
 
-    leaf.openFile(file);
+    leaf!.openFile(file);
 }
 
 export function matchTag(tags: string[], tagQueries: string[]): boolean {

@@ -50,7 +50,7 @@ export const DEFAULT_SETTINGS: BetterCommandPalettePluginSettings = {
 export class BetterCommandPaletteSettingTab extends PluginSettingTab {
     plugin: BetterCommandPalettePlugin;
 
-    app: UnsafeAppInterface;
+    declare app: UnsafeAppInterface;
 
     constructor(app: App, plugin: BetterCommandPalettePlugin) {
         super(app, plugin);

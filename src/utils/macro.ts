@@ -71,7 +71,7 @@ export default class MacroCommand implements Command, MacroCommandInterface {
         return true;
     }
 
-    checkCallback(checking: boolean): boolean | void {
+    checkCallback(checking: boolean): boolean | null {
         if (checking) {
             return this.commandIsAvailable(this.commandIds[0]);
         }

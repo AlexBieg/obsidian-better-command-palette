@@ -13,18 +13,18 @@ import { Match, UnsafeAppInterface } from 'src/types/types';
 import { ActionType } from 'src/utils/constants';
 
 export default class BetterCommandPaletteFileAdapter extends SuggestModalAdapter {
-    titleText: string;
+    titleText!: string;
 
-    emptyStateText: string;
+    emptyStateText!: string;
 
     // Unsafe interface
-    app: UnsafeAppInterface;
+    declare app: UnsafeAppInterface;
 
-    allItems: Match[];
+    allItems!: Match[];
 
-    unresolvedItems: OrderedSet<Match>;
+    unresolvedItems!: OrderedSet<Match>;
 
-    fileSearchPrefix: string;
+    fileSearchPrefix!: string;
 
     initialize() {
         super.initialize();
