@@ -150,8 +150,8 @@ class BetterCommandPaletteModal extends SuggestModal<Match> implements UnsafeSug
         this.setQuery('');
         this.inputEl.focus();
 
-        if (this.modifierButtons.expectingHotkey) {
-            if (this.modifierButtons.modifiersAreValid) {
+        if (this.modifierButtons!.expectingHotkey) {
+            if (this.modifierButtons!.modifiersAreValid) {
                 this.setPlaceholder('Type a hotkey');
             } else {
                 this.setPlaceholder('Select another modifier');
@@ -174,7 +174,7 @@ class BetterCommandPaletteModal extends SuggestModal<Match> implements UnsafeSug
             // Have to cast this to access `value`
             const el = event.target as HTMLInputElement;
 
-            if (plugin.settings.closeWithBackspace && el.value === '' && !this.modifierButtons.expectingHotkey) {
+            if (plugin.settings.closeWithBackspace && el.value === '' && !this.modifierButtons?.expectingHotkey) {
                 this.close(event);
             }
         };
@@ -265,7 +265,7 @@ class BetterCommandPaletteModal extends SuggestModal<Match> implements UnsafeSug
         let nextAdapter;
         let type;
 
-        const { expectingHotkey } = this.modifierButtons;
+        const expectingHotkey = this.modifierButtons?.expectingHotkey ?? false;
 
         if (expectingHotkey) {
             type = ActionType.Hotkey;

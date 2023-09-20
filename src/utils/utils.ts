@@ -59,8 +59,10 @@ export function generateHotKeyText(
     if (settings.hyperKeyOverride && isHyperKey(hotkey.modifiers)) {
         hotKeyStrings.push(modifierInfo.icons.Hyper);
     } else {
-        hotkey.modifiers.forEach((mod: Modifier) => {
-            hotKeyStrings.push(modifierInfo.icons[mod]);
+        modifierInfo.hotkeyOrder.forEach((mod) => {
+            if (hotkey.modifiers.includes(mod)) {
+                hotKeyStrings.push(modifierInfo.icons[mod]);
+            }
         });
     }
 

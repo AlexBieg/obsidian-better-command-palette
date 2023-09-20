@@ -31,7 +31,7 @@ export default class ModifierButtons {
 
         this.modifiersEl = createDiv({ cls: 'better-command-palette-button-box' });
 
-        this.modifierInfo.order.forEach((modifier) => {
+        this.modifierInfo.buttonOrder.forEach((modifier) => {
             this.modifierButtons.set(
                 modifier,
                 new ButtonComponent(this.modifiersEl)
@@ -87,7 +87,7 @@ export default class ModifierButtons {
     }
 
     private updateModifierButtonStates(): void {
-        [...this.modifierInfo.order].forEach((modifier) => {
+        [...this.modifierInfo.buttonOrder].forEach((modifier) => {
             if (this.activeModifiers.has(modifier)) {
                 this.modifierButtons.get(modifier)?.setCta();
             } else {
