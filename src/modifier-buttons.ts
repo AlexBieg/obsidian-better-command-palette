@@ -44,6 +44,7 @@ export default class ModifierButtons {
         if (this.plugin.settings.hyperKeyOverride && getEffectiveHotkeyStyle(this.plugin.settings) === 'mac') {
             this.hyperButton = new ButtonComponent(this.modifiersEl)
                 .setButtonText(this.modifierInfo.icons.Hyper)
+                .setClass('better-command-palette-button')
                 .onClick(() => this.onHyper());
         }
 
@@ -58,6 +59,11 @@ export default class ModifierButtons {
 
     get modifiersAreValid(): boolean {
         return this.activeModifiers.size >= 2 || (this.activeModifiers.size === 1 && !this.activeModifiers.has('Shift'));
+    }
+
+    reset(): void {
+        this.activeModifiers = new Set();
+        this.updateModifierButtonStates();
     }
 
     private toggleModifier(modifier: Modifier): void {

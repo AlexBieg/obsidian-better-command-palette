@@ -229,6 +229,8 @@ class BetterCommandPaletteModal extends SuggestModal<Match> implements UnsafeSug
         if (this.initialInputValue) {
             this.setQuery(this.initialInputValue);
         }
+
+        this.modifierButtons?.reset();
     }
 
     changeActionType(actionType: ActionType) {
