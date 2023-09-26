@@ -16,10 +16,13 @@ export interface BetterCommandPalettePluginSettings {
     suggestionLimit: number,
     recentAbovePinned: boolean,
     hyperKeyOverride: boolean,
+    displayOnlyNotesNames: boolean,
+    hideMdExtension: boolean,
+    recentlyUsedText: string,
     macros: MacroCommandInterface[],
     hotkeyStyle: HotkeyStyleType;
     createNewFileMod: Modifier,
-    createNewPaneMod: Modifier,
+    openInNewTabMod: Modifier,
     hiddenCommands: string[],
     hiddenFiles: string[],
     hiddenTags: string[],
@@ -37,10 +40,13 @@ export const DEFAULT_SETTINGS: BetterCommandPalettePluginSettings = {
     suggestionLimit: 50,
     recentAbovePinned: false,
     hyperKeyOverride: false,
+    displayOnlyNotesNames: false,
+    hideMdExtension: false,
+    recentlyUsedText: '(recently used)',
     macros: [],
     hotkeyStyle: 'auto',
     createNewFileMod: 'Mod',
-    createNewPaneMod: 'Shift',
+    openInNewTabMod: 'Shift',
     hiddenCommands: [],
     hiddenFiles: [],
     hiddenTags: [],
@@ -52,18 +58,18 @@ export class BetterCommandPaletteSettingTab extends PluginSettingTab {
 
     app: UnsafeAppInterface;
 
-    constructor(app: App, plugin: BetterCommandPalettePlugin) {
+    constructor (app: App, plugin: BetterCommandPalettePlugin) {
         super(app, plugin);
         this.plugin = plugin;
     }
 
-    display(): void {
+    display (): void {
         this.containerEl.empty();
         this.displayBasicSettings();
         this.displayMacroSettings();
     }
 
-    displayBasicSettings(): void {
+    displayBasicSettings (): void {
         const { containerEl } = this;
         const { settings } = this.plugin;
 
@@ -103,11 +109,36 @@ export class BetterCommandPaletteSettingTab extends PluginSettingTab {
             }));
 
         new Setting(containerEl)
-            .setName('Use shift to create files and cmd to open in new panes')
-            .setDesc('By default cmd is used to create files and shift is used to open in new panes. This setting reverses that to mimic the functionality of the standard quick switcher')
+            .setName('Use shift to create files and cmd/CTRL to open in new tab')
+            .setDesc('By default cmd/ctrl is used to create files and shift is used to open in new tab. This setting reverses that to mimic the behavior of the standard quick switcher.')
             .addToggle((t) => t.setValue(settings.createNewFileMod === 'Shift').onChange(async (val) => {
                 settings.createNewFileMod = val ? 'Shift' : 'Mod';
-                settings.createNewPaneMod = val ? 'Mod' : 'Shift';
+                settings.openInNewTabMod = val ? 'Mod' : 'Shift';
+                await this.plugin.saveSettings();
+            }));
+
+        new Setting(containerEl)
+            .setName("Display only notes' names")
+            .setDesc("If enabled, only notes names will be displayed in Quick Switcher mode instead of their full path.")
+            .addToggle((t) => t.setValue(settings.displayOnlyNotesNames).onChange(async (val) => {
+                settings.displayOnlyNotesNames = val;
+                await this.plugin.saveSettings();
+            }));
+
+        new Setting(containerEl)
+            .setName("Hide .md extensions")
+            .setDesc("If enabled, Markdown notes will be displayed without their .md extension in Quick Switcher mode")
+            .addToggle((t) => t.setValue(settings.hideMdExtension).onChange(async (val) => {
+                settings.hideMdExtension = val;
+                await this.plugin.saveSettings();
+            }));
+
+
+        new Setting(containerEl)
+            .setName('Recently used text')
+            .setDesc('This text will be displayed next to recently used items')
+            .addText((t) => t.setValue(settings.recentlyUsedText).onChange(async (val) => {
+                settings.recentlyUsedText = val;
                 await this.plugin.saveSettings();
             }));
 
@@ -208,7 +239,7 @@ export class BetterCommandPaletteSettingTab extends PluginSettingTab {
                 }));
     }
 
-    displayMacroSettings(): void {
+    displayMacroSettings (): void {
         const { containerEl } = this;
         const { settings } = this.plugin;
 
