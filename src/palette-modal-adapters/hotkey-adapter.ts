@@ -30,7 +30,7 @@ export default class BetterCommandPaletteHotkeyAdapter extends SuggestModalAdapt
 
     unmount(): void {
         const { palette } = this;
-        palette.inputEl.addEventListener('input', this.onChangeListener);
+        palette.inputEl.removeEventListener('input', this.onChangeListener);
         palette.resultContainerEl.removeAttribute('hidden');
     }
 
