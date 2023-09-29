@@ -6,8 +6,9 @@ import {
     getEffectiveHotkeyStyle,
     getModifierInfo,
     sameSet,
+    setCta,
 } from 'src/utils';
-import { HYPER_KEY_MODIFIERS_SET, ModifierInfo } from './utils/constants';
+import { ActionType, HYPER_KEY_MODIFIERS_SET, ModifierInfo } from './utils/constants';
 
 /**
  * A set of buttons for toggling modifiers used to simulate hotkeys.
@@ -17,19 +18,35 @@ export default class ModifierButtons {
 
     activeModifiers = new Set<Modifier>();
 
+    private fileButton: ButtonComponent;
+
+    private tagButton: ButtonComponent;
+
     private readonly modifierButtons = new Map<Modifier, ButtonComponent>();
 
     private hyperButton: ButtonComponent | undefined;
 
     private modifierInfo: ModifierInfo;
 
+    #actionType: ActionType = ActionType.Commands;
+
     constructor(
         private readonly plugin: BetterCommandPalettePlugin,
-        private readonly onModifiersChanged: () => void,
+        private readonly onButtonStatesChanged: () => void,
     ) {
         this.modifierInfo = getModifierInfo(this.plugin.settings);
 
         this.modifiersEl = createDiv({ cls: 'better-command-palette-button-box' });
+
+        this.fileButton = new ButtonComponent(this.modifiersEl)
+            .setIcon('file-search')
+            .setClass('better-command-palette-button')
+            .onClick(() => this.toggleActionType(ActionType.Files));
+
+        this.tagButton = new ButtonComponent(this.modifiersEl)
+            .setIcon('tag')
+            .setClass('better-command-palette-button')
+            .onClick(() => this.toggleActionType(ActionType.Tags));
 
         this.modifierInfo.buttonOrder.forEach((modifier) => {
             this.modifierButtons.set(
@@ -53,8 +70,8 @@ export default class ModifierButtons {
         });
     }
 
-    get expectingHotkey(): boolean {
-        return this.activeModifiers.size !== 0;
+    get actionType(): ActionType {
+        return this.#actionType;
     }
 
     get modifiersAreValid(): boolean {
@@ -62,8 +79,7 @@ export default class ModifierButtons {
     }
 
     reset(): void {
-        this.activeModifiers = new Set();
-        this.updateModifierButtonStates();
+        this.setActiveModifiers(new Set());
     }
 
     private toggleModifier(modifier: Modifier): void {
@@ -72,36 +88,45 @@ export default class ModifierButtons {
         } else {
             this.activeModifiers.add(modifier);
         }
-        this.updateModifierButtonStates();
+        this.setActiveModifiers(this.activeModifiers);
     }
 
     private onHyper(): void {
         if (this.hyperButton) {
             if (sameSet(this.activeModifiers, HYPER_KEY_MODIFIERS_SET)) {
-                this.activeModifiers.clear();
+                this.setActiveModifiers(new Set());
             } else {
-                this.activeModifiers = new Set(HYPER_KEY_MODIFIERS_SET);
+                this.setActiveModifiers(new Set(HYPER_KEY_MODIFIERS_SET));
             }
         }
-        this.updateModifierButtonStates();
     }
 
-    private updateModifierButtonStates(): void {
+    private toggleActionType(actionType: Exclude<ActionType, ActionType.Hotkey>) {
+        if (this.#actionType === actionType) {
+            this.#actionType = ActionType.Commands;
+        } else {
+            this.#actionType = actionType;
+        }
+        this.activeModifiers.clear();
+        this.updateButtonStates();
+    }
+
+    private setActiveModifiers(activeModifiers: Set<Modifier>): void {
+        this.#actionType = activeModifiers.size === 0 ? ActionType.Commands : ActionType.Hotkey;
+        this.activeModifiers = activeModifiers;
+        this.updateButtonStates();
+    }
+
+    private updateButtonStates(): void {
+        setCta(this.fileButton, this.#actionType === ActionType.Files);
+        setCta(this.tagButton, this.#actionType === ActionType.Tags);
         [...this.modifierInfo.buttonOrder].forEach((modifier) => {
-            if (this.activeModifiers.has(modifier)) {
-                this.modifierButtons.get(modifier)?.setCta();
-            } else {
-                this.modifierButtons.get(modifier)?.removeCta();
-            }
+            setCta(this.modifierButtons.get(modifier)!, this.activeModifiers.has(modifier));
         });
         if (this.hyperButton) {
-            if (sameSet(this.activeModifiers, HYPER_KEY_MODIFIERS_SET)) {
-                this.hyperButton.setCta();
-            } else {
-                this.hyperButton.removeCta();
-            }
+            setCta(this.hyperButton, sameSet(this.activeModifiers, HYPER_KEY_MODIFIERS_SET));
         }
 
-        this.onModifiersChanged();
+        this.onButtonStatesChanged();
     }
 }

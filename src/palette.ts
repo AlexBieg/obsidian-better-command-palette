@@ -8,15 +8,25 @@ import {
     BetterCommandPaletteHotkeyAdapter,
     BetterCommandPaletteTagAdapter,
 } from 'src/palette-modal-adapters';
-import { Match, UnsafeAppInterface, UnsafeSuggestModalInterface } from 'src/types/types';
+import {
+    Match,
+    UnsafeAppInterface,
+    UnsafeSuggestModalInterface,
+} from 'src/types/types';
 import {
     generateHotKeyText,
-    OrderedSet, PaletteMatch, renderPrevItems, sameSet, SuggestModalAdapter,
+    OrderedSet,
+    PaletteMatch,
+    renderPrevItems,
+    sameSet,
+    SuggestModalAdapter,
 } from 'src/utils';
 import { ActionType } from './utils/constants';
 import ModifierButtons from './modifier-buttons';
 
-class BetterCommandPaletteModal extends SuggestModal<Match> implements UnsafeSuggestModalInterface {
+class BetterCommandPaletteModal
+    extends SuggestModal<Match>
+    implements UnsafeSuggestModalInterface {
     // Unsafe interfaces
 
     declare chooser: UnsafeSuggestModalInterface['chooser'];
@@ -117,7 +127,10 @@ class BetterCommandPaletteModal extends SuggestModal<Match> implements UnsafeSug
                 () => this.onModifiersChanged(),
             );
 
-            this.modalEl.insertBefore(this.modifierButtons.modifiersEl, this.modalEl.firstChild);
+            this.modalEl.insertBefore(
+                this.modifierButtons.modifiersEl,
+                this.modalEl.firstChild,
+            );
         }
 
         // Add our custom title element
@@ -132,7 +145,10 @@ class BetterCommandPaletteModal extends SuggestModal<Match> implements UnsafeSug
 
         // Add in the title element
         if (this.modalTitleEl) {
-            this.modalEl.insertBefore(this.modalTitleEl, this.modalEl.firstChild);
+            this.modalEl.insertBefore(
+                this.modalTitleEl,
+                this.modalEl.firstChild,
+            );
         }
 
         this.hiddenItemsHeaderEl = createEl('p', 'hidden-items-header');
@@ -140,24 +156,29 @@ class BetterCommandPaletteModal extends SuggestModal<Match> implements UnsafeSug
 
         this.hiddenItemsHeaderEl.onClickEvent(this.toggleHiddenItems);
 
-        this.modalEl.insertBefore(this.hiddenItemsHeaderEl, this.resultContainerEl);
+        this.modalEl.insertBefore(
+            this.hiddenItemsHeaderEl,
+            this.resultContainerEl,
+        );
 
         // Set our scopes for the modal
         this.setScopes(plugin);
     }
 
+    // TODO: Set action type directly instead of relying on updateActionType.
     onModifiersChanged(): void {
-        this.setQuery('');
-        this.inputEl.focus();
+        const buttons = this.modifierButtons!;
 
-        if (this.modifierButtons!.expectingHotkey) {
-            if (this.modifierButtons!.modifiersAreValid) {
+        if (buttons.actionType === ActionType.Hotkey) {
+            this.setQuery('');
+            if (buttons.modifiersAreValid) {
                 this.setPlaceholder('Type a hotkey');
             } else {
                 this.setPlaceholder('Select another modifier');
             }
         }
 
+        this.inputEl.focus();
         this.updateActionType();
     }
 
@@ -174,7 +195,7 @@ class BetterCommandPaletteModal extends SuggestModal<Match> implements UnsafeSug
             // Have to cast this to access `value`
             const el = event.target as HTMLInputElement;
 
-            if (plugin.settings.closeWithBackspace && el.value === '' && !this.modifierButtons?.expectingHotkey) {
+            if (plugin.settings.closeWithBackspace && el.value === '') {
                 this.close(event);
             }
         };
@@ -189,27 +210,44 @@ class BetterCommandPaletteModal extends SuggestModal<Match> implements UnsafeSug
             closeModal(event);
         });
 
-        this.scope.register([createNewFileMod], 'Enter', (event: KeyboardEvent) => {
-            if (this.actionType === ActionType.Files) {
-                this.currentAdapter.onChooseSuggestion(null, event);
-                this.close(event);
-            }
-        });
+        this.scope.register(
+            [createNewFileMod],
+            'Enter',
+            (event: KeyboardEvent) => {
+                if (this.actionType === ActionType.Files) {
+                    this.currentAdapter.onChooseSuggestion(null, event);
+                    this.close(event);
+                }
+            },
+        );
 
-        this.scope.register([createNewFileMod, createNewPaneMod], 'Enter', (event: KeyboardEvent) => {
-            if (this.actionType === ActionType.Files) {
-                this.currentAdapter.onChooseSuggestion(null, event);
-                this.close(event);
-            }
-        });
+        this.scope.register(
+            [createNewFileMod, createNewPaneMod],
+            'Enter',
+            (event: KeyboardEvent) => {
+                if (this.actionType === ActionType.Files) {
+                    this.currentAdapter.onChooseSuggestion(null, event);
+                    this.close(event);
+                }
+            },
+        );
 
-        this.scope.register([createNewPaneMod], 'Enter', (event: KeyboardEvent) => {
-            if (this.actionType === ActionType.Files
-                && this.currentSuggestions.length) {
-                this.currentAdapter.onChooseSuggestion(this.currentSuggestions[0], event);
-                this.close(event);
-            }
-        });
+        this.scope.register(
+            [createNewPaneMod],
+            'Enter',
+            (event: KeyboardEvent) => {
+                if (
+                    this.actionType === ActionType.Files
+                    && this.currentSuggestions.length
+                ) {
+                    this.currentAdapter.onChooseSuggestion(
+                        this.currentSuggestions[0],
+                        event,
+                    );
+                    this.close(event);
+                }
+            },
+        );
 
         this.scope.register(['Mod'], 'I', this.toggleHiddenItems);
     }
@@ -247,10 +285,7 @@ class BetterCommandPaletteModal extends SuggestModal<Match> implements UnsafeSug
         this.updateSuggestions();
     }
 
-    setQuery(
-        newQuery: string,
-        cursorPosition: number = -1,
-    ) {
+    setQuery(newQuery: string, cursorPosition: number = -1) {
         this.inputEl.value = newQuery;
 
         if (cursorPosition > -1) {
@@ -265,7 +300,7 @@ class BetterCommandPaletteModal extends SuggestModal<Match> implements UnsafeSug
         let nextAdapter;
         let type;
 
-        const expectingHotkey = this.modifierButtons?.expectingHotkey ?? false;
+        const expectingHotkey = this.modifierButtons?.actionType === ActionType.Hotkey;
 
         if (expectingHotkey) {
             type = ActionType.Hotkey;
@@ -319,15 +354,28 @@ class BetterCommandPaletteModal extends SuggestModal<Match> implements UnsafeSug
     }
 
     updateInstructions() {
-        Array.from(this.modalEl.getElementsByClassName('prompt-instructions'))
-            .forEach((instruction) => {
-                this.modalEl.removeChild(instruction);
-            });
+        Array.from(
+            this.modalEl.getElementsByClassName('prompt-instructions'),
+        ).forEach((instruction) => {
+            this.modalEl.removeChild(instruction);
+        });
 
         this.setInstructions([
             ...this.currentAdapter.getInstructions(),
-            { command: generateHotKeyText({ modifiers: [], key: 'ESC' }, this.plugin.settings), purpose: 'Close palette' },
-            { command: generateHotKeyText({ modifiers: ['Mod'], key: 'I' }, this.plugin.settings), purpose: 'Toggle Hidden Items' },
+            {
+                command: generateHotKeyText(
+                    { modifiers: [], key: 'ESC' },
+                    this.plugin.settings,
+                ),
+                purpose: 'Close palette',
+            },
+            {
+                command: generateHotKeyText(
+                    { modifiers: ['Mod'], key: 'I' },
+                    this.plugin.settings,
+                ),
+                purpose: 'Toggle Hidden Items',
+            },
         ]);
     }
 
@@ -341,7 +389,8 @@ class BetterCommandPaletteModal extends SuggestModal<Match> implements UnsafeSug
 
         for (
             let i = 0;
-            i < msg.data.length && results.length < this.suggestionLimit + hiddenCount;
+            i < msg.data.length
+            && results.length < this.suggestionLimit + hiddenCount;
             i += 1
         ) {
             results.push(msg.data[i]);
@@ -351,11 +400,13 @@ class BetterCommandPaletteModal extends SuggestModal<Match> implements UnsafeSug
             }
         }
 
-        const matches = results.map((r: Match) => new PaletteMatch(r.id, r.text, r.tags));
+        const matches = results.map(
+            (r: Match) => new PaletteMatch(r.id, r.text, r.tags),
+        );
 
         // Sort the suggestions so that previously searched items are first
         const prevItems = this.currentAdapter.getPrevItems();
-        matches.sort((a, b) => (+prevItems.has(b)) - (+prevItems.has(a)));
+        matches.sort((a, b) => +prevItems.has(b) - +prevItems.has(a));
 
         this.currentSuggestions = matches;
         this.limit = this.currentSuggestions.length;
@@ -399,7 +450,8 @@ class BetterCommandPaletteModal extends SuggestModal<Match> implements UnsafeSug
         this.hiddenItemsHeaderEl.empty();
 
         if (hiddenItemCount !== 0) {
-            const text = `${this.showHiddenItems ? 'Hide' : 'Show'} hidden items (${hiddenItemCount})`;
+            const text = `${this.showHiddenItems ? 'Hide' : 'Show'
+            } hidden items (${hiddenItemCount})`;
             this.hiddenItemsHeaderEl.setText(text);
         }
     }
@@ -418,11 +470,20 @@ class BetterCommandPaletteModal extends SuggestModal<Match> implements UnsafeSug
         const suggestionContent = el.createEl('span', 'suggestion-content');
         const suggestionAux = el.createEl('span', 'suggestion-aux');
 
-        const flairContainer = suggestionAux.createEl('span', 'suggestion-flair');
-        renderPrevItems(match, suggestionContent, this.currentAdapter.getPrevItems());
+        const flairContainer = suggestionAux.createEl(
+            'span',
+            'suggestion-flair',
+        );
+        renderPrevItems(
+            match,
+            suggestionContent,
+            this.currentAdapter.getPrevItems(),
+        );
 
         setIcon(flairContainer, icon);
-        flairContainer.ariaLabel = isHidden ? 'Click to Unhide' : 'Click to Hide';
+        flairContainer.ariaLabel = isHidden
+            ? 'Click to Unhide'
+            : 'Click to Hide';
         flairContainer.setAttr('data-id', match.id);
 
         flairContainer.onClickEvent((event) => {
@@ -434,7 +495,11 @@ class BetterCommandPaletteModal extends SuggestModal<Match> implements UnsafeSug
             this.currentAdapter.toggleHideId(hideEl.getAttr('data-id')!);
         });
 
-        this.currentAdapter.renderSuggestion(match, suggestionContent, suggestionAux);
+        this.currentAdapter.renderSuggestion(
+            match,
+            suggestionContent,
+            suggestionAux,
+        );
     }
 
     async onChooseSuggestion(item: Match, event: MouseEvent | KeyboardEvent) {
@@ -447,12 +512,12 @@ class BetterCommandPaletteModal extends SuggestModal<Match> implements UnsafeSug
 
         const { activeModifiers } = this.modifierButtons!;
         const upperKey = key.toUpperCase();
-        const commandToRun = this.app.commands.listCommands().find(
-            (command) => command.hotkeys?.some(
+        const commandToRun = this.app.commands
+            .listCommands()
+            .find((command) => command.hotkeys?.some(
                 (hotkey) => hotkey.key.toUpperCase() === upperKey
-                    && sameSet(hotkey.modifiers, activeModifiers),
-            ),
-        );
+                        && sameSet(hotkey.modifiers, activeModifiers),
+            ));
 
         if (commandToRun) {
             this.app.commands.executeCommandById(commandToRun.id);
@@ -460,7 +525,10 @@ class BetterCommandPaletteModal extends SuggestModal<Match> implements UnsafeSug
             // eslint-disable-next-line no-new
             new Notice(
                 `Hotkey not found: ${generateHotKeyText(
-                    { key: key.toUpperCase(), modifiers: Array.from(activeModifiers) },
+                    {
+                        key: key.toUpperCase(),
+                        modifiers: Array.from(activeModifiers),
+                    },
                     this.plugin.settings,
                 )}`,
                 2000,

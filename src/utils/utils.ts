@@ -1,5 +1,5 @@
 import {
-    App, Command, Hotkey, Modifier, normalizePath, parseFrontMatterAliases,
+    App, ButtonComponent, Command, Hotkey, Modifier, normalizePath, parseFrontMatterAliases,
     parseFrontMatterTags, Platform, TFile,
 } from 'obsidian';
 import { BetterCommandPalettePluginSettings } from 'src/settings';
@@ -12,6 +12,14 @@ import {
     ModifierInfo,
     SPECIAL_KEYS,
 } from './constants';
+
+export function setCta(component: ButtonComponent, value: boolean): void {
+    if (value) {
+        component.setCta();
+    } else {
+        component.removeCta();
+    }
+}
 
 /**
  * Determines if the modifiers of a hotkey could be a hyper key command.
