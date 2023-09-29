@@ -124,7 +124,7 @@ class BetterCommandPaletteModal
         if (Platform.isMobile) {
             this.modifierButtons = new ModifierButtons(
                 this.plugin,
-                () => this.onModifiersChanged(),
+                () => this.onModifierButtonSelectionChanged(),
             );
 
             this.modalEl.insertBefore(
@@ -165,8 +165,7 @@ class BetterCommandPaletteModal
         this.setScopes(plugin);
     }
 
-    // TODO: Set action type directly instead of relying on updateActionType.
-    onModifiersChanged(): void {
+    onModifierButtonSelectionChanged(): void {
         const buttons = this.modifierButtons!;
 
         switch (buttons.actionType) {
@@ -176,20 +175,16 @@ class BetterCommandPaletteModal
             case ActionType.Tags:
                 this.setQuery(this.tagSearchPrefix);
                 break;
-            case ActionType.Hotkey:
-                this.setQuery('');
-                if (buttons.modifiersAreValid) {
-                    this.setPlaceholder('Type a hotkey');
-                } else {
-                    this.setPlaceholder('Select another modifier');
-                }
-                break;
             default:
                 this.setQuery('');
         }
 
         this.inputEl.focus();
         this.updateActionType();
+
+        if (this.actionType !== buttons.actionType) {
+            throw Error(`Invariant violated: ${this.actionType} !== ${buttons.actionType}`);
+        }
     }
 
     close(evt?: KeyboardEvent) {
@@ -310,9 +305,14 @@ class BetterCommandPaletteModal
         let nextAdapter;
         let type;
 
-        const expectingHotkey = this.modifierButtons?.actionType === ActionType.Hotkey;
-
-        if (expectingHotkey) {
+        let placeholder = 'Select a command';
+        if (this.modifierButtons && this.modifierButtons.actionType === ActionType.Hotkey) {
+            type = ActionType.Hotkey;
+            if (this.modifierButtons.modifiersAreValid) {
+                placeholder = 'Type a hotkey';
+            } else {
+                placeholder = 'Select another modifier';
+            }
             type = ActionType.Hotkey;
             nextAdapter = this.hotkeyAdapter;
         } else if (text.startsWith(this.fileSearchPrefix)) {
@@ -326,14 +326,15 @@ class BetterCommandPaletteModal
             nextAdapter = this.commandAdapter;
         }
 
-        if (!expectingHotkey) {
-            this.setPlaceholder('Select a command');
-        }
+        this.setPlaceholder(placeholder);
 
         if (type !== this.actionType) {
             this.currentAdapter?.unmount();
             this.currentAdapter = nextAdapter;
             this.currentAdapter.mount();
+            if (this.modifierButtons) {
+                this.modifierButtons.actionType = type;
+            }
         }
 
         if (!this.currentAdapter.initialized) {

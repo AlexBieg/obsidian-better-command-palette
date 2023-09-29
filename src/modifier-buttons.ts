@@ -1,6 +1,4 @@
-import {
-    ButtonComponent, Modifier,
-} from 'obsidian';
+import { ButtonComponent, Modifier } from 'obsidian';
 import BetterCommandPalettePlugin from 'src/main';
 import {
     getEffectiveHotkeyStyle,
@@ -12,11 +10,16 @@ import { ActionType, HYPER_KEY_MODIFIERS_SET, ModifierInfo } from './utils/const
 
 /**
  * A set of buttons for toggling modifiers used to simulate hotkeys.
+ *
+ * Maintans the following class invariant: `activeModifiers` is empty iff
+ * `actionType !== ActionType.Hotkey`.
  */
 export default class ModifierButtons {
     readonly modifiersEl: HTMLElement;
 
     activeModifiers = new Set<Modifier>();
+
+    #actionType: ActionType = ActionType.Commands;
 
     private fileButton: ButtonComponent;
 
@@ -28,11 +31,10 @@ export default class ModifierButtons {
 
     private modifierInfo: ModifierInfo;
 
-    #actionType: ActionType = ActionType.Commands;
 
     constructor(
         private readonly plugin: BetterCommandPalettePlugin,
-        private readonly onButtonStatesChanged: () => void,
+        private readonly onSelectionChanged: () => void,
     ) {
         this.modifierInfo = getModifierInfo(this.plugin.settings);
 
@@ -62,7 +64,7 @@ export default class ModifierButtons {
             this.hyperButton = new ButtonComponent(this.modifiersEl)
                 .setButtonText(this.modifierInfo.icons.Hyper)
                 .setClass('better-command-palette-button')
-                .onClick(() => this.onHyper());
+                .onClick(() => this.toggleHyper());
         }
 
         this.modifiersEl.querySelectorAll('button').forEach((el) => {
@@ -74,12 +76,18 @@ export default class ModifierButtons {
         return this.#actionType;
     }
 
+    set actionType(type: ActionType) {
+        this.#actionType = type;
+        this.onActionTypeChanged(false);
+    }
+
     get modifiersAreValid(): boolean {
         return this.activeModifiers.size >= 2 || (this.activeModifiers.size === 1 && !this.activeModifiers.has('Shift'));
     }
 
     reset(): void {
-        this.setActiveModifiers(new Set());
+        this.activeModifiers.clear();
+        this.onModifiersChanged();
     }
 
     private toggleModifier(modifier: Modifier): void {
@@ -88,16 +96,17 @@ export default class ModifierButtons {
         } else {
             this.activeModifiers.add(modifier);
         }
-        this.setActiveModifiers(this.activeModifiers);
+        this.onModifiersChanged();
     }
 
-    private onHyper(): void {
-        if (this.hyperButton) {
-            if (sameSet(this.activeModifiers, HYPER_KEY_MODIFIERS_SET)) {
-                this.setActiveModifiers(new Set());
-            } else {
-                this.setActiveModifiers(new Set(HYPER_KEY_MODIFIERS_SET));
-            }
+    private toggleHyper(): void {
+        if (!this.hyperButton) {
+            return;
+        }
+        if (sameSet(this.activeModifiers, HYPER_KEY_MODIFIERS_SET)) {
+            this.activeModifiers.clear();
+        } else {
+            this.activeModifiers = new Set(HYPER_KEY_MODIFIERS_SET);
         }
     }
 
@@ -107,17 +116,34 @@ export default class ModifierButtons {
         } else {
             this.#actionType = actionType;
         }
-        this.activeModifiers.clear();
-        this.updateButtonStates();
+        this.onActionTypeChanged(true);
     }
 
-    private setActiveModifiers(activeModifiers: Set<Modifier>): void {
-        this.#actionType = activeModifiers.size === 0 ? ActionType.Commands : ActionType.Hotkey;
-        this.activeModifiers = activeModifiers;
-        this.updateButtonStates();
+    private onActionTypeChanged(runCallback: boolean): void {
+        // Restore the class invariant prioritzing the new action type.
+        if (this.#actionType !== ActionType.Hotkey) {
+            this.activeModifiers.clear();
+        }
+
+        this.updateButtonAppearance();
+        if (runCallback) {
+            this.onSelectionChanged();
+        }
     }
 
-    private updateButtonStates(): void {
+    private onModifiersChanged(): void {
+        // Restore the class invariant prioritizing the new modifier set.
+        if (this.activeModifiers.size > 0) {
+            this.#actionType = ActionType.Hotkey;
+        } else {
+            this.#actionType = ActionType.Commands;
+        }
+
+        this.updateButtonAppearance();
+        this.onSelectionChanged();
+    }
+
+    private updateButtonAppearance(): void {
         setCta(this.fileButton, this.#actionType === ActionType.Files);
         setCta(this.tagButton, this.#actionType === ActionType.Tags);
         [...this.modifierInfo.buttonOrder].forEach((modifier) => {
@@ -126,7 +152,5 @@ export default class ModifierButtons {
         if (this.hyperButton) {
             setCta(this.hyperButton, sameSet(this.activeModifiers, HYPER_KEY_MODIFIERS_SET));
         }
-
-        this.onButtonStatesChanged();
     }
 }
