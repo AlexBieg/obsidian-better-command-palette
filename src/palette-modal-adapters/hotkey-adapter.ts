@@ -5,9 +5,9 @@ import {
 import { Match, UnsafeAppInterface } from 'src/types/types';
 
 export default class BetterCommandPaletteHotkeyAdapter extends SuggestModalAdapter {
-    titleText!: string;
+    titleText = 'Better Command Palette: Hotkeys';
 
-    emptyStateText!: string;
+    emptyStateText = '';
 
     // Unsafe Interfaces
     declare app: UnsafeAppInterface;
@@ -21,13 +21,6 @@ export default class BetterCommandPaletteHotkeyAdapter extends SuggestModalAdapt
             this.palette.inputEl.value = '';
         }
     };
-
-    initialize() {
-        super.initialize();
-
-        this.titleText = 'Better Command Palette: Hotkeys';
-        this.emptyStateText = '';
-    }
 
     mount(): void {
         const { palette } = this;
