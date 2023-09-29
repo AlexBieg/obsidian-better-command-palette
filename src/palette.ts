@@ -169,13 +169,23 @@ class BetterCommandPaletteModal
     onModifiersChanged(): void {
         const buttons = this.modifierButtons!;
 
-        if (buttons.actionType === ActionType.Hotkey) {
-            this.setQuery('');
-            if (buttons.modifiersAreValid) {
-                this.setPlaceholder('Type a hotkey');
-            } else {
-                this.setPlaceholder('Select another modifier');
-            }
+        switch (buttons.actionType) {
+            case ActionType.Files:
+                this.setQuery(this.fileSearchPrefix);
+                break;
+            case ActionType.Tags:
+                this.setQuery(this.tagSearchPrefix);
+                break;
+            case ActionType.Hotkey:
+                this.setQuery('');
+                if (buttons.modifiersAreValid) {
+                    this.setPlaceholder('Type a hotkey');
+                } else {
+                    this.setPlaceholder('Select another modifier');
+                }
+                break;
+            default:
+                this.setQuery('');
         }
 
         this.inputEl.focus();
@@ -516,7 +526,7 @@ class BetterCommandPaletteModal
             .listCommands()
             .find((command) => command.hotkeys?.some(
                 (hotkey) => hotkey.key.toUpperCase() === upperKey
-                        && sameSet(hotkey.modifiers, activeModifiers),
+                    && sameSet(hotkey.modifiers, activeModifiers),
             ));
 
         if (commandToRun) {
