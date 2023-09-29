@@ -71,12 +71,12 @@ export default class MacroCommand implements Command, MacroCommandInterface {
         return true;
     }
 
-    checkCallback(checking: boolean): boolean | null {
+    checkCallback(checking: boolean): boolean | void {
         if (checking) {
             return this.commandIsAvailable(this.commandIds[0]);
         }
 
         this.callAllCommands();
-        return null;
+        return undefined;
     }
 }

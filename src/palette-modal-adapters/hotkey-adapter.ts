@@ -5,18 +5,12 @@ import {
 import { Match, UnsafeAppInterface } from 'src/types/types';
 
 export default class BetterCommandPaletteHotkeyAdapter extends SuggestModalAdapter {
-    titleText: string;
+    titleText!: string;
 
-    emptyStateText: string;
-
-    COMMAND_PLUGIN_NAME_SEPARATOR = ': ';
+    emptyStateText!: string;
 
     // Unsafe Interfaces
-    app: UnsafeAppInterface;
-
-    allItems: Match[];
-
-    pinnedItems: Match[];
+    declare app: UnsafeAppInterface;
 
     readonly onChangeListener = () => {
         const { value } = this.palette.inputEl;
