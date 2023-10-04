@@ -15,7 +15,7 @@ import {
  * @param {Modifier[]} modifiers An array of modifiers
  * @returns {boolean} Do the modifiers make up a hyper key command
  */
-function isHyperKey (modifiers: Modifier[]): boolean {
+function isHyperKey(modifiers: Modifier[]): boolean {
     if (modifiers.length !== 4) {
         return false;
     }
@@ -28,7 +28,7 @@ function isHyperKey (modifiers: Modifier[]): boolean {
  * @param {Hotkey} hotkey The hotkey to generate text for
  * @returns {string} The hotkey text
  */
-export function generateHotKeyText (
+export function generateHotKeyText(
     hotkey: Hotkey,
     settings: BetterCommandPalettePluginSettings,
 ): string {
@@ -56,7 +56,12 @@ export function generateHotKeyText (
     return hotKeyStrings.join(' ');
 }
 
-export function renderPrevItems (settings: BetterCommandPalettePluginSettings, match: Match, el: HTMLElement, prevItems: OrderedSet<Match>) {
+export function renderPrevItems(
+    settings: BetterCommandPalettePluginSettings,
+    match: Match,
+    el: HTMLElement,
+    prevItems: OrderedSet<Match>,
+) {
     if (prevItems.has(match)) {
         el.addClass('recent');
         el.createEl('span', {
@@ -66,11 +71,11 @@ export function renderPrevItems (settings: BetterCommandPalettePluginSettings, m
     }
 }
 
-export function getCommandText (item: Command): string {
+export function getCommandText(item: Command): string {
     return item.name;
 }
 
-export async function getOrCreateFile (app: App, path: string): Promise<TFile> {
+export async function getOrCreateFile(app: App, path: string): Promise<TFile> {
     let file = app.metadataCache.getFirstLinkpathDest(path, '');
 
     if (!file) {
@@ -89,7 +94,7 @@ export async function getOrCreateFile (app: App, path: string): Promise<TFile> {
     return file;
 }
 
-export function openFileWithEventKeys (
+export function openFileWithEventKeys(
     app: App,
     settings: BetterCommandPalettePluginSettings,
     file: TFile,
@@ -102,7 +107,7 @@ export function openFileWithEventKeys (
     app.workspace.openLinkText(file.path, file.path, openInNewTab);
 }
 
-export function matchTag (tags: string[], tagQueries: string[]): boolean {
+export function matchTag(tags: string[], tagQueries: string[]): boolean {
     for (let i = 0; i < tagQueries.length; i += 1) {
         const tagSearch = tagQueries[i];
 
@@ -120,7 +125,7 @@ export function matchTag (tags: string[], tagQueries: string[]): boolean {
     return false;
 }
 
-export function createPaletteMatchesFromFilePath (
+export function createPaletteMatchesFromFilePath(
     metadataCache: UnsafeMetadataCacheInterface,
     filePath: string,
 ): PaletteMatch[] {

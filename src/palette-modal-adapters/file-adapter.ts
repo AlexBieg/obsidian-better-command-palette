@@ -26,7 +26,7 @@ export default class BetterCommandPaletteFileAdapter extends SuggestModalAdapter
 
     fileSearchPrefix!: string;
 
-    initialize () {
+    initialize() {
         super.initialize();
 
         this.titleText = 'Better Command Palette: Files';
@@ -71,14 +71,14 @@ export default class BetterCommandPaletteFileAdapter extends SuggestModalAdapter
         });
     }
 
-    mount (): void {
+    mount(): void {
         this.keymapHandlers = [
             this.palette.scope.register(['Mod'], this.plugin.settings.commandSearchHotkey, () => this.palette.changeActionType(ActionType.Commands)),
             this.palette.scope.register(['Mod'], this.plugin.settings.tagSearchHotkey, () => this.palette.changeActionType(ActionType.Tags)),
         ];
     }
 
-    getInstructions (): Instruction[] {
+    getInstructions(): Instruction[] {
         const { openInNewTabMod, createNewFileMod } = this.plugin.settings;
         return [
             { command: generateHotKeyText({ modifiers: [], key: 'ENTER' }, this.plugin.settings), purpose: 'Open file' },
@@ -89,27 +89,27 @@ export default class BetterCommandPaletteFileAdapter extends SuggestModalAdapter
         ];
     }
 
-    cleanQuery (query: string): string {
+    cleanQuery(query: string): string {
         const newQuery = query.replace(this.fileSearchPrefix, '');
         return newQuery;
     }
 
-    renderSuggestion (match: Match, content: HTMLElement): void {
+    renderSuggestion(match: Match, content: HTMLElement): void {
         let noteName = match.text;
 
         // Build the displayed note name without its full path if required in settings
         if (this.plugin.settings.displayOnlyNotesNames) {
-            noteName = match.text.split("/").pop();
+            noteName = match.text.split('/').pop()!;
         }
 
         // Build the displayed note name without its Markdown extension if required in settings
-        if (this.plugin.settings.hideMdExtension && noteName.endsWith(".md")) {
+        if (this.plugin.settings.hideMdExtension && noteName.endsWith('.md')) {
             noteName = noteName.slice(0, -3);
         }
 
         const suggestionEl = content.createEl('div', {
             cls: 'suggestion-title',
-            text: noteName
+            text: noteName,
         });
 
         if (this.unresolvedItems.has(match)) {
@@ -138,7 +138,7 @@ export default class BetterCommandPaletteFileAdapter extends SuggestModalAdapter
         });
     }
 
-    async onChooseSuggestion (match: Match, event: MouseEvent | KeyboardEvent) {
+    async onChooseSuggestion(match: Match, event: MouseEvent | KeyboardEvent) {
         let path = match && match.id;
 
         // No match means we are trying to create new file
