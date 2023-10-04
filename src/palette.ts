@@ -71,7 +71,7 @@ class BetterCommandPaletteModal
 
     modifierButtons: ModifierButtons | undefined;
 
-    constructor(
+    constructor (
         app: App,
         prevCommands: OrderedSet<Match>,
         prevTags: OrderedSet<Match>,
@@ -165,7 +165,7 @@ class BetterCommandPaletteModal
         this.setScopes(plugin);
     }
 
-    onModifierButtonSelectionChanged(): void {
+    onModifierButtonSelectionChanged (): void {
         const buttons = this.modifierButtons!;
 
         switch (buttons.actionType) {
@@ -195,7 +195,7 @@ class BetterCommandPaletteModal
         }
     }
 
-    setScopes(plugin: BetterCommandPalettePlugin) {
+    setScopes (plugin: BetterCommandPalettePlugin) {
         const closeModal = (event: KeyboardEvent) => {
             // Have to cast this to access `value`
             const el = event.target as HTMLInputElement;
@@ -205,7 +205,7 @@ class BetterCommandPaletteModal
             }
         };
 
-        const { createNewPaneMod, createNewFileMod } = plugin.settings;
+        const { openInNewTabMod, createNewFileMod } = plugin.settings;
 
         this.scope.register([], 'Backspace', (event: KeyboardEvent) => {
             closeModal(event);
@@ -226,33 +226,22 @@ class BetterCommandPaletteModal
             },
         );
 
-        this.scope.register(
-            [createNewFileMod, createNewPaneMod],
-            'Enter',
-            (event: KeyboardEvent) => {
-                if (this.actionType === ActionType.Files) {
-                    this.currentAdapter.onChooseSuggestion(null, event);
-                    this.close(event);
-                }
-            },
-        );
+        this.scope.register([createNewFileMod, openInNewTabMod], 'Enter', (event: KeyboardEvent) => {
+            if (this.actionType === ActionType.Files) {
+                this.currentAdapter.onChooseSuggestion(null, event);
+                this.close(event);
+            }
+        });
 
-        this.scope.register(
-            [createNewPaneMod],
-            'Enter',
-            (event: KeyboardEvent) => {
-                if (
-                    this.actionType === ActionType.Files
-                    && this.currentSuggestions.length
-                ) {
-                    this.currentAdapter.onChooseSuggestion(
-                        this.currentSuggestions[0],
-                        event,
-                    );
-                    this.close(event);
-                }
-            },
-        );
+        this.scope.register([openInNewTabMod], 'Enter', (event: KeyboardEvent) => {
+            if (this.actionType === ActionType.Files && this.currentSuggestions.length) {
+                const promptResults = document.querySelector(".better-command-palette .prompt-results");
+                const selected = document.querySelector(".better-command-palette .is-selected");
+                const selectedIndex = Array.from(promptResults.children).indexOf(selected);
+                this.currentAdapter.onChooseSuggestion(this.currentSuggestions[selectedIndex], event);
+                this.close(event);
+            }
+        });
 
         this.scope.register(['Mod'], 'I', this.toggleHiddenItems);
     }
@@ -262,7 +251,7 @@ class BetterCommandPaletteModal
         this.updateSuggestions();
     };
 
-    onOpen() {
+    onOpen () {
         super.onOpen();
 
         // Add the initial value to the input
@@ -276,12 +265,13 @@ class BetterCommandPaletteModal
         this.modifierButtons?.reset();
     }
 
-    changeActionType(actionType: ActionType) {
+    changeActionType (actionType: ActionType) {
         let prefix = '';
         if (actionType === ActionType.Files) {
             prefix = this.plugin.settings.fileSearchPrefix;
         } else if (actionType === ActionType.Tags) {
             prefix = this.plugin.settings.tagSearchPrefix;
+
         }
         const currentQuery: string = this.inputEl.value;
         const cleanQuery = this.currentAdapter.cleanQuery(currentQuery);
@@ -290,7 +280,10 @@ class BetterCommandPaletteModal
         this.updateSuggestions();
     }
 
-    setQuery(newQuery: string, cursorPosition: number = -1) {
+    setQuery (
+        newQuery: string,
+        cursorPosition: number = -1,
+    ) {
         this.inputEl.value = newQuery;
 
         if (cursorPosition > -1) {
@@ -300,7 +293,7 @@ class BetterCommandPaletteModal
         this.updateSuggestions();
     }
 
-    updateActionType(): boolean {
+    updateActionType (): boolean {
         const text: string = this.inputEl.value;
         let nextAdapter;
         let type;
@@ -318,12 +311,15 @@ class BetterCommandPaletteModal
         } else if (text.startsWith(this.fileSearchPrefix)) {
             type = ActionType.Files;
             nextAdapter = this.fileAdapter;
+            this.modalEl.setAttribute("palette-mode", "files");
         } else if (text.startsWith(this.tagSearchPrefix)) {
             type = ActionType.Tags;
             nextAdapter = this.tagAdapter;
+            this.modalEl.setAttribute("palette-mode", "tags");
         } else {
             type = ActionType.Commands;
             nextAdapter = this.commandAdapter;
+            this.modalEl.setAttribute("palette-mode", "commands");
         }
 
         this.setPlaceholder(placeholder);
@@ -356,20 +352,23 @@ class BetterCommandPaletteModal
         return wasUpdated;
     }
 
-    updateTitleText() {
-        this.modalTitleEl?.setText(this.currentAdapter.getTitleText());
+    updateTitleText () {
+        if (this.plugin.settings.showPluginName) {
+            this.modalTitleEl.setText(this.currentAdapter.getTitleText());
+        } else {
+            this.modalTitleEl.setText('');
+        }
     }
 
-    updateEmptyStateText() {
+    updateEmptyStateText () {
         this.emptyStateText = this.currentAdapter.getEmptyStateText();
     }
 
-    updateInstructions() {
-        Array.from(
-            this.modalEl.getElementsByClassName('prompt-instructions'),
-        ).forEach((instruction) => {
-            this.modalEl.removeChild(instruction);
-        });
+    updateInstructions () {
+        Array.from(this.modalEl.getElementsByClassName('prompt-instructions'))
+            .forEach((instruction) => {
+                this.modalEl.removeChild(instruction);
+            });
 
         this.setInstructions([
             ...this.currentAdapter.getInstructions(),
@@ -390,11 +389,11 @@ class BetterCommandPaletteModal
         ]);
     }
 
-    getItems(): Match[] {
+    getItems (): Match[] {
         return this.currentAdapter.getSortedItems();
     }
 
-    receivedSuggestions(msg: MessageEvent) {
+    receivedSuggestions (msg: MessageEvent) {
         const results = [];
         let hiddenCount = 0;
 
@@ -411,9 +410,7 @@ class BetterCommandPaletteModal
             }
         }
 
-        const matches = results.map(
-            (r: Match) => new PaletteMatch(r.id, r.text, r.tags),
-        );
+        const matches = results.map((r: Match) => new PaletteMatch(r.id, r.text, r.tags));
 
         // Sort the suggestions so that previously searched items are first
         const prevItems = this.currentAdapter.getPrevItems();
@@ -424,7 +421,7 @@ class BetterCommandPaletteModal
         this.updateSuggestions();
     }
 
-    getSuggestionsAsync(query: string) {
+    getSuggestionsAsync (query: string) {
         const items = this.getItems();
         this.suggestionsWorker.postMessage({
             query,
@@ -432,7 +429,7 @@ class BetterCommandPaletteModal
         });
     }
 
-    getSuggestions(query: string): Match[] {
+    getSuggestions (query: string): Match[] {
         // The action type might have changed
         this.updateActionType();
 
@@ -457,7 +454,7 @@ class BetterCommandPaletteModal
         return this.showHiddenItems ? this.currentSuggestions : visibleItems;
     }
 
-    updateHiddenItemCountHeader(hiddenItemCount: number) {
+    updateHiddenItemCountHeader (hiddenItemCount: number) {
         this.hiddenItemsHeaderEl.empty();
 
         if (hiddenItemCount !== 0) {
@@ -467,7 +464,7 @@ class BetterCommandPaletteModal
         }
     }
 
-    renderSuggestion(match: Match, el: HTMLElement) {
+    renderSuggestion (match: Match, el: HTMLElement) {
         el.addClass('mod-complex');
 
         const isHidden = this.currentAdapter.hiddenIds.includes(match.id);
@@ -481,15 +478,8 @@ class BetterCommandPaletteModal
         const suggestionContent = el.createEl('span', 'suggestion-content');
         const suggestionAux = el.createEl('span', 'suggestion-aux');
 
-        const flairContainer = suggestionAux.createEl(
-            'span',
-            'suggestion-flair',
-        );
-        renderPrevItems(
-            match,
-            suggestionContent,
-            this.currentAdapter.getPrevItems(),
-        );
+        const flairContainer = suggestionAux.createEl('span', 'suggestion-flair');
+        renderPrevItems(this.plugin.settings, match, suggestionContent, this.currentAdapter.getPrevItems());
 
         setIcon(flairContainer, icon);
         flairContainer.ariaLabel = isHidden
@@ -513,7 +503,7 @@ class BetterCommandPaletteModal
         );
     }
 
-    async onChooseSuggestion(item: Match, event: MouseEvent | KeyboardEvent) {
+    async onChooseSuggestion (item: Match, event: MouseEvent | KeyboardEvent) {
         this.currentAdapter.onChooseSuggestion(item, event);
     }
 

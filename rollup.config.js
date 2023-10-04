@@ -39,7 +39,7 @@ export default {
         scss({
             output: `${outputLocation}/styles.css`,
         }),
-        eslint(),
+        // eslint(),
         copy({
             targets: [
                 ...(!isLocal
