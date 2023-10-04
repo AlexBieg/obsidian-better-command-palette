@@ -77,6 +77,6 @@ export default class MacroCommand implements Command, MacroCommandInterface {
         }
 
         this.callAllCommands();
-        return null;
+        return undefined;
     }
 }

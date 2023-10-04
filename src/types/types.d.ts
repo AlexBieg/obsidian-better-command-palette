@@ -37,6 +37,7 @@ export interface Match extends Comparable {
 // Copied this pattern from Another Quick Switcher: https://github.com/tadashi-aikawa/obsidian-another-quick-switcher/blob/master/src/ui/AnotherQuickSwitcherModal.ts#L109
 
 export interface UnsafeSuggestModalInterface extends SuggestModal<Match> {
+    app: UnsafeAppInterface;
     chooser: {
         useSelectedItem(ev: Partial<KeyboardEvent>): void;
     }

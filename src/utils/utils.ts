@@ -1,5 +1,5 @@
 import {
-    App, Command, Hotkey, Modifier, normalizePath, parseFrontMatterAliases,
+    App, ButtonComponent, Command, Hotkey, Modifier, normalizePath, parseFrontMatterAliases,
     parseFrontMatterTags, Platform, TFile,
 } from 'obsidian';
 import { BetterCommandPalettePluginSettings } from 'src/settings';
@@ -7,15 +7,26 @@ import { Match, UnsafeMetadataCacheInterface } from 'src/types/types';
 import PaletteMatch from './palette-match';
 import OrderedSet from './ordered-set';
 import {
-    BASIC_MODIFIER_ICONS, HYPER_KEY_MODIFIERS_SET, MAC_MODIFIER_ICONS, SPECIAL_KEYS,
+    HYPER_KEY_MODIFIERS_SET,
+    MODIFIER_INFO,
+    ModifierInfo,
+    SPECIAL_KEYS,
 } from './constants';
+
+export function setCta(component: ButtonComponent, value: boolean): void {
+    if (value) {
+        component.setCta();
+    } else {
+        component.removeCta();
+    }
+}
 
 /**
  * Determines if the modifiers of a hotkey could be a hyper key command.
  * @param {Modifier[]} modifiers An array of modifiers
  * @returns {boolean} Do the modifiers make up a hyper key command
  */
-function isHyperKey (modifiers: Modifier[]): boolean {
+function isHyperKey(modifiers: Modifier[]): boolean {
     if (modifiers.length !== 4) {
         return false;
     }
@@ -23,40 +34,61 @@ function isHyperKey (modifiers: Modifier[]): boolean {
     return modifiers.every((m) => HYPER_KEY_MODIFIERS_SET.has(m));
 }
 
+export function getEffectiveHotkeyStyle(
+    settings: BetterCommandPalettePluginSettings,
+): 'mac' | 'windows' {
+    if (settings.hotkeyStyle === 'auto') {
+        return Platform.isMacOS || Platform.isIosApp
+            ? 'mac'
+            : 'windows';
+    }
+    return settings.hotkeyStyle;
+}
+
+export function getModifierInfo(
+    settings: BetterCommandPalettePluginSettings,
+): ModifierInfo {
+    return MODIFIER_INFO[getEffectiveHotkeyStyle(settings)];
+}
+
 /**
  * A utility that generates the text of a Hotkey for UIs
  * @param {Hotkey} hotkey The hotkey to generate text for
  * @returns {string} The hotkey text
  */
-export function generateHotKeyText (
+export function generateHotKeyText(
     hotkey: Hotkey,
     settings: BetterCommandPalettePluginSettings,
 ): string {
-    let modifierIcons = Platform.isMacOS ? MAC_MODIFIER_ICONS : BASIC_MODIFIER_ICONS;
-
-    if (settings.hotkeyStyle === 'mac') {
-        modifierIcons = MAC_MODIFIER_ICONS;
-    } else if (settings.hotkeyStyle === 'windows') {
-        modifierIcons = BASIC_MODIFIER_ICONS;
-    }
+    const modifierInfo = getModifierInfo(settings);
 
     const hotKeyStrings: string[] = [];
 
     if (settings.hyperKeyOverride && isHyperKey(hotkey.modifiers)) {
-        hotKeyStrings.push(modifierIcons.Hyper);
+        hotKeyStrings.push(modifierInfo.icons.Hyper);
     } else {
-        hotkey.modifiers.forEach((mod: Modifier) => {
-            hotKeyStrings.push(modifierIcons[mod]);
+        modifierInfo.hotkeyOrder.forEach((mod) => {
+            if (hotkey.modifiers.includes(mod)) {
+                hotKeyStrings.push(modifierInfo.icons[mod]);
+            }
         });
     }
 
-    const key = hotkey.key.toUpperCase();
+    let { key } = hotkey;
+    if (key.length === 1) {
+        key = key.toUpperCase();
+    }
     hotKeyStrings.push(SPECIAL_KEYS[key] || key);
 
-    return hotKeyStrings.join(' ');
+    return hotKeyStrings.join(modifierInfo.separator);
 }
 
-export function renderPrevItems (settings: BetterCommandPalettePluginSettings, match: Match, el: HTMLElement, prevItems: OrderedSet<Match>) {
+export function renderPrevItems(
+    settings: BetterCommandPalettePluginSettings,
+    match: Match,
+    el: HTMLElement,
+    prevItems: OrderedSet<Match>,
+) {
     if (prevItems.has(match)) {
         el.addClass('recent');
         el.createEl('span', {
@@ -66,11 +98,11 @@ export function renderPrevItems (settings: BetterCommandPalettePluginSettings, m
     }
 }
 
-export function getCommandText (item: Command): string {
+export function getCommandText(item: Command): string {
     return item.name;
 }
 
-export async function getOrCreateFile (app: App, path: string): Promise<TFile> {
+export async function getOrCreateFile(app: App, path: string): Promise<TFile> {
     let file = app.metadataCache.getFirstLinkpathDest(path, '');
 
     if (!file) {
@@ -89,7 +121,7 @@ export async function getOrCreateFile (app: App, path: string): Promise<TFile> {
     return file;
 }
 
-export function openFileWithEventKeys (
+export function openFileWithEventKeys(
     app: App,
     settings: BetterCommandPalettePluginSettings,
     file: TFile,
@@ -102,7 +134,7 @@ export function openFileWithEventKeys (
     app.workspace.openLinkText(file.path, file.path, openInNewTab);
 }
 
-export function matchTag (tags: string[], tagQueries: string[]): boolean {
+export function matchTag(tags: string[], tagQueries: string[]): boolean {
     for (let i = 0; i < tagQueries.length; i += 1) {
         const tagSearch = tagQueries[i];
 
@@ -120,7 +152,7 @@ export function matchTag (tags: string[], tagQueries: string[]): boolean {
     return false;
 }
 
-export function createPaletteMatchesFromFilePath (
+export function createPaletteMatchesFromFilePath(
     metadataCache: UnsafeMetadataCacheInterface,
     filePath: string,
 ): PaletteMatch[] {
@@ -149,4 +181,18 @@ export function createPaletteMatchesFromFilePath (
             tags,
         )),
     ];
+}
+
+/**
+ * Tests if two sets have the same members, or if a and array and a set contain
+ * the same items.
+ *
+ * Will erroneously return false if `a` is an array with duplicate entires.
+ */
+export function sameSet<T>(a: Set<T> | T[], b: Set<T>): boolean {
+    const left = a instanceof Array ? a : Array.from(a);
+    if (left.length !== b.size) {
+        return false;
+    }
+    return left.every((value) => b.has(value));
 }

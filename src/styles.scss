@@ -4,6 +4,23 @@
         margin: 5px;
     }
 
+    .better-command-palette-button-box {
+        display: flex;
+        flex-direction: row;
+        justify-content: center;
+        .better-command-palette-button {
+            display: block;
+            margin-left: 0.5ch;
+            margin-right: 0.5ch;
+            &:first-child {
+                margin-left: 1ch;
+            }
+            &:last-child {
+                margin-right: 1ch;
+            }
+        }
+    }
+
     .hidden-items-header {
         margin: 0px;
         margin-left: 13px;
