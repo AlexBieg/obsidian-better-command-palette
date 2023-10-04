@@ -56,20 +56,20 @@ export const DEFAULT_SETTINGS: BetterCommandPalettePluginSettings = {
 export class BetterCommandPaletteSettingTab extends PluginSettingTab {
     plugin: BetterCommandPalettePlugin;
 
-    app: UnsafeAppInterface;
+    declare app: UnsafeAppInterface;
 
-    constructor (app: App, plugin: BetterCommandPalettePlugin) {
+    constructor(app: App, plugin: BetterCommandPalettePlugin) {
         super(app, plugin);
         this.plugin = plugin;
     }
 
-    display (): void {
+    display(): void {
         this.containerEl.empty();
         this.displayBasicSettings();
         this.displayMacroSettings();
     }
 
-    displayBasicSettings (): void {
+    displayBasicSettings(): void {
         const { containerEl } = this;
         const { settings } = this.plugin;
 
@@ -119,20 +119,19 @@ export class BetterCommandPaletteSettingTab extends PluginSettingTab {
 
         new Setting(containerEl)
             .setName("Display only notes' names")
-            .setDesc("If enabled, only notes names will be displayed in Quick Switcher mode instead of their full path.")
+            .setDesc('If enabled, only notes names will be displayed in Quick Switcher mode instead of their full path.')
             .addToggle((t) => t.setValue(settings.displayOnlyNotesNames).onChange(async (val) => {
                 settings.displayOnlyNotesNames = val;
                 await this.plugin.saveSettings();
             }));
 
         new Setting(containerEl)
-            .setName("Hide .md extensions")
-            .setDesc("If enabled, Markdown notes will be displayed without their .md extension in Quick Switcher mode")
+            .setName('Hide .md extensions')
+            .setDesc('If enabled, Markdown notes will be displayed without their .md extension in Quick Switcher mode')
             .addToggle((t) => t.setValue(settings.hideMdExtension).onChange(async (val) => {
                 settings.hideMdExtension = val;
                 await this.plugin.saveSettings();
             }));
-
 
         new Setting(containerEl)
             .setName('Recently used text')
@@ -239,7 +238,7 @@ export class BetterCommandPaletteSettingTab extends PluginSettingTab {
                 }));
     }
 
-    displayMacroSettings (): void {
+    displayMacroSettings(): void {
         const { containerEl } = this;
         const { settings } = this.plugin;
 

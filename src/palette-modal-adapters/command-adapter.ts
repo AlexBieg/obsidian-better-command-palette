@@ -6,18 +6,18 @@ import { Match, UnsafeAppInterface } from 'src/types/types';
 import { ActionType } from 'src/utils/constants';
 
 export default class BetterCommandPaletteCommandAdapter extends SuggestModalAdapter {
-    titleText: string;
+    titleText!: string;
 
-    emptyStateText: string;
+    emptyStateText!: string;
 
     COMMAND_PLUGIN_NAME_SEPARATOR = ': ';
 
     // Unsafe Interfaces
-    app: UnsafeAppInterface;
+    declare app: UnsafeAppInterface;
 
-    allItems: Match[];
+    allItems!: Match[];
 
-    pinnedItems: Match[];
+    pinnedItems!: Match[];
 
     initialize() {
         super.initialize();
@@ -90,7 +90,7 @@ export default class BetterCommandPaletteCommandAdapter extends SuggestModalAdap
             // Seems like this is how the acutal command palette does it though
             const split = text.split(this.COMMAND_PLUGIN_NAME_SEPARATOR);
             // Get first element
-            prefix = split.shift();
+            prefix = split.shift()!;
             text = split.join(this.COMMAND_PLUGIN_NAME_SEPARATOR);
         }
 
