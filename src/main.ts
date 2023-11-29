@@ -1,13 +1,14 @@
-import { Plugin } from 'obsidian';
+import { DataAdapter, Plugin } from 'obsidian';
 
 import SuggestionsWorker from 'web-worker:./web-workers/suggestions-worker';
-import { OrderedSet, MacroCommand } from 'src/utils';
+import { OrderedSet, MacroCommand, PaletteMatch } from 'src/utils';
 import BetterCommandPaletteModal from 'src/palette';
 import { Match, UnsafeAppInterface } from 'src/types/types';
 import { BetterCommandPalettePluginSettings, BetterCommandPaletteSettingTab, DEFAULT_SETTINGS } from 'src/settings';
 import { MACRO_COMMAND_ID_PREFIX } from './utils/constants';
 import './styles.scss';
 
+const SEARCH_HISTORY_PATH = '.obsidian/plugins/obsidian-better-command-palette/searchHistory.json';
 export default class BetterCommandPalettePlugin extends Plugin {
     app: UnsafeAppInterface;
 
@@ -19,14 +20,17 @@ export default class BetterCommandPalettePlugin extends Plugin {
 
     suggestionsWorker: Worker;
 
+    fs: DataAdapter;
+
     async onload() {
         // eslint-disable-next-line no-console
         console.log('Loading plugin: Better Command Palette');
 
+        this.fs = this.app.vault.adapter;
         await this.loadSettings();
+        await this.loadSearchHistory();
+        this.registerEvent(this.app.workspace.on('quit', this.saveSearchHistory, this));
 
-        this.prevCommands = new OrderedSet<Match>();
-        this.prevTags = new OrderedSet<Match>();
         this.suggestionsWorker = new SuggestionsWorker({});
 
         this.addCommand({
@@ -84,6 +88,7 @@ export default class BetterCommandPalettePlugin extends Plugin {
 
     onunload(): void {
         this.suggestionsWorker.terminate();
+        // this.saveSearchHistory();  // doesn't work
     }
 
     loadMacroCommands() {
@@ -132,5 +137,39 @@ export default class BetterCommandPalettePlugin extends Plugin {
         this.deleteMacroCommands();
         await this.saveData(this.settings);
         this.loadMacroCommands();
+    }
+
+    async loadSearchHistory() {
+        console.log(SEARCH_HISTORY_PATH);
+         
+        try {
+            const historyData = JSON.parse(await this.fs.read(SEARCH_HISTORY_PATH));
+            const createPaletteMatch = (item: Match) => new PaletteMatch(item.id, item.text, item.tags);
+
+            this.prevCommands = new OrderedSet(
+                (historyData.prevCommands || []).map(createPaletteMatch)
+            );
+            this.prevTags = new OrderedSet(
+                (historyData.prevTags || []).map(createPaletteMatch)
+            );
+        } catch (error) {
+            console.error('Error loading search history:', error);
+            this.prevCommands = new OrderedSet<Match>();
+            this.prevTags = new OrderedSet<Match>();
+        }
+    }
+
+    saveSearchHistory() {
+        // limit the number of stored commands and tags to prevent storing excessively long search histories
+        const maxCount = 15;
+        const limitedPrevCommands = this.prevCommands.values().slice(0, maxCount);
+        const limitedPrevTags = this.prevTags.values().slice(0, maxCount);
+
+        const historyData = JSON.stringify({
+            prevCommands: limitedPrevCommands,
+            prevTags: limitedPrevTags
+        });
+
+        this.fs.write(SEARCH_HISTORY_PATH, historyData);
     }
 }
